@@ -92,6 +92,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 
+import io.github.cdimascio.dotenv.Dotenv;
 /*
 Pure Java + HttpServer + MariaDB + Session + JWT Example
 
@@ -109,9 +110,12 @@ public class SimpleAuthServer {
 
     // ==== DB CONFIG (modify according to your environment) ==== //
     private static final String DB_URL = "jdbc:mariadb://localhost:53301/sql_db";
-    private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = System.getenv("DB_PASSWORD");
-
+    private static final String DB_USER = "user";
+    // private static final String DB_PASSWORD = System.getenv("DB_PASSWORD");
+    private static final Dotenv DOTENV = Dotenv.configure()
+            .directory("/Users/u085/Desktop/share/workplace")
+            .load();
+    private static final String DB_PASSWORD = DOTENV.get("DB_PASSWORD");
     // ==== SESSION STORE ==== //
     private static final Map<String, User> SESSION_STORE = new ConcurrentHashMap<>();
     private static final String SESSION_COOKIE_NAME = "SESSION_ID";
@@ -725,7 +729,7 @@ public class SimpleAuthServer {
     // ========= JWT Util =========
 
     public static class JwtUtil {
-        private static final String SECRET = System.getenv("JWT_SECRET");
+        private static final String SECRET = DOTENV.get("JWT_SECRET");
         private static final Algorithm ALG = Algorithm.HMAC256(SECRET);
         private static final String ISSUER = "simple-auth-server";
 
