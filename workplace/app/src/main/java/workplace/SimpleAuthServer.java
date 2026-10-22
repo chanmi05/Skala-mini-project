@@ -136,9 +136,9 @@ public class SimpleAuthServer {
         System.out.println("=== SimpleAuthServer v2026-02-03-REPLACED ===");
         System.out.println("Server started at http://localhost:8080");
 
-        //  어떤 계층이 DB 접근을 담당해야 하는가? Repository 구현체를 생성하여 서비스와 연결하세요.
+        // 어떤 계층이 DB 접근을 담당해야 하는가? Repository 구현체를 생성하여 서비스와 연결하세요.
         UserRepository userRepository = new JdbcUserRepository(DB_URL, DB_USER, DB_PASSWORD);
-        //  HTTP 처리부가 SQL을 직접 실행하지 않도록 인증 서비스에 저장소를 주입하세요.
+        // HTTP 처리부가 SQL을 직접 실행하지 않도록 인증 서비스에 저장소를 주입하세요.
         AuthService authService = new AuthService(userRepository);
 
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
@@ -206,12 +206,14 @@ public class SimpleAuthServer {
 
             String username = trimToNull(params.get("username"));
             String password = params.get("password");
-            if (password != null) password = password.trim();
+            if (password != null)
+                password = password.trim();
 
             if (DEBUG) {
                 System.out.println("=== SIGNUP HIT ===");
                 System.out.println("[SIGNUP] request received (credentials omitted)");
-                System.out.println("[SIGNUP] username=" + username + ", pwLen=" + (password == null ? "null" : password.length()));
+                System.out.println(
+                        "[SIGNUP] username=" + username + ", pwLen=" + (password == null ? "null" : password.length()));
             }
 
             if (isBlank(username) || isBlank(password)) {
@@ -220,8 +222,9 @@ public class SimpleAuthServer {
             }
 
             try {
-                //  회원가입 요청을 어떤 계층으로 위임해야 하는가?
-                authService.signUp(username, password);redirect(exchange, "/login");
+                // 회원가입 요청을 어떤 계층으로 위임해야 하는가?
+                authService.signUp(username, password);
+                redirect(exchange, "/login");
             } catch (SQLIntegrityConstraintViolationException dup) {
                 writeText(exchange, 400, "username already exists");
             } catch (Exception e) {
@@ -231,7 +234,8 @@ public class SimpleAuthServer {
         });
 
         // POST /api/login
-        // Login + Session + JWT issuance + (Important) No 302 redirect → Return 200 JSON
+        // Login + Session + JWT issuance + (Important) No 302 redirect → Return 200
+        // JSON
         server.createContext("/api/login", exchange -> {
             if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
                 methodNotAllowed(exchange);
@@ -253,7 +257,7 @@ public class SimpleAuthServer {
                 }
 
                 // [① 로그인 연결] 서비스의 로그인 결과를 받아 실패 시 401, 성공 시 쿠키 발급으로 이어지게 하세요.
-                User user = /* TODO ①: 로그인 검증 */ null;
+                User user = authService.login(username, password);
                 if (user == null) {
                     writeJson(exchange, 401, "{\"ok\":false,\"error\":\"invalid credentials\"}");
                     return;
@@ -261,30 +265,29 @@ public class SimpleAuthServer {
 
                 // 1) Session Cookie
                 String sessionId = UUID.randomUUID().toString();
-                //  서버 측 세션 상태를 어떤 키로 보관해야 이후 쿠키를 통해 찾을 수 있는가?
-                SESSION_STORE.put(sessionId, user);exchange.getResponseHeaders().add(
+                // 서버 측 세션 상태를 어떤 키로 보관해야 이후 쿠키를 통해 찾을 수 있는가?
+                SESSION_STORE.put(sessionId, user);
+                exchange.getResponseHeaders().add(
                         "Set-Cookie",
-                        SESSION_COOKIE_NAME + "=" + sessionId + "; Path=/; HttpOnly; SameSite=Lax"
-                );
+                        SESSION_COOKIE_NAME + "=" + sessionId + "; Path=/; HttpOnly; SameSite=Lax");
 
                 // 2) JWT Cookie
-                //  서버 측 세션과 별개로 검증 가능한 토큰을 발급하세요.
+                // 서버 측 세션과 별개로 검증 가능한 토큰을 발급하세요.
                 String jwt = JwtUtil.createToken(user);
                 exchange.getResponseHeaders().add(
                         "Set-Cookie",
-                        JWT_COOKIE_NAME + "=" + jwt + "; Path=/; HttpOnly; SameSite=Lax"
-                );
+                        JWT_COOKIE_NAME + "=" + jwt + "; Path=/; HttpOnly; SameSite=Lax");
 
                 // 3) Cookie for frontend login status check (readable by JS)
                 exchange.getResponseHeaders().add(
                         "Set-Cookie",
-                        APP_AUTH_COOKIE_NAME + "=1; Path=/; SameSite=Lax"
-                );
+                        APP_AUTH_COOKIE_NAME + "=1; Path=/; SameSite=Lax");
 
                 // 4) (Most important) Do not redirect here — end with 200 JSON response
-                //    → In fetch/XHR environments, 302 redirects easily cause HTTP 0/cancellation
-                //  fetch 호출에서는 서버 302 대신 성공 JSON으로 이동 경로를 알립니다.
-                writeJson(exchange, 200, "{\"ok\":true,\"redirect\":\"http://localhost:8008/index.html\"}");System.out.println("[LOGIN] SUCCESS -> 200 JSON (no redirect)");
+                // → In fetch/XHR environments, 302 redirects easily cause HTTP 0/cancellation
+                // fetch 호출에서는 서버 302 대신 성공 JSON으로 이동 경로를 알립니다.
+                writeJson(exchange, 200, "{\"ok\":true,\"redirect\":\"http://localhost:8008/index.html\"}");
+                System.out.println("[LOGIN] SUCCESS -> 200 JSON (no redirect)");
                 return;
 
             } catch (Exception e) {
@@ -299,8 +302,9 @@ public class SimpleAuthServer {
         server.createContext("/api/auth/check", exchange -> {
             // CORS Preflight
             if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
-                //  브라우저의 사전 요청은 인증 전에 CORS 헤더를 붙이고 본문 없이 종료해야 합니다.
-                addCorsHeaders(exchange);exchange.sendResponseHeaders(204, -1);
+                // 브라우저의 사전 요청은 인증 전에 CORS 헤더를 붙이고 본문 없이 종료해야 합니다.
+                addCorsHeaders(exchange);
+                exchange.sendResponseHeaders(204, -1);
                 exchange.close();
                 return;
             }
@@ -317,7 +321,7 @@ public class SimpleAuthServer {
             User sessionUser = null;
             if (!isBlank(sessionId)) {
                 // [② 세션 검증] 쿠키의 세션 ID는 사용자 자체가 아닙니다. 서버 저장소에서 해당 사용자를 조회하세요.
-                sessionUser = /* TODO ②: 서버 저장소 조회 */ null;
+                sessionUser = SESSION_STORE.get(sessionId);
             }
 
             // (B) JWT validation
@@ -329,7 +333,7 @@ public class SimpleAuthServer {
             if (!isBlank(token)) {
                 try {
                     // [③ JWT 검증] 토큰 내용을 단순 디코딩하지 말고 서명·만료·발급자 검증 함수를 사용하세요.
-                    DecodedJWT decoded = /* TODO ③: 토큰 검증 */ null;
+                    DecodedJWT decoded = JwtUtil.verifyToken(token);
                     jwtOk = true;
                     jwtUsername = decoded.getClaim("username").asString();
                     jwtSubject = decoded.getSubject();
@@ -342,7 +346,7 @@ public class SimpleAuthServer {
 
             // Policy: pass if either session OR JWT is valid
             // [④ 인증 정책] Session OR JWT: 두 방식 모두 실패한 경우에만 거부하도록 조건을 작성하세요.
-            if (/* TODO ④: 두 인증 수단이 모두 실패했는가? */ false) {
+            if (/* TODO ④: 두 인증 수단이 모두 실패했는가? */ !jwtOk && sessionUser == null) {
                 writeJson(exchange, 401, "{\"ok\":false,\"reason\":\"UNAUTHORIZED\"}");
                 return;
             }
@@ -405,8 +409,9 @@ public class SimpleAuthServer {
 
             String sessionId = resolveSessionId(exchange);
             if (sessionId != null) {
-                //  로그아웃 때 서버 측 세션을 무효화하세요.
-                SESSION_STORE.remove(sessionId);}
+                // 로그아웃 때 서버 측 세션을 무효화하세요.
+                SESSION_STORE.remove(sessionId);
+            }
 
             // Remove cookie (delete with identical attributes)
             exchange.getResponseHeaders().add("Set-Cookie", cookie(SESSION_COOKIE_NAME, "", true, 0));
@@ -431,7 +436,8 @@ public class SimpleAuthServer {
 
     // ========= Resource/Reponse Helper =========
 
-    private static void serveResource(HttpExchange exchange, String resourcePath, String contentType) throws IOException {
+    private static void serveResource(HttpExchange exchange, String resourcePath, String contentType)
+            throws IOException {
         InputStream is = SimpleAuthServer.class.getClassLoader().getResourceAsStream(resourcePath);
         if (is == null) {
             notFound(exchange);
@@ -481,7 +487,8 @@ public class SimpleAuthServer {
         String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
         Map<String, String> params = new HashMap<>();
         for (String pair : body.split("&")) {
-            if (pair.isEmpty()) continue;
+            if (pair.isEmpty())
+                continue;
             String[] kv = pair.split("=", 2);
             String key = urlDecode(kv[0]);
             String value = kv.length > 1 ? urlDecode(kv[1]) : "";
@@ -499,15 +506,17 @@ public class SimpleAuthServer {
     }
 
     private static String trimToNull(String s) {
-        if (s == null) return null;
+        if (s == null)
+            return null;
         String t = s.trim();
         return t.isEmpty() ? null : t;
     }
 
-// Read common cookie
+    // Read common cookie
     private static String getCookieValue(HttpExchange exchange, String name) {
         List<String> cookies = exchange.getRequestHeaders().get("Cookie");
-        if (cookies == null) return null;
+        if (cookies == null)
+            return null;
         for (String header : cookies) {
             String[] parts = header.split(";\\s*");
             for (String part : parts) {
@@ -526,12 +535,14 @@ public class SimpleAuthServer {
 
     private static User resolveUser(HttpExchange exchange) {
         String sessionId = resolveSessionId(exchange);
-        if (sessionId == null) return null;
+        if (sessionId == null)
+            return null;
         return SESSION_STORE.get(sessionId);
     }
 
     private static String escapeHtml(String s) {
-        if (s == null) return "";
+        if (s == null)
+            return "";
         return s.replace("&", "&amp;")
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")
@@ -540,7 +551,8 @@ public class SimpleAuthServer {
     }
 
     private static String escapeJson(String s) {
-        if (s == null) return "";
+        if (s == null)
+            return "";
         return s.replace("\\", "\\\\")
                 .replace("\"", "\\\"")
                 .replace("\n", "\\n")
@@ -548,17 +560,19 @@ public class SimpleAuthServer {
                 .replace("\t", "\\t");
     }
 
-  // Cookie creation helper (unified attributes)
+    // Cookie creation helper (unified attributes)
     // maxAgeSeconds:
-    //  -1 : Max-Age not set (behaves like a session cookie)
-    //   0 : Delete immediately
-    
+    // -1 : Max-Age not set (behaves like a session cookie)
+    // 0 : Delete immediately
+
     private static String cookie(String name, String value, boolean httpOnly, int maxAgeSeconds) {
         StringBuilder sb = new StringBuilder();
         sb.append(name).append("=").append(value == null ? "" : value);
         sb.append("; Path=/");
-        if (maxAgeSeconds >= 0) sb.append("; Max-Age=").append(maxAgeSeconds);
-        if (httpOnly) sb.append("; HttpOnly");
+        if (maxAgeSeconds >= 0)
+            sb.append("; Max-Age=").append(maxAgeSeconds);
+        if (httpOnly)
+            sb.append("; HttpOnly");
         sb.append("; SameSite=Lax");
         return sb.toString();
     }
@@ -570,18 +584,34 @@ public class SimpleAuthServer {
         private String username;
         private String password;
 
-        public Long getId() { return id; }
-        public void setId(Long id) { this.id = id; }
+        public Long getId() {
+            return id;
+        }
 
-        public String getUsername() { return username; }
-        public void setUsername(String username) { this.username = username; }
+        public void setId(Long id) {
+            this.id = id;
+        }
 
-        public String getPassword() { return password; }
-        public void setPassword(String password) { this.password = password; }
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
     }
 
     public interface UserRepository {
         void save(User user) throws Exception;
+
         User findByUsername(String username) throws Exception;
     }
 
@@ -604,9 +634,11 @@ public class SimpleAuthServer {
         public void save(User u) throws Exception {
             String sql = "INSERT INTO users(username, password) VALUES(?, ?)";
             try (Connection conn = getConnection();
-                 PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                //  SQL의 ? 자리와 사용자 필드를 연결하세요(문자열 결합 SQL 금지).
-                ps.setString(1, u.getUsername());ps.setString(2, u.getPassword());ps.executeUpdate();
+                    PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                // SQL의 ? 자리와 사용자 필드를 연결하세요(문자열 결합 SQL 금지).
+                ps.setString(1, u.getUsername());
+                ps.setString(2, u.getPassword());
+                ps.executeUpdate();
                 try (ResultSet rs = ps.getGeneratedKeys()) {
                     if (rs.next()) {
                         u.setId(rs.getLong(1));
@@ -619,7 +651,7 @@ public class SimpleAuthServer {
         public User findByUsername(String username) throws Exception {
             String sql = "SELECT id, username, password FROM users WHERE username = ?";
             try (Connection conn = getConnection();
-                 PreparedStatement ps = conn.prepareStatement(sql)) {
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
                 ps.setString(1, username);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
@@ -644,7 +676,8 @@ public class SimpleAuthServer {
 
         public void signUp(String username, String rawPassword) throws Exception {
             username = trimToNull(username);
-            if (rawPassword != null) rawPassword = rawPassword.trim();
+            if (rawPassword != null)
+                rawPassword = rawPassword.trim();
 
             User existing = userRepository.findByUsername(username);
             if (existing != null) {
@@ -652,7 +685,7 @@ public class SimpleAuthServer {
             }
 
             // [⑤-A 비밀번호 저장] 평문 대신 cost 12의 BCrypt salt 포함 해시를 저장하세요.
-            String hashed = /* TODO ⑤-A: bcrypt 해시 생성(cost=12) */ null;
+            String hashed = /* TODO ⑤-A: bcrypt 해시 생성(cost=12) */ BCrypt.hashpw(rawPassword, BCrypt.gensalt(12));
 
             User u = new User();
             u.setUsername(username);
@@ -662,24 +695,29 @@ public class SimpleAuthServer {
 
         public User login(String username, String rawPassword) throws Exception {
             username = trimToNull(username);
-            if (rawPassword != null) rawPassword = rawPassword.trim();
+            if (rawPassword != null)
+                rawPassword = rawPassword.trim();
 
             User u = userRepository.findByUsername(username);
             if (u == null) {
-                if (DEBUG) System.out.println("[AUTH] user not found: " + username);
+                if (DEBUG)
+                    System.out.println("[AUTH] user not found: " + username);
                 return null;
             }
             if (DEBUG) {
                 System.out.println("[AUTH] user found: " + username);
                 String hash = u.getPassword();
-                System.out.println("[AUTH] dbHash prefix: " + (hash == null ? "null" : hash.substring(0, Math.min(7, hash.length()))));
+                System.out.println("[AUTH] dbHash prefix: "
+                        + (hash == null ? "null" : hash.substring(0, Math.min(7, hash.length()))));
             }
 
             // [⑤-B 비밀번호 검증] 입력 평문과 저장된 BCrypt 해시를 검증하세요. ⑤-A와 한 묶음입니다.
-            boolean ok = /* TODO ⑤-B: 입력 비밀번호와 저장된 해시 검증 */ false;
-            if (DEBUG) System.out.println("[AUTH] bcrypt matches=" + ok);
+            boolean ok = /* TODO ⑤-B: 입력 비밀번호와 저장된 해시 검증 */ BCrypt.checkpw(rawPassword, u.getPassword());
+            if (DEBUG)
+                System.out.println("[AUTH] bcrypt matches=" + ok);
 
-            if (!ok) return null;
+            if (!ok)
+                return null;
             return u;
         }
     }
@@ -696,7 +734,7 @@ public class SimpleAuthServer {
             return JWT.create()
                     .withIssuer(ISSUER)
                     .withIssuedAt(Date.from(now))
-                    //  JWT가 무기한 유효하지 않도록 발급 시점 기준 1시간 만료를 지정하세요.
+                    // JWT가 무기한 유효하지 않도록 발급 시점 기준 1시간 만료를 지정하세요.
                     .withExpiresAt(Date.from(now.plus(1, ChronoUnit.HOURS))).withSubject(String.valueOf(user.getId()))
                     .withClaim("username", user.getUsername())
                     .sign(ALG);
@@ -706,7 +744,7 @@ public class SimpleAuthServer {
             JWTVerifier verifier = JWT.require(ALG)
                     .withIssuer(ISSUER)
                     .build();
-            //  JWT 파싱만 하지 말고 검증기의 검증 결과를 반환하세요.
+            // JWT 파싱만 하지 말고 검증기의 검증 결과를 반환하세요.
             return verifier.verify(token);
         }
     }
