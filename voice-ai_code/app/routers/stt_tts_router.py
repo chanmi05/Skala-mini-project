@@ -129,21 +129,21 @@ async def stt_to_tts(
         # [Q03] 음성 인식 서비스 연결
         # 힌트: 변환된 WAV 파일 경로를 로컬 STT 서비스에 전달하여 텍스트를 얻으세요.
         # TODO Q03: None을 올바른 서비스 호출로 교체하세요.
-        stt_text = None
+        stt_text = transcribe_audio_file_local(wav_path)
         logger.info(f"STT conversion result: {stt_text}")
 
         # 7. LLM translation processing
         # [Q04] STT 결과와 번역 서비스 연결
         # 힌트: 인식된 문장과 사용자가 선택한 목표 언어를 함께 전달하세요.
         # TODO Q04: None을 번역 서비스 호출로 교체하세요.
-        llm_response = None
+        llm_response = get_llm_response(stt_text, target_language)
         logger.info(f"LLM translated text: {llm_response}")
 
         # 8. TTS processing
         # [Q05] 번역 텍스트와 음성 합성 서비스 연결
         # 힌트: 번역된 문장과 저장할 MP3 파일 경로를 함께 전달하세요.
         # TODO Q05: pass를 올바른 TTS 서비스 호출로 교체하세요.
-        pass
+        text_to_speech(llm_response, tts_output_path)
         logger.info(f"TTS output file created: {tts_output_path}")
 
         # 9. Return as HTTP URL

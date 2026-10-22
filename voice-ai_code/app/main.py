@@ -71,7 +71,7 @@ def get_current_user(
         # [Q01] Java 인증 서버와의 JWT 신뢰 연결
         # 힌트: 쿠키의 토큰을 Java 서버와 동일한 비밀키, 알고리즘, 발급자로 검증하세요.
         # TODO Q01: 아래 None을 JWT 검증 호출로 바꾸세요.
-        payload = None
+        payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM], issuer=ISSUER)
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -121,7 +121,7 @@ async def tts_page(current_user: dict = Depends(get_current_user)):
 # [Q02] 음성 통번역 HTML의 접근 제어
 # 힌트: 페이지 함수 실행 전 인증 의존성이 먼저 수행되도록 연결하세요.
 # TODO Q02: 기본값 None을 인증 의존성 호출로 바꾸세요.
-async def stt_tts_page(current_user: dict = None):
+async def stt_tts_page(current_user: dict = Depends(get_current_user)):
     _must_exist(STT_TTS_HTML, "stt-tts.html")
     return FileResponse(STT_TTS_HTML)
 
