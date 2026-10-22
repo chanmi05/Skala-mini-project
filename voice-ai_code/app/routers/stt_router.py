@@ -1,5 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, status, Cookie
 from jose import jwt, JWTError
+from app.jwt_config import SECRET_KEY, ALGORITHM, ISSUER
 import shutil
 import os
 
@@ -8,10 +9,6 @@ from app.services.stt_service import transcribe_audio_file_local, convert_webm_t
 
 router = APIRouter()
 
-# Configuration that must match the Java server
-SECRET_KEY = "RANDOM_SECRET_KEY"   # Must be identical to Java JwtUtil.SECRET
-ALGORITHM = "HS256"
-ISSUER = "simple-auth-server"         # Must be identical to Java JwtUtil.ISSUER
 
 def get_current_user(
     access_token: str | None = Cookie(default=None, alias="ACCESS_TOKEN")

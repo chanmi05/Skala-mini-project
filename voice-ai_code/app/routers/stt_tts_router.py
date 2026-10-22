@@ -1,5 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException, status, Cookie
 from jose import jwt, JWTError
+from app.jwt_config import SECRET_KEY, ALGORITHM, ISSUER
 import os
 import shutil
 import logging
@@ -14,10 +15,6 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# Configuration that must match the Java server
-SECRET_KEY = "RANDOM_SECRET_KEY"
-ALGORITHM = "HS256"
-ISSUER = "simple-auth-server"
 
 SUPPORTED_TARGET_LANGUAGES = {"en", "zh", "ko", "ja", "vi"}
 

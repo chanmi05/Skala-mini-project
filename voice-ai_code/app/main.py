@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 from starlette.staticfiles import StaticFiles
 from jose import jwt, JWTError
+from app.jwt_config import SECRET_KEY, ALGORITHM, ISSUER
 
 from app.routers.stt_router import router as stt_router
 from app.routers.tts_router import router as tts_router
@@ -47,10 +48,7 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 app = FastAPI()
 
-# Configuration that must match the Java server
-SECRET_KEY = "RANDOM_SECRET_KEY"   # Must be identical to Java JwtUtil.SECRET
-ALGORITHM = "HS256"
-ISSUER = "simple-auth-server"      # Must be identical to Java JwtUtil.ISSUER
+# JWT settings are shared with all voice API routers via app.jwt_config.
 
 # 3) JWT decoding dependency
 
