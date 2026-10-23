@@ -23,8 +23,16 @@ pre{white-space:pre-wrap;word-break:break-word}audio{width:100%}.muted{color:#59
 <audio id="recordingPlayer" controls></audio>
 <p><a id="recordingDownload">같은 녹음 저장하기</a> · 원본은 이 브라우저 메모리에만 남고 새로고침하면 사라집니다.</p>
 </section>
+<section id="questionReview" hidden>
+<h2>음성 인식 원문</h2><p id="rawTranscript"></p>
+<h2>문맥을 반영한 질문 · 확인 후 수정 가능</h2>
+<textarea id="question" rows="3" maxlength="2000" style="width:100%;font:inherit;box-sizing:border-box" aria-label="확인할 질문"></textarea>
+<p id="correctionWarning"></p>
+<button id="useOriginal">원문 사용</button><button id="confirmQuestion">이 질문으로 답변 받기</button>
+<p class="muted">문맥 교정 AI는 인식된 텍스트만 검토합니다. 이름·숫자·부정 표현이 맞는지 확인하세요. 교정 시 마스킹된 텍스트가 OpenAI로 전송되며 호출 비용이 발생합니다.</p>
+</section>
 <article hidden id="result">
-<h2>인식한 질문</h2><p id="transcript"></p>
+<h2>확정한 질문</h2><p id="transcript"></p>
 <h2>답변</h2><p id="answer"></p>
 <h3>출처</h3><ul id="sources"></ul>
 <p id="review"></p><p id="warning"></p>
@@ -46,10 +54,14 @@ function previewRecording(blob,name){
  el('recordingPreview').hidden=false;
 }
 function status(text){el('status').textContent=text}
-function mode(value){el('mode').textContent=value==='mock'
- ? '개발용 모드 · 실제 규정 검색 없이 고정 테스트 응답을 읽습니다.'
- : '실제 RAG 연동 모드 · 팀 RAG 서버의 답변을 읽습니다.'}
-function busy(value){for(const id of ['record','send','file']) el(id).disabled=value}
+function mode(value){
+ const labels={
+ mock:'개발용 모드 · 실제 규정 검색 없이 고정 테스트 응답을 읽습니다.',
+ demo:'검색 실험 모드 · 테스트용 가상 규정을 키워드로 검색합니다. 실제 법령·회사 규정이 아니며 팀 RAG/FAISS 성능 검증과는 다릅니다.',
+ live:'실제 RAG 연동 모드 · 팀 RAG 서버의 답변을 읽습니다.'};
+ el('mode').textContent=labels[value]||'설정된 모드를 확인해 주세요.';
+}
+function busy(value){for(const id of ['record','send','file','confirmQuestion','useOriginal','question']) el(id).disabled=value}
 function clearResult(){el('result').hidden=true;el('player').pause();el('player').hidden=true;
  el('player').removeAttribute('src'); if(playback){URL.revokeObjectURL(playback);playback=null}}
 async function check(response){
@@ -59,10 +71,25 @@ async function check(response){
 }
 async function send(blob,name){
  previewRecording(blob,name);
- clearResult();busy(true);status('음성 인식 → 규정 검색 → 음성 생성 중…');
+ clearResult();el('questionReview').hidden=true;busy(true);status('음성 인식 → 문맥 교정 중…');
  try{
  const form=new FormData();form.append('audio',blob,name);
- const res=await check(await fetch('/voice-query',{method:'POST',credentials:'include',body:form}));
+ const res=await check(await fetch('/voice-transcribe',{method:'POST',credentials:'include',body:form}));
+ const d=await res.json();
+ el('rawTranscript').textContent=d.raw_transcript;
+ el('question').value=d.corrected_question;
+ el('correctionWarning').textContent=d.warning||(d.changed?'문맥 교정 제안입니다. 원래 의도와 맞는지 확인하세요.':'추가 교정 없이 원문을 유지했습니다.');
+ el('questionReview').hidden=false;status('질문을 확인한 뒤 “이 질문으로 답변 받기”를 눌러주세요.');
+ }catch(e){status(e.message)}finally{busy(false)}
+}
+el('useOriginal').onclick=()=>{el('question').value=el('rawTranscript').textContent};
+el('confirmQuestion').onclick=async()=>{
+ const question=el('question').value.trim();
+ if(!question){status('질문을 입력해 주세요.');return}
+ clearResult();busy(true);status('확인한 질문으로 규정 검색 → 음성 생성 중…');
+ try{
+ const res=await check(await fetch('/voice-query-text',{method:'POST',credentials:'include',
+ headers:{'Content-Type':'application/json'},body:JSON.stringify({question})}));
  const d=await res.json();mode(d.mode);
  for(const id of ['transcript','answer'])el(id).textContent=d[id];
  el('sources').replaceChildren();
@@ -77,11 +104,12 @@ async function send(blob,name){
  }catch(e){el('warning').textContent='답변은 완료됐지만 음성을 불러오지 못했습니다: '+e.message}
  }
  }catch(e){status(e.message)}finally{busy(false)}
-}
+};
 el('send').onclick=()=>{const f=el('file').files[0];if(f)send(f,f.name);else status('파일을 먼저 선택하세요.')};
 el('record').onclick=async()=>{
  if(recorder?.state==='recording'){recorder.stop();return}
  clearResult();
+ el('questionReview').hidden=true;
  try{
  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)throw Error('localhost 또는 HTTPS와 녹음 지원 브라우저가 필요합니다.');
  stream=await navigator.mediaDevices.getUserMedia({audio:true});

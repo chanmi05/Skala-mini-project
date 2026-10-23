@@ -6,6 +6,8 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from starlette.concurrency import run_in_threadpool
+from pydantic import BaseModel, Field
+from app.services.transcript_review import review_transcript, TranscriptReview
 
 from app.voice_auth import voice_identity
 from app.services import voice_pipeline as pipeline
@@ -21,6 +23,25 @@ def voice_config(identity=Depends(voice_identity)):
 
 @router.post("/voice-query", response_model=pipeline.VoiceAnswer)
 async def voice_query(audio: UploadFile = File(...), identity=Depends(voice_identity)):
+    data, suffix = await read_audio(audio)
+    return await run_in_threadpool(pipeline.run_pipeline, data, suffix, identity)
+
+@router.post("/voice-transcribe", response_model=TranscriptReview)
+async def voice_transcribe(audio: UploadFile = File(...), identity=Depends(voice_identity)):
+    data, suffix = await read_audio(audio)
+    text = await run_in_threadpool(pipeline.transcribe_private, data, suffix)
+    if len(text) > 2000:
+        raise HTTPException(422, "질문은 2000자 이내로 녹음해 주세요.")
+    return await run_in_threadpool(review_transcript, text)
+
+class ConfirmedQuestion(BaseModel):
+    question: str = Field(min_length=1, max_length=2000)
+
+@router.post("/voice-query-text", response_model=pipeline.VoiceAnswer)
+def voice_query_text(body: ConfirmedQuestion, identity=Depends(voice_identity)):
+    return pipeline.answer_question(body.question, identity)
+
+async def read_audio(audio: UploadFile):
     suffix = Path(audio.filename or "").suffix.lower()
     try:
         if suffix not in {".webm", ".wav", ".m4a", ".mp4", ".ogg"}:
@@ -33,7 +54,7 @@ async def voice_query(audio: UploadFile = File(...), identity=Depends(voice_iden
             chunks.append(chunk)
         if not size:
             raise HTTPException(422, "빈 음성 파일입니다.")
-        return await run_in_threadpool(pipeline.run_pipeline, b"".join(chunks), suffix, identity)
+        return b"".join(chunks), suffix
     finally:
         await audio.close()
 

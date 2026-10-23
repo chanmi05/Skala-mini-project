@@ -43,12 +43,16 @@ def mask_private(text: str) -> str:
 
 def rag_mode() -> str:
     mode = os.getenv("VOICE_RAG_MODE", "live").lower()
-    if mode not in {"mock", "live"}:
-        raise HTTPException(503, "VOICE_RAG_MODE는 mock 또는 live여야 합니다.")
+    if mode not in {"mock", "demo", "live"}:
+        raise HTTPException(503, "VOICE_RAG_MODE는 mock, demo 또는 live여야 합니다.")
     return mode
 
 def ask_rag(question: str, token: str) -> RagAnswer:
-    if rag_mode() == "mock":
+    mode = rag_mode()
+    if mode == "demo":
+        from app.services.demo_rag import demo_answer
+        return RagAnswer.model_validate(demo_answer(question))
+    if mode == "mock":
         # A wiring fixture, never presented as a real regulation or citation.
         return RagAnswer(
             answer="개발용 음성 연결 테스트가 성공했습니다. 실제 규정 답변은 RAG 연동 후 제공됩니다.",
@@ -133,6 +137,14 @@ def synthesize(answer: str, user_id: str) -> str:
 def run_pipeline(data: bytes, suffix: str, identity: dict) -> VoiceAnswer:
     started = time.perf_counter()
     transcript = transcribe_private(data, suffix)
+    return answer_question(transcript, identity, started)
+
+def answer_question(question: str, identity: dict, started: float | None = None) -> VoiceAnswer:
+    if started is None:
+        started = time.perf_counter()
+    transcript = mask_private(question.strip())
+    if not transcript:
+        raise HTTPException(422, "질문을 입력해 주세요.")
     # No raw question is logged or sent to the external LLM by this service.
     result = ask_rag(transcript, identity["token"])
     result.answer = mask_private(result.answer)
