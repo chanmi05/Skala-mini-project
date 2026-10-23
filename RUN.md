@@ -2,12 +2,12 @@
 
 macOS의 zsh/bash 기준입니다. 서버마다 별도의 터미널을 사용하고, 각 명령어 블록은 저장소 루트(`/Users/u085/Desktop/share`)에서 시작합니다. Python 프로젝트는 각각의 가상환경을 사용합니다.
 
-| 프로젝트 | 역할 | 포트 | 접속 주소 |
-| --- | --- | --- | --- |
-| `workplace` | Java 인증 서버 | 8080 | http://localhost:8080/login |
-| `voice-ai_code` | 음성 인식·합성·통번역 | 8008 | http://localhost:8008/index.html |
-| `rag-code-template_ext` | 외부 웹·PDF RAG API | 8001 | http://localhost:8001/docs |
-| 루트 HTML | RAG 선택·질의 화면 | 5174 | http://localhost:5174/intro_main.html |
+| 프로젝트                  | 역할                    | 포트 | 접속 주소                             |
+| ------------------------- | ----------------------- | ---- | ------------------------------------- |
+| `workplace`             | Java 인증 서버          | 8080 | http://localhost:8080/login           |
+| `voice-ai_code`         | 음성 인식·합성·통번역 | 8008 | http://localhost:8008/index.html      |
+| `rag-code-template_ext` | 외부 웹·PDF RAG API    | 8001 | http://localhost:8001/docs            |
+| 루트 HTML                 | RAG 선택·질의 화면     | 5174 | http://localhost:5174/intro_main.html |
 
 실행 순서: **MariaDB → Java 인증 서버 → 음성 AI 서버**. 이후 8080에서 회원가입·로그인하면 8008로 이동합니다. 외부 RAG API와 HTML 화면 서버는 별도로 실행할 수 있습니다.
 
@@ -55,7 +55,7 @@ python -m pip install --upgrade pip setuptools wheel
 python -m pip install -r requirements.txt
 ```
 
-`voice-ai_code/.env`에 다음 항목을 설정합니다.
+`voice-ai_code/app/.env`에 다음 항목을 설정합니다.
 
 ```dotenv
 OPENAI_API_KEY=발급받은_OpenAI_API_키
@@ -86,10 +86,10 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8008 --reload --env-file 
 
 ```bash
 cd /Users/u085/Desktop/share/voice-ai_code
-docker compose --env-file .env up -d --build
+docker compose --env-file app/.env up -d --build
 ```
 
-컨테이너는 로컬의 `workplace/.env`를 읽을 수 없으므로 `voice-ai_code/.env`에 `JWT_SECRET`을 반드시 설정합니다. 로컬 uvicorn과 Docker를 같은 8008 포트에서 동시에 실행하지 않습니다.
+컨테이너는 로컬의 `workplace/.env`를 읽을 수 없으므로 `app/.env`에 `JWT_SECRET`을 반드시 설정합니다. 로컬 uvicorn과 Docker를 같은 8008 포트에서 동시에 실행하지 않습니다.
 
 ## 3. 외부 웹·PDF RAG API (`rag-code-template_ext`)
 
@@ -154,7 +154,7 @@ Docker로 실행한 음성 AI 서버 종료:
 
 ```bash
 cd /Users/u085/Desktop/share/voice-ai_code
-docker compose --env-file .env stop app
+docker compose --env-file app/.env stop app
 ```
 
 포트 사용 확인:
