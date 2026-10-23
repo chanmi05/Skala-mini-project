@@ -1,0 +1,19 @@
+{
+  "total": 24,
+  "success": 24,
+  "errors": 0,
+  "answerable_success_count": 20,
+  "hit_at_k": 0.9,
+  "evidence_group_recall": 0.9,
+  "context_group_recall": 0.9,
+  "mrr": 0.5605357142857142,
+  "median_total_ms": 1772.15,
+  "reviewed_count": 0,
+  "reviewer_types": [],
+  "answer_correct_reviewed_count": 0,
+  "answer_correct_rate": null,
+  "grounded_reviewed_count": 0,
+  "grounded_rate": null,
+  "abstained_reviewed_count": 0,
+  "abstained_rate": null
+}
