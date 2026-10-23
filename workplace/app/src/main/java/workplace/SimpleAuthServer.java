@@ -113,7 +113,7 @@ public class SimpleAuthServer {
     private static final String DB_USER = "user";
     // private static final String DB_PASSWORD = System.getenv("DB_PASSWORD");
     private static final Dotenv DOTENV = Dotenv.configure()
-            .directory("/Users/u085/Desktop/share/workplace")
+            .directory(".") // 실행 디렉터리(workplace)의 .env
             .load();
     private static final String DB_PASSWORD = DOTENV.get("DB_PASSWORD");
     // ==== SESSION STORE ==== //

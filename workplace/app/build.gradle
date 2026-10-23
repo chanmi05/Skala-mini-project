@@ -31,6 +31,11 @@ application {
     mainClass = 'workplace.SimpleAuthServer'
 }
 
+// .env를 workplace 루트에서 읽도록 실행 디렉터리를 고정합니다.
+tasks.named('run', JavaExec) {
+    workingDir = rootProject.projectDir
+}
+
 // DbExample.java 예제 개별 실행을 위한 추가 설정
 
 tasks.register('runDbExample', JavaExec) {

@@ -24,7 +24,7 @@ DB_PASSWORD=사용할_DB_비밀번호
 JWT_SECRET=충분히_긴_임의의_비밀키
 ```
 
-현재 Java 코드는 `.env` 경로를 `/Users/u085/Desktop/share/workplace`로 지정하고 있습니다. 저장소 위치를 옮겼다면 `SimpleAuthServer.java`의 `Dotenv.configure().directory(...)`도 수정해야 합니다.
+Java는 실행 디렉터리의 `.env`를 상대 경로(`.`)로 읽습니다. Gradle의 `:app:run`은 실행 디렉터리를 `workplace` 루트로 지정하므로 저장소를 옮겨도 코드 수정 없이 실행할 수 있습니다. IDE에서 직접 실행할 경우 Working directory를 `workplace` 폴더로 설정합니다.
 
 ### 실행
 
