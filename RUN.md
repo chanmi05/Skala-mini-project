@@ -1,0 +1,164 @@
+# 프로젝트 실행 방법
+
+macOS의 zsh/bash 기준입니다. 서버마다 별도의 터미널을 사용하고, 각 명령어 블록은 저장소 루트(`/Users/u085/Desktop/share`)에서 시작합니다. Python 프로젝트는 각각의 가상환경을 사용합니다.
+
+| 프로젝트 | 역할 | 포트 | 접속 주소 |
+| --- | --- | --- | --- |
+| `workplace` | Java 인증 서버 | 8080 | http://localhost:8080/login |
+| `voice-ai_code` | 음성 인식·합성·통번역 | 8008 | http://localhost:8008/index.html |
+| `rag-code-template_ext` | 외부 웹·PDF RAG API | 8001 | http://localhost:8001/docs |
+| 루트 HTML | RAG 선택·질의 화면 | 5174 | http://localhost:5174/intro_main.html |
+
+실행 순서: **MariaDB → Java 인증 서버 → 음성 AI 서버**. 이후 8080에서 회원가입·로그인하면 8008로 이동합니다. 외부 RAG API와 HTML 화면 서버는 별도로 실행할 수 있습니다.
+
+## 1. Java 인증 서버 (`workplace`)
+
+### 최초 준비
+
+JDK 17 이상과 Docker Desktop이 필요합니다. Docker Desktop을 먼저 실행합니다.
+
+`workplace/.env`에 다음 항목을 설정합니다. 기존 파일이 있으면 필요한 항목만 확인·수정합니다.
+
+```dotenv
+DB_PASSWORD=사용할_DB_비밀번호
+JWT_SECRET=충분히_긴_임의의_비밀키
+```
+
+현재 Java 코드는 `.env` 경로를 `/Users/u085/Desktop/share/workplace`로 지정하고 있습니다. 저장소 위치를 옮겼다면 `SimpleAuthServer.java`의 `Dotenv.configure().directory(...)`도 수정해야 합니다.
+
+### 실행
+
+```bash
+cd /Users/u085/Desktop/share/workplace
+docker compose up -d --wait mariadb
+./gradlew :app:run --no-configuration-cache
+```
+
+MariaDB는 호스트 포트 `53301`, DB `sql_db`, 사용자 `user`를 사용합니다. 새 DB 볼륨을 처음 생성할 때 `docker/mariadb/init.sql`이 실행되어 `users` 테이블을 생성합니다.
+
+Gradle 실행 권한 오류가 나면 `chmod +x gradlew`를 한 번 실행합니다.
+
+접속: http://localhost:8080/login
+
+## 2. 음성 AI 서버 (`voice-ai_code`)
+
+### 최초 준비
+
+Python 3.11과 ffmpeg가 필요합니다.
+
+```bash
+cd /Users/u085/Desktop/share/voice-ai_code
+brew install ffmpeg
+python3.11 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip setuptools wheel
+python -m pip install -r requirements.txt
+```
+
+`voice-ai_code/.env`에 다음 항목을 설정합니다.
+
+```dotenv
+OPENAI_API_KEY=발급받은_OpenAI_API_키
+JWT_SECRET=workplace와_동일한_JWT_SECRET
+```
+
+로컬에서는 `JWT_SECRET`이 없으면 `workplace/.env`에서도 읽지만, 명시할 경우 반드시 Java 서버와 같은 값을 사용합니다.
+
+### 실행
+
+```bash
+cd /Users/u085/Desktop/share/voice-ai_code
+source .venv/bin/activate
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8008 --reload --env-file .env
+```
+
+`--env-file`은 서비스 모듈을 불러오기 전에 API 키를 로드하기 위해 지정합니다.
+
+먼저 http://localhost:8080/login 에서 로그인합니다. 로그인 성공 시 http://localhost:8008/index.html 로 이동합니다. 로그인 없이 8008의 HTML 또는 음성 API에 접근하면 401을 반환합니다. 두 서버 모두 `localhost`로 접속해 인증 쿠키가 공유되도록 합니다.
+
+음성 페이지:
+
+- 음성 인식: http://localhost:8008/stt.html
+- 음성 합성: http://localhost:8008/tts.html
+- 음성 통번역: http://localhost:8008/stt-tts.html
+
+### Docker로 실행하는 경우 (로컬 실행 대신 선택)
+
+```bash
+cd /Users/u085/Desktop/share/voice-ai_code
+docker compose --env-file .env up -d --build
+```
+
+컨테이너는 로컬의 `workplace/.env`를 읽을 수 없으므로 `voice-ai_code/.env`에 `JWT_SECRET`을 반드시 설정합니다. 로컬 uvicorn과 Docker를 같은 8008 포트에서 동시에 실행하지 않습니다.
+
+## 3. 외부 웹·PDF RAG API (`rag-code-template_ext`)
+
+### 최초 준비
+
+```bash
+cd /Users/u085/Desktop/share/rag-code-template_ext
+python3.11 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip setuptools wheel
+python -m pip install -r requirements-e.txt
+```
+
+`rag-code-template_ext/.env`에 다음 항목을 설정합니다.
+
+```dotenv
+OPENAI_API_KEY=발급받은_OpenAI_API_키
+NAVER_CLIENT_ID=발급받은_네이버_클라이언트_ID
+NAVER_CLIENT_SECRET=발급받은_네이버_클라이언트_시크릿
+```
+
+네이버 인증 정보는 웹 검색 기능에서 사용합니다. DB 연결 설정이 필요하면 같은 파일에 `ASYNC_DB_URL`을 추가합니다. 기본값은 `mysql+aiomysql://root:password@127.0.0.1:53301/sql_db?charset=utf8mb4`이며, 위 Docker DB의 사용자·비밀번호와 다르므로 DB를 사용할 때 실제 연결 정보로 바꿉니다.
+
+### 실행
+
+```bash
+cd /Users/u085/Desktop/share/rag-code-template_ext
+source .venv/bin/activate
+python -m uvicorn rag_external-web_pdf_closed_llm:app --host 127.0.0.1 --port 8001 --reload
+```
+
+API 문서: http://localhost:8001/docs
+
+처음에는 벡터 저장소가 없을 수 있습니다. 화면에서 웹 검색 또는 PDF 업로드로 자료를 등록한 뒤 질문합니다.
+
+## 4. HTML 화면 서버 (저장소 루트)
+
+```bash
+cd /Users/u085/Desktop/share
+python3 -m http.server 5174 --bind 127.0.0.1
+```
+
+- 시작 화면: http://localhost:5174/intro_main.html
+- 외부 RAG 화면: http://localhost:5174/external_index.html
+- 프로젝트 내 외부 RAG 화면: http://localhost:5174/rag-code-template_ext/external_index.html
+- 내부 RAG 화면: http://localhost:5174/internal_index.html
+
+외부 RAG 화면의 API 주소는 `http://localhost:8001`로 지정합니다. 내부 RAG 화면의 기본 API 주소는 `http://localhost:8002`지만, 현재 저장소에는 해당 백엔드 소스가 없어 실행 명령어를 제공할 수 없습니다. 별도의 내부 RAG 서버가 필요합니다.
+
+## 5. 종료
+
+터미널에서 실행 중인 Gradle, uvicorn, HTML 서버는 각각 `Ctrl+C`로 종료합니다.
+
+Docker MariaDB 종료:
+
+```bash
+cd /Users/u085/Desktop/share/workplace
+docker compose stop mariadb
+```
+
+Docker로 실행한 음성 AI 서버 종료:
+
+```bash
+cd /Users/u085/Desktop/share/voice-ai_code
+docker compose --env-file .env stop app
+```
+
+포트 사용 확인:
+
+```bash
+lsof -iTCP:8080 -iTCP:8008 -iTCP:8001 -iTCP:5174 -sTCP:LISTEN
+```
