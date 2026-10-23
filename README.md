@@ -1,0 +1,1 @@
+# Skala-mini-project
