@@ -1,0 +1,23 @@
+{
+  "source_file": "Standard_Rules_of_Employment_2026.hwp",
+  "xml_paragraphs": 2367,
+  "nonempty_paragraphs": 2113,
+  "tables": 45,
+  "table_cells": 815,
+  "xml_text_characters": 121049,
+  "xml_text_characters_in_nonempty_blocks": 121013,
+  "plain_txt_characters": 5474,
+  "structured_text_characters": 121399,
+  "paired_rows_by_table": {
+    "5": 118,
+    "27": 118
+  },
+  "limitations": [
+    "XML text coverage is not a visual comparison against the original HWP.",
+    "Images/equations are not OCRed; XML traversal order is not guaranteed visual reading order.",
+    "Blocks include contents, forms, templates, guidance and annexes; do not embed all blindly.",
+    "A paired row can contain multiple articles; it is not a final RAG chunk.",
+    "Table cell text includes nested tables; avoid indexing both parent and nested copies.",
+    "Page numbers and reference links have not been resolved."
+  ]
+}
