@@ -24,7 +24,7 @@ def text_to_speech(text: str, output_path: str = "output.mp3"):
         "voice": "nova"
     }
 
-    response = requests.post(url, headers=headers, json=data)
+    response = requests.post(url, headers=headers, json=data, timeout=(10, 60))
     print(f"TTS response status code: {response.status_code}")
 
     if response.status_code != 200:
