@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>Login</title>
+  <title>로그인 · 휴가 낼게요</title>
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
 <div class="container">
-  <h1>Login</h1>
+  <h1>로그인</h1>
 
   <!-- ✅ Keep the form, but JS intercepts submit and processes via fetch -->
   <form id="loginForm" method="POST" action="/api/login">
-    <label>Username
-      <input type="text" name="username" required autocomplete="username">
+    <label>사원번호
+      <input type="text" name="employeeId" required maxlength="100" autocomplete="username">
     </label>
-    <label>Password
+    <label>비밀번호
       <input type="password" name="password" required autocomplete="current-password">
     </label>
 
