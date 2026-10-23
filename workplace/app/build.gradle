@@ -24,6 +24,13 @@ dependencies {
     implementation 'org.mindrot:jbcrypt:0.4'
     // 환경 변수 로딩을 위한 dotenv-java 라이브러리
     implementation 'io.github.cdimascio:dotenv-java:3.2.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.12.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.12.1'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    environment 'JWT_SECRET', 'local-auth-test-secret-with-no-production-access'
 }
 
 application {

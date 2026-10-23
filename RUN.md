@@ -8,6 +8,7 @@ macOS의 zsh/bash 기준입니다. 서버마다 별도의 터미널을 사용하
 | `voice-ai_code`         | 음성 인식·합성·통번역 | 8008 | http://localhost:8008/index.html      |
 | `rag-code-template_ext` | 외부 웹·PDF RAG API    | 8001 | http://localhost:8001/docs            |
 | 루트 HTML                 | RAG 선택·질의 화면     | 5174 | http://localhost:5174/intro_main.html |
+| `frontend`              | Vue 3 프런트엔드       | 5173 | http://localhost:5173                |
 
 실행 순서: **MariaDB → Java 인증 서버 → 음성 AI 서버**. 이후 8080에서 회원가입·로그인하면 8008로 이동합니다. 외부 RAG API와 HTML 화면 서버는 별도로 실행할 수 있습니다.
 
@@ -24,7 +25,7 @@ DB_PASSWORD=사용할_DB_비밀번호
 JWT_SECRET=충분히_긴_임의의_비밀키
 ```
 
-현재 Java 코드는 `.env` 경로를 `/Users/u085/Desktop/share/workplace`로 지정하고 있습니다. 저장소 위치를 옮겼다면 `SimpleAuthServer.java`의 `Dotenv.configure().directory(...)`도 수정해야 합니다.
+Java 서버는 실행 위치를 기준으로 `workplace/.env`, 현재 디렉터리의 `.env`, 상위 디렉터리의 `.env` 순서로 설정 파일을 찾습니다. Gradle로 실행할 때 `workplace/.env`를 사용하며, 같은 키의 프로세스 환경변수가 있으면 우선합니다.
 
 ### 실행
 
@@ -35,6 +36,8 @@ docker compose up -d --wait mariadb
 ```
 
 MariaDB는 호스트 포트 `53301`, DB `sql_db`, 사용자 `user`를 사용합니다. 새 DB 볼륨을 처음 생성할 때 `docker/mariadb/init.sql`이 실행되어 `users` 테이블을 생성합니다.
+
+Java 서버를 시작하면 기존 테이블에도 이름을 저장할 `name` 컬럼을 추가합니다. 기존 계정과 DB 볼륨은 유지되며, 기존 `username` 컬럼을 사원번호 저장에 사용합니다. 새 회원가입은 **이름·사원번호·비밀번호**, 로그인은 **사원번호·비밀번호**를 사용합니다.
 
 Gradle 실행 권한 오류가 나면 `chmod +x gradlew`를 한 번 실행합니다.
 
@@ -139,9 +142,40 @@ python3 -m http.server 5174 --bind 127.0.0.1
 
 외부 RAG 화면의 API 주소는 `http://localhost:8001`로 지정합니다. 내부 RAG 화면의 기본 API 주소는 `http://localhost:8002`지만, 현재 저장소에는 해당 백엔드 소스가 없어 실행 명령어를 제공할 수 없습니다. 별도의 내부 RAG 서버가 필요합니다.
 
-## 5. 종료
+## 5. Vue 프런트엔드 (`frontend`)
+
+저장소 루트에서 실행합니다. Node.js 22.12 이상이 필요합니다.
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+접속: http://localhost:5173
+
+Vue 3 + Vite + Vue Router로 다음 세 화면을 제공합니다.
+
+- 메인 채팅: http://localhost:5173/
+- 로그인: http://localhost:5173/login
+- 회원가입: http://localhost:5173/signup
+
+가입·로그인·로그아웃 및 세션 확인은 개발 서버의 `/api` 프록시를 통해 Java 인증 서버(8080)에 연결됩니다. 실제 인증은 위 1번의 MariaDB와 Java 서버를 먼저 실행해야 합니다. 로그인 성공 후 Vue 메인 화면으로 이동합니다.
+
+프로젝트명은 **휴가 낼게요**입니다. 로그인 후 헤더와 프로필에 가입한 이름으로 `홍길동님.`을 표시하며, 새로고침 후에도 인증 확인 응답으로 이름을 복원합니다.
+
+메인은 사내 지침 챗봇 화면입니다. 휴가·근태, 출장·경비, 보안·업무에 관한 예시 질문을 제공하며 텍스트와 음성으로 질문할 수 있습니다. 사내 지침 문서 검색 및 답변 생성은 아직 연결하지 않았습니다. 대화 목록·검색·저장 기능 없이 현재 대화만 표시하며, 상단 **대화 초기화**, 페이지 이동 또는 새로고침 시 초기화됩니다.
+
+음성 질문은 위 2번의 음성 서버(8008)도 실행해야 합니다. Vue에서 로그인한 뒤 입력창의 **음성 질문 → 녹음 종료**를 누르면 `/voice-api/stt/` 프록시를 통해 기존 로컬 Whisper STT를 사용합니다. 인식한 질문을 자동 전송하고 답변 텍스트를 브라우저의 한국어 음성으로 재생합니다. 답변 아래 **다시 듣기 / 중지**를 사용할 수 있습니다. 현재는 지침 답변 연결 준비 안내를 읽습니다.
+
+마이크 권한과 WebM 녹음을 지원하는 브라우저가 필요하며, 녹음은 최대 60초입니다. 녹음·변환 중 취소할 수 있고, **대화 초기화**를 누르거나 페이지를 떠나면 녹음과 재생을 중지합니다. 자동 재생이 차단되면 **다시 듣기**를 누릅니다. 기존 HTML 화면은 위 4번 방법으로 실행할 수 있습니다.
+
+프로덕션 빌드: `npm run build`. 자세한 설정은 [frontend/README.md](frontend/README.md)를 참고하세요.
+
+## 6. 종료
 
 터미널에서 실행 중인 Gradle, uvicorn, HTML 서버는 각각 `Ctrl+C`로 종료합니다.
+Vue 개발 서버도 실행한 터미널에서 `Ctrl+C`로 종료합니다.
 
 Docker MariaDB 종료:
 

@@ -32,7 +32,8 @@ At this time, copy/move the entire folder containing gradlew, settings.gradle (o
 7. The users schema to be used by the authentication server must be created in advance (Ground Rule: table names must be written in lowercase)
     CREATE TABLE `users` (
     `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-    `username` varchar(100) NOT NULL,
+    `name` varchar(100) NOT NULL DEFAULT '',
+    `username` varchar(100) NOT NULL, -- employee ID (legacy column name)
     `password` varchar(255) NOT NULL,
     `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
     `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
@@ -69,6 +70,8 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 // java.sql – Specify only what is needed
 import java.sql.Connection;
@@ -103,7 +106,7 @@ Modification history:
   3) Added CORS + credentials support for /api/auth/check
   4) Maintained redirect to http://localhost:8008/index.html on successful login
   5) Added DEBUG logs to identify login failure causes
-     - Outputs raw params / username/password / bcrypt matches result to console
+     - Request status only; credentials are not logged
  */
 
 public class SimpleAuthServer {
@@ -112,9 +115,7 @@ public class SimpleAuthServer {
     private static final String DB_URL = "jdbc:mariadb://localhost:53301/sql_db";
     private static final String DB_USER = "user";
     // private static final String DB_PASSWORD = System.getenv("DB_PASSWORD");
-    private static final Dotenv DOTENV = Dotenv.configure()
-            .directory("/Users/u085/Desktop/share/workplace")
-            .load();
+    private static final Dotenv DOTENV = loadDotenv();
     private static final String DB_PASSWORD = DOTENV.get("DB_PASSWORD");
     // ==== SESSION STORE ==== //
     private static final Map<String, User> SESSION_STORE = new ConcurrentHashMap<>();
@@ -141,7 +142,8 @@ public class SimpleAuthServer {
         System.out.println("Server started at http://localhost:8080");
 
         // 어떤 계층이 DB 접근을 담당해야 하는가? Repository 구현체를 생성하여 서비스와 연결하세요.
-        UserRepository userRepository = new JdbcUserRepository(DB_URL, DB_USER, DB_PASSWORD);
+        JdbcUserRepository userRepository = new JdbcUserRepository(DB_URL, DB_USER, DB_PASSWORD);
+        userRepository.initializeSchema();
         // HTTP 처리부가 SQL을 직접 실행하지 않도록 인증 서비스에 저장소를 주입하세요.
         AuthService authService = new AuthService(userRepository);
 
@@ -208,29 +210,23 @@ public class SimpleAuthServer {
             }
             Map<String, String> params = parseFormBody(exchange);
 
-            String username = trimToNull(params.get("username"));
+            String name = trimToNull(params.get("name"));
+            String employeeId = trimToNull(params.get("employeeId"));
             String password = params.get("password");
-            if (password != null)
-                password = password.trim();
 
             if (DEBUG) {
                 System.out.println("=== SIGNUP HIT ===");
                 System.out.println("[SIGNUP] request received (credentials omitted)");
-                System.out.println(
-                        "[SIGNUP] username=" + username + ", pwLen=" + (password == null ? "null" : password.length()));
-            }
-
-            if (isBlank(username) || isBlank(password)) {
-                writeText(exchange, 400, "username and password are required");
-                return;
             }
 
             try {
                 // 회원가입 요청을 어떤 계층으로 위임해야 하는가?
-                authService.signUp(username, password);
+                authService.signUp(name, employeeId, password);
                 redirect(exchange, "/login");
+            } catch (IllegalArgumentException invalid) {
+                writeJson(exchange, 400, "{\"ok\":false,\"error\":\"invalid registration fields\"}");
             } catch (SQLIntegrityConstraintViolationException dup) {
-                writeText(exchange, 400, "username already exists");
+                writeJson(exchange, 400, "{\"ok\":false,\"error\":\"employee ID already exists\"}");
             } catch (Exception e) {
                 e.printStackTrace();
                 writeText(exchange, 500, "signup error");
@@ -248,20 +244,17 @@ public class SimpleAuthServer {
 
             try {
                 Map<String, String> params = parseFormBody(exchange);
-                String username = params.get("username");
+                String employeeId = params.get("employeeId");
                 String password = params.get("password");
 
                 System.out.println("[LOGIN] content-type=" + exchange.getRequestHeaders().getFirst("Content-Type"));
-                System.out.println("[LOGIN] username(trim)=" + (username == null ? "null" : username.trim())
-                        + ", pwLen=" + (password == null ? -1 : password.length()));
-
-                if (isBlank(username) || isBlank(password)) {
-                    writeJson(exchange, 400, "{\"ok\":false,\"error\":\"username and password are required\"}");
+                if (isBlank(employeeId) || isBlank(password)) {
+                    writeJson(exchange, 400, "{\"ok\":false,\"error\":\"employee ID and password are required\"}");
                     return;
                 }
 
                 // [① 로그인 연결] 서비스의 로그인 결과를 받아 실패 시 401, 성공 시 쿠키 발급으로 이어지게 하세요.
-                User user = authService.login(username, password);
+                User user = authService.login(employeeId, password);
                 if (user == null) {
                     writeJson(exchange, 401, "{\"ok\":false,\"error\":\"invalid credentials\"}");
                     return;
@@ -290,7 +283,8 @@ public class SimpleAuthServer {
                 // 4) (Most important) Do not redirect here — end with 200 JSON response
                 // → In fetch/XHR environments, 302 redirects easily cause HTTP 0/cancellation
                 // fetch 호출에서는 서버 302 대신 성공 JSON으로 이동 경로를 알립니다.
-                writeJson(exchange, 200, "{\"ok\":true,\"redirect\":\"http://localhost:8008/index.html\"}");
+                writeJson(exchange, 200, "{\"ok\":true,\"user\":" + userJson(user)
+                        + ",\"redirect\":\"http://localhost:8008/index.html\"}");
                 System.out.println("[LOGIN] SUCCESS -> 200 JSON (no redirect)");
                 return;
 
@@ -328,43 +322,29 @@ public class SimpleAuthServer {
                 sessionUser = SESSION_STORE.get(sessionId);
             }
 
-            // (B) JWT validation
-            String token = getCookieValue(exchange, JWT_COOKIE_NAME);
-            boolean jwtOk = false;
-            String jwtUsername = null;
-            String jwtSubject = null;
-
-            if (!isBlank(token)) {
-                try {
-                    // [③ JWT 검증] 토큰 내용을 단순 디코딩하지 말고 서명·만료·발급자 검증 함수를 사용하세요.
-                    DecodedJWT decoded = JwtUtil.verifyToken(token);
-                    jwtOk = true;
-                    jwtUsername = decoded.getClaim("username").asString();
-                    jwtSubject = decoded.getSubject();
-                } catch (JWTVerificationException ex) {
-                    jwtOk = false;
-                } catch (Exception ex) {
-                    jwtOk = false;
+            User authenticatedUser = sessionUser;
+            String via = "session";
+            if (authenticatedUser == null) {
+                String token = getCookieValue(exchange, JWT_COOKIE_NAME);
+                if (!isBlank(token)) {
+                    try {
+                        authenticatedUser = JwtUtil.resolveUser(token, userRepository);
+                        via = "jwt";
+                    } catch (JWTVerificationException invalidToken) {
+                        // A missing, expired or invalid token is not an authenticated user.
+                    } catch (Exception error) {
+                        writeJson(exchange, 500, "{\"ok\":false,\"error\":\"auth check error\"}");
+                        return;
+                    }
                 }
             }
-
-            // Policy: pass if either session OR JWT is valid
-            // [④ 인증 정책] Session OR JWT: 두 방식 모두 실패한 경우에만 거부하도록 조건을 작성하세요.
-            if (/* TODO ④: 두 인증 수단이 모두 실패했는가? */ !jwtOk && sessionUser == null) {
+            if (authenticatedUser == null) {
                 writeJson(exchange, 401, "{\"ok\":false,\"reason\":\"UNAUTHORIZED\"}");
                 return;
             }
-
-            if (sessionUser != null) {
-                String body = "{\"ok\":true,\"via\":\"session\",\"username\":\""
-                        + escapeJson(sessionUser.getUsername()) + "\"}";
-                writeJson(exchange, 200, body);
-            } else {
-                String body = "{\"ok\":true,\"via\":\"jwt\",\"username\":\""
-                        + escapeJson(jwtUsername) + "\",\"sub\":\""
-                        + escapeJson(jwtSubject) + "\"}";
-                writeJson(exchange, 200, body);
-            }
+            writeJson(exchange, 200, "{\"ok\":true,\"via\":\"" + via
+                    + "\",\"username\":\"" + escapeJson(authenticatedUser.getEmployeeId())
+                    + "\",\"user\":" + userJson(authenticatedUser) + "}");
         });
 
         // (Optional) GET /home -> for session testing within 8080
@@ -395,7 +375,7 @@ public class SimpleAuthServer {
                       </div>
                     </body>
                     </html>
-                    """.formatted(escapeHtml(user.getUsername()));
+                    """.formatted(escapeHtml(user.getName()) + "님.");
             byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().add("Content-Type", "text/html; charset=utf-8");
             exchange.sendResponseHeaders(200, bytes.length);
@@ -436,6 +416,21 @@ public class SimpleAuthServer {
         exchange.getResponseHeaders().set("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
         exchange.getResponseHeaders().set("Access-Control-Allow-Headers", "Content-Type");
         exchange.getResponseHeaders().set("Vary", "Origin");
+    }
+
+    private static Dotenv loadDotenv() {
+        Path workingDirectory = Path.of("").toAbsolutePath();
+        for (Path directory : List.of(workingDirectory.resolve("workplace"), workingDirectory, workingDirectory.getParent())) {
+            if (Files.isRegularFile(directory.resolve(".env"))) {
+                return Dotenv.configure().directory(directory.toString()).ignoreIfMissing().load();
+            }
+        }
+        return Dotenv.configure().ignoreIfMissing().load();
+    }
+
+    static String userJson(User user) {
+        return "{\"name\":\"" + escapeJson(user.getName())
+                + "\",\"employeeId\":\"" + escapeJson(user.getEmployeeId()) + "\"}";
     }
 
     // ========= Resource/Reponse Helper =========
@@ -585,38 +580,23 @@ public class SimpleAuthServer {
 
     public static class User {
         private Long id;
-        private String username;
+        private String name;
+        private String employeeId;
         private String password;
 
-        public Long getId() {
-            return id;
-        }
-
-        public void setId(Long id) {
-            this.id = id;
-        }
-
-        public String getUsername() {
-            return username;
-        }
-
-        public void setUsername(String username) {
-            this.username = username;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+        public String getName() { return isBlank(name) ? employeeId : name; }
+        public void setName(String name) { this.name = name; }
+        public String getEmployeeId() { return employeeId; }
+        public void setEmployeeId(String employeeId) { this.employeeId = employeeId; }
+        public String getPassword() { return password; }
+        public void setPassword(String password) { this.password = password; }
     }
 
     public interface UserRepository {
         void save(User user) throws Exception;
-
-        User findByUsername(String username) throws Exception;
+        User findByEmployeeId(String employeeId) throws Exception;
     }
 
     public static class JdbcUserRepository implements UserRepository {
@@ -634,34 +614,50 @@ public class SimpleAuthServer {
             return DriverManager.getConnection(url, user, password);
         }
 
+        public void initializeSchema() throws SQLException {
+            try (Connection conn = getConnection(); Statement statement = conn.createStatement()) {
+                statement.executeUpdate("""
+                    CREATE TABLE IF NOT EXISTS users (
+                        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                        name VARCHAR(100) NOT NULL DEFAULT '',
+                        username VARCHAR(100) NOT NULL,
+                        password VARCHAR(255) NOT NULL,
+                        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                        UNIQUE KEY uk_users_username (username)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                    """);
+                // Keep existing accounts and the historical username column (now used for employee IDs).
+                statement.executeUpdate("ALTER TABLE users ADD COLUMN IF NOT EXISTS name VARCHAR(100) NOT NULL DEFAULT '' AFTER id");
+            }
+        }
+
         @Override
         public void save(User u) throws Exception {
-            String sql = "INSERT INTO users(username, password) VALUES(?, ?)";
+            String sql = "INSERT INTO users(name, username, password) VALUES(?, ?, ?)";
             try (Connection conn = getConnection();
                     PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                // SQL의 ? 자리와 사용자 필드를 연결하세요(문자열 결합 SQL 금지).
-                ps.setString(1, u.getUsername());
-                ps.setString(2, u.getPassword());
+                ps.setString(1, u.getName());
+                ps.setString(2, u.getEmployeeId());
+                ps.setString(3, u.getPassword());
                 ps.executeUpdate();
                 try (ResultSet rs = ps.getGeneratedKeys()) {
-                    if (rs.next()) {
-                        u.setId(rs.getLong(1));
-                    }
+                    if (rs.next()) u.setId(rs.getLong(1));
                 }
             }
         }
 
         @Override
-        public User findByUsername(String username) throws Exception {
-            String sql = "SELECT id, username, password FROM users WHERE username = ?";
-            try (Connection conn = getConnection();
-                    PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setString(1, username);
+        public User findByEmployeeId(String employeeId) throws Exception {
+            String sql = "SELECT id, name, username, password FROM users WHERE username = ?";
+            try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, employeeId);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         User u = new User();
                         u.setId(rs.getLong("id"));
-                        u.setUsername(rs.getString("username"));
+                        u.setName(rs.getString("name"));
+                        u.setEmployeeId(rs.getString("username"));
                         u.setPassword(rs.getString("password"));
                         return u;
                     }
@@ -678,50 +674,32 @@ public class SimpleAuthServer {
             this.userRepository = userRepository;
         }
 
-        public void signUp(String username, String rawPassword) throws Exception {
-            username = trimToNull(username);
-            if (rawPassword != null)
-                rawPassword = rawPassword.trim();
-
-            User existing = userRepository.findByUsername(username);
-            if (existing != null) {
-                throw new SQLIntegrityConstraintViolationException("username already exists");
+        public void signUp(String name, String employeeId, String rawPassword) throws Exception {
+            name = trimToNull(name);
+            employeeId = trimToNull(employeeId);
+            if (name == null || name.length() > 100 || name.chars().anyMatch(Character::isISOControl)
+                    || employeeId == null || !employeeId.matches("\\S{1,100}")
+                    || employeeId.chars().anyMatch(Character::isISOControl)
+                    || rawPassword == null || rawPassword.length() < 8 || rawPassword.length() > 64
+                    || !rawPassword.equals(rawPassword.trim())
+                    || rawPassword.getBytes(StandardCharsets.UTF_8).length > 72) {
+                throw new IllegalArgumentException("invalid registration fields");
             }
-
-            // [⑤-A 비밀번호 저장] 평문 대신 cost 12의 BCrypt salt 포함 해시를 저장하세요.
-            String hashed = /* TODO ⑤-A: bcrypt 해시 생성(cost=12) */ BCrypt.hashpw(rawPassword, BCrypt.gensalt(12));
-
+            if (userRepository.findByEmployeeId(employeeId) != null) {
+                throw new SQLIntegrityConstraintViolationException("employee ID already exists");
+            }
             User u = new User();
-            u.setUsername(username);
-            u.setPassword(hashed);
+            u.setName(name);
+            u.setEmployeeId(employeeId);
+            u.setPassword(BCrypt.hashpw(rawPassword, BCrypt.gensalt(12)));
             userRepository.save(u);
         }
 
-        public User login(String username, String rawPassword) throws Exception {
-            username = trimToNull(username);
-            if (rawPassword != null)
-                rawPassword = rawPassword.trim();
-
-            User u = userRepository.findByUsername(username);
-            if (u == null) {
-                if (DEBUG)
-                    System.out.println("[AUTH] user not found: " + username);
-                return null;
-            }
-            if (DEBUG) {
-                System.out.println("[AUTH] user found: " + username);
-                String hash = u.getPassword();
-                System.out.println("[AUTH] dbHash prefix: "
-                        + (hash == null ? "null" : hash.substring(0, Math.min(7, hash.length()))));
-            }
-
-            // [⑤-B 비밀번호 검증] 입력 평문과 저장된 BCrypt 해시를 검증하세요. ⑤-A와 한 묶음입니다.
-            boolean ok = /* TODO ⑤-B: 입력 비밀번호와 저장된 해시 검증 */ BCrypt.checkpw(rawPassword, u.getPassword());
-            if (DEBUG)
-                System.out.println("[AUTH] bcrypt matches=" + ok);
-
-            if (!ok)
-                return null;
+        public User login(String employeeId, String rawPassword) throws Exception {
+            employeeId = trimToNull(employeeId);
+            if (employeeId == null || isBlank(rawPassword)) return null;
+            User u = userRepository.findByEmployeeId(employeeId);
+            if (u == null || !BCrypt.checkpw(rawPassword.trim(), u.getPassword())) return null;
             return u;
         }
     }
@@ -740,8 +718,20 @@ public class SimpleAuthServer {
                     .withIssuedAt(Date.from(now))
                     // JWT가 무기한 유효하지 않도록 발급 시점 기준 1시간 만료를 지정하세요.
                     .withExpiresAt(Date.from(now.plus(1, ChronoUnit.HOURS))).withSubject(String.valueOf(user.getId()))
-                    .withClaim("username", user.getUsername())
+                    .withClaim("username", user.getEmployeeId()) // Compatibility with the existing voice server.
+                    .withClaim("employeeId", user.getEmployeeId())
+                    .withClaim("name", user.getName())
                     .sign(ALG);
+        }
+
+        public static User resolveUser(String token, UserRepository repository) throws Exception {
+            DecodedJWT decoded = verifyToken(token);
+            String employeeId = decoded.getClaim("employeeId").asString();
+            if (isBlank(employeeId)) employeeId = decoded.getClaim("username").asString();
+            if (isBlank(employeeId)) return null;
+            User user = repository.findByEmployeeId(employeeId);
+            if (user == null || !String.valueOf(user.getId()).equals(decoded.getSubject())) return null;
+            return user;
         }
 
         public static DecodedJWT verifyToken(String token) throws JWTVerificationException {
