@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Sign Up</title>
+    <title>회원가입 · 휴가 낼게요</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 <div class="container">
-    <h1>Sign Up</h1>
+    <h1>회원가입</h1>
     <form method="POST" action="/api/signup">
-        <label>Username
-            <input type="text" name="username" required>
+        <label>이름
+            <input type="text" name="name" required maxlength="100" autocomplete="name">
         </label>
-        <label>Password
-            <input type="password" name="password" required>
+        <label>사원번호
+            <input type="text" name="employeeId" required maxlength="100" autocomplete="username">
+        </label>
+        <label>비밀번호
+            <input type="password" name="password" required minlength="8" maxlength="64" autocomplete="new-password">
         </label>
         <button type="submit">Sign Up</button>
     </form>

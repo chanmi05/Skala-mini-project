@@ -6,8 +6,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 from starlette.staticfiles import StaticFiles
 from jose import jwt, JWTError
+
+# Load configuration before importing services or JWT settings.
+from dotenv import load_dotenv as _load_env
+from pathlib import Path as _Path
+_load_env(_Path(__file__).resolve().parent / ".env")
+_load_env(_Path(__file__).resolve().parent.parent / ".env")
 from app.jwt_config import SECRET_KEY, ALGORITHM, ISSUER
 
+from app.routers.voice_query_router import router as voice_query_router
 from app.routers.stt_router import router as stt_router
 from app.routers.tts_router import router as tts_router
 from app.routers.stt_tts_router import router as stt_tts_router
@@ -47,6 +54,7 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 # 2) FastAPI App
 
 app = FastAPI()
+app.include_router(voice_query_router)
 
 # JWT settings are shared with all voice API routers via app.jwt_config.
 
@@ -94,6 +102,10 @@ def get_current_user(
 def _must_exist(p: Path, name: str):
     if not p.exists():
         raise HTTPException(status_code=404, detail=f"{name} not found: {p}")
+
+@app.get("/voice-query.html", include_in_schema=False)
+async def voice_query_page(current_user: dict = Depends(get_current_user)):
+    return FileResponse(STATIC_DIR / "voice-query.html")
 
 @app.get("/", include_in_schema=False)
 async def root_page(current_user: dict = Depends(get_current_user)):
@@ -160,6 +172,10 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:8008",
         "http://127.0.0.1:8008",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
     ],
     allow_credentials=True,
     allow_methods=["*"],

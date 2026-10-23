@@ -1,4 +1,74 @@
 .DS_Store
 .vscode/
 .idea/
+
+# Local credentials; share only templates containing placeholders.
 .env
+.env.*
+!.env.example
+!.env.sample
+!.env.*.example
+!.env.*.sample
+# Backups of local credentials are never templates.
+.env*.bak
+.env*.backup
+.env*.old
+.env*.tmp
+.env*~
+.envrc
+credentials.local.json
+secrets.local.json
+id_rsa
+id_ed25519
+
+# Python environments, compiled files and tooling caches.
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.egg-info/
+
+# Java / Gradle generated output. Keep Gradle Wrapper files.
+.gradle/
+build/
+*.class
+/workplace/app/bin/
+
+# Frontend dependency and build caches.
+node_modules/
+dist/
+.vite/
+
+# Voice inputs and generated speech (not source/test fixtures).
+/voice-ai_code/app/routers/uploads/
+/voice-ai_code/.voice_output/
+
+# Optional local Whisper model downloads.
+/voice-ai_code/models/
+/voice-ai_code/model_cache/
+/voice-ai_code/.models/
+/voice-ai_code/.hf_cache/
+.huggingface/
+
+# Runtime logs, editor swap files and local database files.
+*.log
+*.pid
+*.sqlite
+*.sqlite3
+*.sqlite3-journal
+*.swp
+*.swo
+*~
+Thumbs.db
+
+# FAISS indexes are intentionally retained for team sharing.
+# Agree with the RAG owner before excluding rag-code-template_ext/faiss_db/.

@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>휴가낼게여! · 음성 연동 테스트</title>
+<style>
+body{font:16px/1.7 system-ui,sans-serif;background:#f4f6fa;color:#17233b;margin:0}
+main{max-width:800px;margin:48px auto;padding:32px;background:white;border-radius:20px}
+button,input{font:inherit}button{padding:10px 18px;margin:8px 8px 8px 0;cursor:pointer}
+button:disabled{cursor:wait}#mode{padding:12px;background:#fff3ca}article{border-top:1px solid #ddd;margin-top:24px}
+pre{white-space:pre-wrap;word-break:break-word}audio{width:100%}.muted{color:#59677d}
+</style>
+<main>
+<h1>휴가낼게여! 음성 테스트</h1>
+<p class="muted">60초 이내로 질문을 녹음하세요. 생성 음성은 AI 음성이며 약 15분간 재생할 수 있습니다.</p>
+<p id="mode">연결 확인 중…</p>
+<p id="sttSettings" class="muted"></p>
+<label><input id="requireConfirmation" type="checkbox" role="switch" checked> 답변 전 질문 확인 <span id="confirmationState">ON</span></label>
+<p id="confirmationHelp" class="muted">ON: 원문·교정 질문을 확인하거나 수정한 뒤 버튼을 눌러 답변을 받습니다. 설정은 다음 녹음/파일 전송부터 적용됩니다.</p>
+<button id="record">녹음 시작</button>
+<label>또는 오디오 파일 선택 <input id="file" type="file" accept=".webm,.wav,.m4a,.mp4,.ogg"></label>
+<button id="send">파일 전송</button>
+<p id="status" role="status">준비</p>
+<section id="recordingPreview" hidden>
+<p>방금 보낸 녹음 · 문장이 처음부터 끝까지 선명하게 들리는지 확인하세요.</p>
+<audio id="recordingPlayer" controls></audio>
+<p><a id="recordingDownload">같은 녹음 저장하기</a> · 원본은 이 브라우저 메모리에만 남고 새로고침하면 사라집니다.</p>
+</section>
+<section id="questionReview" hidden>
+<h2>음성 인식 원문</h2><p id="rawTranscript"></p>
+<h2>문맥을 반영한 질문</h2>
+<textarea id="question" rows="3" maxlength="2000" style="width:100%;font:inherit;box-sizing:border-box" aria-label="확인할 질문"></textarea>
+<p id="correctionWarning"></p>
+<div id="confirmationActions"><button id="useOriginal">원문 사용</button><button id="confirmQuestion">이 질문으로 답변 받기</button></div>
+<p class="muted">문맥 교정 AI는 인식된 텍스트만 검토합니다. 이름·숫자·부정 표현이 맞는지 확인하세요. 교정 시 마스킹된 텍스트가 OpenAI로 전송되며 호출 비용이 발생합니다.</p>
+</section>
+<article hidden id="result">
+<h2>답변에 사용한 질문</h2><p id="transcript"></p>
+<h2>답변</h2><p id="answer"></p>
+<h3>출처</h3><ul id="sources"></ul>
+<p id="review"></p><p id="warning"></p>
+<audio id="player" controls hidden></audio>
+<details><summary>API 응답 확인</summary><pre id="json"></pre></details>
+</article>
+<p><a href="/index.html">교수님 예제 홈</a> · <a href="/docs">API 명세</a> · <a href="http://localhost:8080/login">로그인</a></p>
+</main>
+<script>
+const el=id=>document.getElementById(id);
+let recorder, stream, timer, playback, recordingUrl;
+function previewRecording(blob,name){
+ el('recordingPlayer').pause();
+ if(recordingUrl)URL.revokeObjectURL(recordingUrl);
+ recordingUrl=URL.createObjectURL(blob);
+ el('recordingPlayer').src=recordingUrl;
+ el('recordingDownload').href=recordingUrl;
+ el('recordingDownload').download=name;
+ el('recordingPreview').hidden=false;
+}
+function status(text){el('status').textContent=text}
+function mode(value){
+ const labels={
+ mock:'개발용 모드 · 실제 규정 검색 없이 고정 테스트 응답을 읽습니다.',
+ demo:'검색 실험 모드 · 테스트용 가상 규정을 키워드로 검색합니다. 실제 법령·회사 규정이 아니며 팀 RAG/FAISS 성능 검증과는 다릅니다.',
+ live:'실제 RAG 연동 모드 · 팀 RAG 서버의 답변을 읽습니다.'};
+ el('mode').textContent=labels[value]||'설정된 모드를 확인해 주세요.';
+}
+function confirmationHelp(){
+ const on=el('requireConfirmation').checked;
+ el('confirmationState').textContent=on?'ON':'OFF';
+ el('confirmationHelp').textContent=(on
+ ? 'ON: 원문·교정 질문을 확인하거나 수정한 뒤 버튼을 눌러 답변을 받습니다.'
+ : 'OFF: 원문·교정 질문을 보여주고, 교정된 질문으로 바로 답변을 받습니다. 교정 실패 시 안내와 함께 원문을 사용합니다.')
+ +' 설정은 다음 녹음/파일 전송부터 적용됩니다.';
+}
+el('requireConfirmation').onchange=confirmationHelp;
+function busy(value){for(const id of ['record','send','file','confirmQuestion','useOriginal','question','requireConfirmation']) el(id).disabled=value}
+function clearResult(){el('result').hidden=true;el('player').pause();el('player').hidden=true;
+ el('player').removeAttribute('src'); if(playback){URL.revokeObjectURL(playback);playback=null}}
+async function check(response){
+ if(response.status===401){status('로그인이 필요합니다. 8080에서 로그인한 뒤 돌아오세요.');throw Error('인증 만료')}
+ if(!response.ok){const d=await response.json();throw Error(typeof d.detail==='string'?d.detail:'요청 처리에 실패했습니다.')}
+ return response;
+}
+async function send(blob,name){
+ const requireConfirmation=el('requireConfirmation').checked;
+ previewRecording(blob,name);
+ clearResult();el('questionReview').hidden=true;busy(true);status('음성 인식 → 문맥 교정 중…');
+ try{
+ const form=new FormData();form.append('audio',blob,name);
+ const res=await check(await fetch('/voice-transcribe',{method:'POST',credentials:'include',body:form}));
+ const d=await res.json();
+ el('rawTranscript').textContent=d.raw_transcript;
+ el('question').value=d.corrected_question;
+ el('correctionWarning').textContent=d.warning||(d.changed?'문맥 교정 제안입니다. 원래 의도와 맞는지 확인하세요.':'추가 교정 없이 원문을 유지했습니다.');
+ el('question').readOnly=!requireConfirmation;
+ el('confirmationActions').hidden=!requireConfirmation;
+ el('questionReview').hidden=false;
+ if(requireConfirmation){
+  status('질문을 확인한 뒤 “이 질문으로 답변 받기”를 눌러주세요.');
+ }else{
+  await requestAnswer(d.corrected_question,true);
+ }
+ }catch(e){status(e.message)}finally{busy(false)}
+}
+el('useOriginal').onclick=()=>{el('question').value=el('rawTranscript').textContent};
+el('confirmQuestion').onclick=async()=>{
+ const question=el('question').value.trim();
+ if(!question){status('질문을 입력해 주세요.');return}
+ busy(true);
+ try{
+  await requestAnswer(question,false);
+ }catch(e){status(e.message)}finally{busy(false)}
+};
+async function requestAnswer(question,automatic){
+ clearResult();status(automatic?'교정된 질문으로 바로 규정 검색 → 음성 생성 중…':'확인한 질문으로 규정 검색 → 음성 생성 중…');
+ const res=await check(await fetch('/voice-query-text',{method:'POST',credentials:'include',
+ headers:{'Content-Type':'application/json'},body:JSON.stringify({question})}));
+ const d=await res.json();mode(d.mode);
+ for(const id of ['transcript','answer'])el(id).textContent=d[id];
+ el('sources').replaceChildren();
+ for(const s of d.sources){const li=document.createElement('li');li.textContent=[s.doc,s.article,s.page==null?'':s.page+'쪽'].filter(Boolean).join(' · ');el('sources').append(li)}
+ if(!d.sources.length){const li=document.createElement('li');li.textContent='출처 없음';el('sources').append(li)}
+ el('review').textContent='검토 필요: '+(d.needs_review?'예':'아니오')+' / 담당자 안내: '+(d.handoff?'예':'아니오');
+ el('warning').textContent=d.warning||'';el('json').textContent=JSON.stringify(d,null,2);el('result').hidden=false;
+ status('완료 · '+(d.latency_ms/1000).toFixed(1)+'초');
+ if(d.audio_url){
+ try{const audio=await check(await fetch(d.audio_url,{credentials:'include'}));
+ playback=URL.createObjectURL(await audio.blob());el('player').src=playback;el('player').hidden=false;
+ }catch(e){el('warning').textContent='답변은 완료됐지만 음성을 불러오지 못했습니다: '+e.message}
+ }
+}
+el('send').onclick=()=>{const f=el('file').files[0];if(f)send(f,f.name);else status('파일을 먼저 선택하세요.')};
+el('record').onclick=async()=>{
+ if(recorder?.state==='recording'){recorder.stop();return}
+ clearResult();
+ el('questionReview').hidden=true;
+ try{
+ if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)throw Error('localhost 또는 HTTPS와 녹음 지원 브라우저가 필요합니다.');
+ stream=await navigator.mediaDevices.getUserMedia({audio:true});
+ const mime=['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(t=>MediaRecorder.isTypeSupported(t));
+ if(!mime){stream.getTracks().forEach(t=>t.stop());throw Error('지원하는 녹음 형식이 없습니다. 파일 업로드를 사용하세요.')}
+ const chunks=[];recorder=new MediaRecorder(stream,{mimeType:mime});
+ recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+ recorder.onstop=()=>{clearTimeout(timer);stream.getTracks().forEach(t=>t.stop());el('record').textContent='녹음 시작';
+ el('send').disabled=false;el('file').disabled=false;send(new Blob(chunks,{type:mime}),mime.includes('mp4')?'recording.mp4':'recording.webm')};
+ recorder.start();el('record').textContent='녹음 종료';el('send').disabled=true;el('file').disabled=true;
+ el('requireConfirmation').disabled=true;
+ status('녹음 중 · 최대 60초');timer=setTimeout(()=>{if(recorder.state==='recording')recorder.stop()},60000);
+ }catch(e){if(stream)stream.getTracks().forEach(t=>t.stop());el('requireConfirmation').disabled=false;status('녹음을 시작할 수 없습니다: '+e.message)}
+};
+fetch('/voice-config',{credentials:'include'}).then(check).then(r=>r.json()).then(d=>{
+ mode(d.mode);
+ if(d.stt)el('sttSettings').textContent='인식 모델: '+d.stt.model+' / 언어: '+d.stt.language+' / 인사·근태 용어 힌트: '+(d.stt.vocabulary_hint?'사용':'미사용');
+}).catch(e=>status(e.message));
+window.addEventListener('pagehide',()=>{clearTimeout(timer);if(stream)stream.getTracks().forEach(t=>t.stop());if(playback)URL.revokeObjectURL(playback);if(recordingUrl)URL.revokeObjectURL(recordingUrl)});
+</script>
+</html>
