@@ -1,5 +1,8 @@
 # HWP 추출 실험
 
+왼쪽 규정안 열을 청킹 입력용 조항 데이터로 만드는 절차는
+[HWP 전처리 가이드](HWP_PREPROCESSING_GUIDE.md)를 참고하세요.
+
 `Standard_Rules_of_Employment_2026.hwp`를 pyhwp로 실제 추출한 결과입니다.
 원본 파일은 변경하지 않습니다. 외부 API나 LLM에 문서를 전송하지 않습니다.
 
