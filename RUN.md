@@ -1,6 +1,6 @@
 # 프로젝트 실행 방법
 
-macOS의 zsh/bash 기준입니다. 서버마다 별도의 터미널을 사용하고, 각 명령어 블록은 저장소 루트(`/Users/u085/Desktop/share`)에서 시작합니다. Python 프로젝트는 각각의 가상환경을 사용합니다.
+macOS의 zsh/bash 기준입니다. 서버마다 별도의 터미널을 사용하고, 각 명령어 블록은 저장소 루트에서 시작합니다. Python 프로젝트는 각각의 가상환경을 사용합니다.
 
 | 프로젝트                  | 역할                    | 포트 | 접속 주소                             |
 | ------------------------- | ----------------------- | ---- | ------------------------------------- |
@@ -29,7 +29,7 @@ Java는 실행 디렉터리의 `.env`를 상대 경로(`.`)로 읽습니다. Gra
 ### 실행
 
 ```bash
-cd /Users/u085/Desktop/share/workplace
+cd workplace
 docker compose up -d --wait mariadb
 ./gradlew :app:run --no-configuration-cache
 ```
@@ -47,7 +47,7 @@ Gradle 실행 권한 오류가 나면 `chmod +x gradlew`를 한 번 실행합니
 Python 3.11과 ffmpeg가 필요합니다.
 
 ```bash
-cd /Users/u085/Desktop/share/voice-ai_code
+cd voice-ai_code
 brew install ffmpeg
 python3.11 -m venv .venv
 source .venv/bin/activate
@@ -67,7 +67,7 @@ JWT_SECRET=workplace와_동일한_JWT_SECRET
 ### 실행
 
 ```bash
-cd /Users/u085/Desktop/share/voice-ai_code
+cd voice-ai_code
 source .venv/bin/activate
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8008 --reload --env-file .env
 ```
@@ -85,7 +85,7 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8008 --reload --env-file 
 ### Docker로 실행하는 경우 (로컬 실행 대신 선택)
 
 ```bash
-cd /Users/u085/Desktop/share/voice-ai_code
+cd voice-ai_code
 docker compose --env-file app/.env up -d --build
 ```
 
@@ -96,7 +96,7 @@ docker compose --env-file app/.env up -d --build
 ### 최초 준비
 
 ```bash
-cd /Users/u085/Desktop/share/rag-code-template_ext
+cd rag-code-template_ext
 python3.11 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip setuptools wheel
@@ -116,7 +116,7 @@ NAVER_CLIENT_SECRET=발급받은_네이버_클라이언트_시크릿
 ### 실행
 
 ```bash
-cd /Users/u085/Desktop/share/rag-code-template_ext
+cd rag-code-template_ext
 source .venv/bin/activate
 python -m uvicorn rag_external-web_pdf_closed_llm:app --host 127.0.0.1 --port 8001 --reload
 ```
@@ -125,20 +125,6 @@ API 문서: http://localhost:8001/docs
 
 처음에는 벡터 저장소가 없을 수 있습니다. 화면에서 웹 검색 또는 PDF 업로드로 자료를 등록한 뒤 질문합니다.
 
-## 4. HTML 화면 서버 (저장소 루트)
-
-```bash
-cd /Users/u085/Desktop/share
-python3 -m http.server 5174 --bind 127.0.0.1
-```
-
-- 시작 화면: http://localhost:5174/intro_main.html
-- 외부 RAG 화면: http://localhost:5174/external_index.html
-- 프로젝트 내 외부 RAG 화면: http://localhost:5174/rag-code-template_ext/external_index.html
-- 내부 RAG 화면: http://localhost:5174/internal_index.html
-
-외부 RAG 화면의 API 주소는 `http://localhost:8001`로 지정합니다. 내부 RAG 화면의 기본 API 주소는 `http://localhost:8002`지만, 현재 저장소에는 해당 백엔드 소스가 없어 실행 명령어를 제공할 수 없습니다. 별도의 내부 RAG 서버가 필요합니다.
-
 ## 5. 종료
 
 터미널에서 실행 중인 Gradle, uvicorn, HTML 서버는 각각 `Ctrl+C`로 종료합니다.
@@ -146,14 +132,14 @@ python3 -m http.server 5174 --bind 127.0.0.1
 Docker MariaDB 종료:
 
 ```bash
-cd /Users/u085/Desktop/share/workplace
+cd workplace
 docker compose stop mariadb
 ```
 
 Docker로 실행한 음성 AI 서버 종료:
 
 ```bash
-cd /Users/u085/Desktop/share/voice-ai_code
+cd voice-ai_code
 docker compose --env-file app/.env stop app
 ```
 
