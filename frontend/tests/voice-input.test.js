@@ -12,6 +12,16 @@ const recorderDescriptor = Object.getOwnPropertyDescriptor(
 )
 const originalFetch = globalThis.fetch
 let sessions, tracks, recordings, transcripts, uploads
+const answer = {
+  answer: '연차는 사내 지침에 따라 신청해 주세요.',
+  sources: [],
+  needs_review: false,
+  handoff: false,
+  transcript: '연차 신청 절차를 알려주세요.',
+  mode: 'live',
+  latency_ms: 100,
+  audio_url: '/voice-audio/answer.mp3',
+}
 
 class FakeRecorder {
   static isTypeSupported() {
@@ -70,7 +80,7 @@ beforeEach(() => {
   })
   globalThis.fetch = async (url, options) => {
     uploads.push({ url, options })
-    return Response.json({ text: ' 연차 신청 절차를 알려주세요. ' })
+    return Response.json(answer)
   }
 })
 
@@ -85,7 +95,7 @@ afterEach(() => {
   globalThis.fetch = originalFetch
 })
 
-test('녹음 종료 후 마이크를 해제하고 인증 쿠키와 함께 STT로 전송한다', async () => {
+test('녹음 종료 후 마이크를 해제하고 인증 쿠키와 함께 음성 질의 API로 전송하고 답변을 전달한다', async () => {
   const voice = session()
   await voice.start()
   assert.equal(voice.phase.value, 'recording')
@@ -93,13 +103,13 @@ test('녹음 종료 후 마이크를 해제하고 인증 쿠키와 함께 STT로
   voice.stop()
   await recordings[0].finished
   assert.equal(tracks[0].stopped, true)
-  assert.equal(uploads[0].url, '/voice-api/stt/')
+  assert.equal(uploads[0].url, 'http://localhost:8008/voice-query')
   assert.equal(uploads[0].options.credentials, 'include')
   assert.match(
     uploads[0].options.body.get('audio').name,
     /^recording-.*\.webm$/,
   )
-  assert.deepEqual(transcripts, ['연차 신청 절차를 알려주세요.'])
+  assert.deepEqual(transcripts, [answer])
   assert.equal(voice.phase.value, 'idle')
 })
 
@@ -145,7 +155,7 @@ test('변환 중 취소하면 요청을 중단하고 늦은 결과를 입력창�
   await new Promise((resolve) => setImmediate(resolve))
   assert.equal(voice.phase.value, 'transcribing')
   voice.cancel()
-  complete(Response.json({ text: '취소한 질문' }))
+  complete(Response.json(answer))
   await recordings[0].finished
   assert.deepEqual(transcripts, [])
   assert.equal(voice.phase.value, 'idle')
@@ -174,13 +184,13 @@ test('서버 인증이 만료되면 재로그인을 안내하고 마이크를 �
   assert.equal(voice.busy.value, false)
 })
 
-test('인식 결과가 없으면 질문을 추가하지 않고 재녹음을 안내한다', async () => {
-  globalThis.fetch = async () => Response.json({ text: ' ' })
+test('잘못된 응답이면 대화에 추가하지 않고 오류를 안내한다', async () => {
+  globalThis.fetch = async () => Response.json({ answer: ' ' })
   const voice = session()
   await voice.start()
   voice.stop()
   await recordings[0].finished
-  assert.match(voice.error.value, /음성을 인식하지 못/)
+  assert.match(voice.error.value, /응답 형식/)
   assert.deepEqual(transcripts, [])
 })
 

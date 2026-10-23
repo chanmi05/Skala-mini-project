@@ -1,14 +1,24 @@
 import { ref } from 'vue'
+import { resolveVoiceAudioUrl } from '../services/voice.js'
 
 export function useSpeechOutput() {
   const phase = ref('idle')
   const activeId = ref(null)
   const error = ref('')
   let utterance = null
+  let audio = null
   let generation = 0
 
   function stop() {
     generation += 1
+    if (audio) {
+      audio.onplaying = null
+      audio.onended = null
+      audio.onerror = null
+      audio.pause()
+      audio.removeAttribute('src')
+      audio = null
+    }
     if (utterance) {
       utterance.onstart = null
       utterance.onend = null
@@ -20,9 +30,38 @@ export function useSpeechOutput() {
     activeId.value = null
   }
 
-  function speak(text, messageId) {
+  function speak(text, messageId, audioUrl) {
     stop()
     error.value = ''
+    if (audioUrl) {
+      const token = generation
+      const fail = (event) => {
+        if (token !== generation) return
+        stop()
+        error.value =
+          event?.name === 'NotAllowedError'
+            ? '자동 재생이 차단되었습니다. 답변의 다시 듣기 버튼을 눌러 주세요.'
+            : '음성을 재생할 수 없거나 재생 기간이 만료되었습니다. 텍스트를 확인하거나 다시 질문해 주세요.'
+      }
+      try {
+        const player = new Audio(resolveVoiceAudioUrl(audioUrl))
+        player.crossOrigin = 'use-credentials'
+        audio = player
+        activeId.value = messageId
+        phase.value = 'pending'
+        player.onplaying = () => {
+          if (token === generation) phase.value = 'speaking'
+        }
+        player.onended = () => {
+          if (token === generation) stop()
+        }
+        player.onerror = fail
+        player.play().catch(fail)
+      } catch (e) {
+        fail(e)
+      }
+      return
+    }
     const synthesis = globalThis.speechSynthesis
     const Utterance = globalThis.SpeechSynthesisUtterance
     if (!synthesis || !Utterance) {

@@ -6,11 +6,12 @@ import BrandLogo from '@/components/BrandLogo.vue'
 import { checkAuth, currentUser, logout } from '@/services/auth'
 import { useVoiceInput } from '@/composables/useVoiceInput'
 import { useSpeechOutput } from '@/composables/useSpeechOutput'
+import { useChat } from '@/composables/useChat'
+import { MAX_QUESTION_LENGTH } from '@/services/voice'
 import { PROJECT_NAME } from '@/config/project'
 
 const router = useRouter()
 const draft = ref('')
-const messages = ref([])
 const input = ref(null)
 const messageEnd = ref(null)
 const notice = ref('')
@@ -22,7 +23,17 @@ const {
   speak: speakAnswer,
   stop: stopAnswer,
 } = useSpeechOutput()
-let responseGeneration = 0
+const {
+  messages,
+  pending,
+  error: chatError,
+  send: sendText,
+  receiveVoiceAnswer,
+  reset: resetChat,
+} = useChat((answer, voice) => {
+  scrollToAnswer()
+  if (voice) speakAnswer(answer.content, answer.id, answer.audioUrl)
+})
 const {
   phase: voicePhase,
   seconds: recordingSeconds,
@@ -31,15 +42,7 @@ const {
   start: startVoice,
   stop: stopVoice,
   cancel: cancelVoice,
-} = useVoiceInput(async (text) => {
-  const nextDraft = [draft.value.trimEnd(), text].filter(Boolean).join('\n')
-  if (nextDraft.length > 10000) {
-    throw new Error(
-      '질문이 너무 깁니다. 입력한 내용을 줄인 뒤 다시 녹음해 주세요.',
-    )
-  }
-  await send({ text: nextDraft, voice: true })
-})
+} = useVoiceInput(receiveVoiceAnswer)
 const voiceStatus = computed(() => {
   if (voicePhase.value === 'requesting')
     return '마이크 사용 권한을 확인하고 있어요.'
@@ -47,7 +50,7 @@ const voiceStatus = computed(() => {
     return `녹음 중 · ${recordingSeconds.value}초 / 60초 · 마이크 버튼을 눌러 종료하세요.`
   }
   if (voicePhase.value === 'transcribing')
-    return '녹음한 질문을 텍스트로 변환하고 있어요.'
+    return '음성을 인식하고 지침 답변을 준비하고 있어요.'
   return ''
 })
 const suggestions = [
@@ -79,7 +82,7 @@ function resizeInput() {
 
 function resetConversation() {
   resetVoice()
-  messages.value = []
+  resetChat()
   draft.value = ''
   notice.value = ''
   nextTick(() => {
@@ -96,30 +99,36 @@ async function useSuggestion(prompt) {
   input.value?.focus()
 }
 
-async function send({ text = draft.value, voice = false } = {}) {
-  if (voiceBusy.value && !voice) return
-  const content = text.trim()
+async function scrollToAnswer() {
+  await nextTick()
+  messageEnd.value?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+}
+
+async function send() {
+  if (voiceBusy.value || pending.value) return
+  const content = draft.value.trim()
   if (!content) return
+  if (!currentUser.value) {
+    chatError.value = '로그인 후 질문할 수 있습니다.'
+    return
+  }
+  if (content.length > MAX_QUESTION_LENGTH) {
+    chatError.value = '질문은 2,000자 이내로 입력해 주세요.'
+    return
+  }
   stopAnswer()
   speechError.value = ''
-  const token = ++responseGeneration
-  const answer = {
-    id: crypto.randomUUID(),
-    role: 'assistant',
-    content:
-      '현재는 사내 지침 챗봇의 화면 미리보기입니다. 사내 지침 문서 검색과 답변 기능은 아직 연결되지 않아, 질문하신 내용의 실제 규정을 안내할 수 없습니다.',
-  }
-  messages.value.push(
-    { id: crypto.randomUUID(), role: 'user', content, voice },
-    answer,
-  )
+  const sending = sendText(content)
   draft.value = ''
   await nextTick()
   resizeInput()
-  messageEnd.value?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-  input.value?.focus()
-  if (voice && token === responseGeneration)
-    speakAnswer(answer.content, answer.id)
+  scrollToAnswer()
+  const success = await sending
+  if (success === false && chatError.value && !draft.value) {
+    draft.value = content
+    await nextTick()
+    resizeInput()
+  }
 }
 
 function onKeydown(event) {
@@ -141,7 +150,7 @@ async function signOut() {
   resetVoice()
   try {
     await logout()
-    messages.value = []
+    resetChat()
     await router.push('/login')
   } catch (e) {
     notice.value = e.message
@@ -151,7 +160,6 @@ async function signOut() {
 }
 
 function resetVoice() {
-  responseGeneration += 1
   cancelVoice()
   stopAnswer()
   speechError.value = ''
@@ -159,6 +167,7 @@ function resetVoice() {
 }
 
 function toggleVoice() {
+  if (pending.value) return
   if (voicePhase.value === 'recording') {
     stopVoice()
     return
@@ -168,6 +177,11 @@ function toggleVoice() {
     voiceError.value = '로그인 후 음성으로 질문할 수 있습니다.'
     return
   }
+  if (draft.value.trim()) {
+    voiceError.value = '입력 중인 질문을 먼저 전송하거나 지운 뒤 녹음해 주세요.'
+    return
+  }
+  chatError.value = ''
   startVoice()
 }
 
@@ -176,6 +190,7 @@ onMounted(() => {
 })
 onUnmounted(() => {
   resetVoice()
+  resetChat()
 })
 </script>
 
@@ -202,9 +217,7 @@ onUnmounted(() => {
           >
             <AppIcon name="plus" :size="16" /><span>대화 초기화</span>
           </button>
-          <span class="preview-badge"
-            ><span class="status-dot"></span>미리보기</span
-          ><RouterLink v-if="!currentUser" to="/login" class="header-login"
+          <RouterLink v-if="!currentUser" to="/login" class="header-login"
             >로그인<AppIcon name="right" :size="15" /></RouterLink
           ><template v-else
             ><span class="header-user">{{ currentUser.name }}님.</span
@@ -278,14 +291,40 @@ onUnmounted(() => {
               ><BrandLogo compact />
               <div class="message-body">
                 <span class="message-author"
-                  >{{ PROJECT_NAME }} <span>미리보기</span></span
+                  >{{ PROJECT_NAME }}
+                  <span v-if="message.mode === 'demo'">데모</span>
+                  <span v-else-if="message.mode === 'mock'"
+                    >연결 테스트</span
+                  ></span
                 >
                 <p>{{ message.content }}</p>
+                <div v-if="message.sources.length" class="answer-sources">
+                  <strong>참고 지침</strong>
+                  <ul>
+                    <li v-for="(source, index) in message.sources" :key="index">
+                      {{ source.doc
+                      }}<template v-if="source.article">
+                        · {{ source.article }}</template
+                      ><template v-if="source.page != null">
+                        · {{ source.page }}쪽</template
+                      >
+                    </li>
+                  </ul>
+                </div>
+                <p v-if="message.needsReview" class="answer-note">
+                  추가 확인이 필요한 답변입니다. 해당 지침과 함께 확인해 주세요.
+                </p>
+                <p v-if="message.handoff" class="answer-note">
+                  정확한 안내는 담당 부서에 문의해 주세요.
+                </p>
+                <p v-if="message.warning" class="answer-note">
+                  {{ message.warning }}
+                </p>
                 <button
                   type="button"
                   class="answer-audio-button"
                   :class="{ playing: speakingMessageId === message.id }"
-                  :disabled="voiceBusy"
+                  :disabled="voiceBusy || pending"
                   :aria-label="
                     speakingMessageId === message.id
                       ? '음성 답변 중지'
@@ -294,7 +333,11 @@ onUnmounted(() => {
                   @click="
                     speakingMessageId === message.id
                       ? stopAnswer()
-                      : speakAnswer(message.content, message.id)
+                      : speakAnswer(
+                          message.content,
+                          message.id,
+                          message.audioUrl,
+                        )
                   "
                 >
                   <AppIcon
@@ -320,10 +363,16 @@ onUnmounted(() => {
               </p></template
             >
           </article>
+          <p v-if="pending" class="answer-pending" role="status">
+            관련 지침을 확인하고 있습니다…
+          </p>
           <div ref="messageEnd"></div>
         </section>
       </main>
       <div class="composer-area">
+        <p v-if="chatError" class="voice-feedback error" role="alert">
+          {{ chatError }}
+        </p>
         <p v-if="speechError" class="voice-feedback error" role="alert">
           {{ speechError }}
         </p>
@@ -353,9 +402,9 @@ onUnmounted(() => {
             ref="input"
             v-model="draft"
             rows="1"
-            maxlength="10000"
+            :maxlength="MAX_QUESTION_LENGTH"
             placeholder="사내 지침에 대해 질문해 주세요."
-            :readonly="voiceBusy"
+            :readonly="voiceBusy || pending"
             @input="resizeInput"
             @keydown="onKeydown"
           ></textarea>
@@ -371,7 +420,7 @@ onUnmounted(() => {
                 type="button"
                 class="voice-button"
                 :class="{ recording: voicePhase === 'recording' }"
-                :disabled="voiceBusy && voicePhase !== 'recording'"
+                :disabled="pending || (voiceBusy && voicePhase !== 'recording')"
                 :aria-pressed="voicePhase === 'recording'"
                 :aria-label="
                   voicePhase === 'recording'
@@ -391,7 +440,7 @@ onUnmounted(() => {
                 class="send-button"
                 type="submit"
                 aria-label="메시지 보내기"
-                :disabled="!draft.trim() || voiceBusy"
+                :disabled="!draft.trim() || voiceBusy || pending"
               >
                 <AppIcon name="arrow" :size="20" />
               </button>
@@ -399,8 +448,8 @@ onUnmounted(() => {
           </div>
         </form>
         <p class="composer-disclaimer">
-          지침 답변 연결 준비 중 · 음성 질문은 녹음 종료 후 자동 전송되며 답변을
-          음성으로 재생합니다.
+          질문은 2,000자까지 입력할 수 있습니다. 음성 질문은 녹음 종료 후 자동
+          전송되며 답변을 음성으로 재생합니다.
         </p>
       </div>
     </div>

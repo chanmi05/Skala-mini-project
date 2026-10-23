@@ -42,27 +42,38 @@ async function request(path, fields) {
 
 function readUser(data) {
   const user = data?.user
-  if (
-    typeof user?.name !== 'string' ||
-    !user.name.trim() ||
-    typeof user.employeeId !== 'string' ||
-    !user.employeeId.trim()
-  )
-    return null
-  return { name: user.name, employeeId: user.employeeId }
+  const employeeId = user?.employeeId || data?.username
+  if (typeof employeeId !== 'string' || !employeeId.trim()) return null
+  const name =
+    typeof user?.name === 'string' && user.name.trim()
+      ? user.name.trim()
+      : employeeId
+  return { name, employeeId }
 }
 
 export async function login(employeeId, password) {
-  const { data } = await request('/api/login', { employeeId, password })
-  const user = readUser(data)
-  if (!data?.ok || !user)
+  // username is the documented field; employeeId supports the current Java server.
+  const { data } = await request('/api/login', {
+    username: employeeId,
+    employeeId,
+    password,
+  })
+  if (!data?.ok)
     throw new Error('로그인 응답을 확인할 수 없습니다. 다시 시도해 주세요.')
+  let user = readUser(data)
+  if (!user) {
+    const { data: session } = await request('/api/auth/check')
+    user = session?.ok ? readUser(session) : null
+  }
+  if (!user)
+    throw new Error('로그인 상태를 확인할 수 없습니다. 다시 시도해 주세요.')
   currentUser.value = user
 }
 
 export async function signup(name, employeeId, password) {
   const { response } = await request('/api/signup', {
     name,
+    username: employeeId,
     employeeId,
     password,
   })

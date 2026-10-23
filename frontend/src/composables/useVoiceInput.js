@@ -1,8 +1,8 @@
 import { computed, ref } from 'vue'
-import { transcribeAudio } from '../services/voice.js'
+import { queryAudio } from '../services/voice.js'
 
-// 녹음과 변환 결과는 현재 입력창에만 사용합니다. 페이지를 떠날 때 cancel()을 호출합니다.
-export function useVoiceInput(onTranscript) {
+// 녹음은 저장하지 않으며 페이지를 떠날 때 cancel()을 호출합니다.
+export function useVoiceInput(onAnswer) {
   const phase = ref('idle')
   const seconds = ref(0)
   const error = ref('')
@@ -103,10 +103,10 @@ export function useVoiceInput(onTranscript) {
         }
         controller = new AbortController()
         try {
-          const text = await transcribeAudio(audio, {
+          const answer = await queryAudio(audio, {
             signal: controller.signal,
           })
-          if (token === generation) await onTranscript(text)
+          if (token === generation) await onAnswer(answer)
         } catch (e) {
           if (token === generation) error.value = e.message
         } finally {

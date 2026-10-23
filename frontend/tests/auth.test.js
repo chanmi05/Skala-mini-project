@@ -33,14 +33,31 @@ test('로그인은 사원번호를 문자열로 전송하고 서버에서 받은
   await login('000123', 'test-password')
   assert.equal(calls[0].url, '/api/login')
   assert.equal(calls[0].options.body.get('employeeId'), '000123')
-  assert.equal(calls[0].options.body.has('username'), false)
+  assert.equal(calls[0].options.body.get('username'), '000123')
   assert.equal(calls[0].options.credentials, 'include')
   assert.deepEqual(currentUser.value, user)
 })
 
-test('이름이 누락된 로그인 응답을 사원번호로 대신 표시하지 않는다', async () => {
-  reply({ ok: true, user: { employeeId: '000123' } })
-  await assert.rejects(login('000123', 'test-password'), /로그인 응답/)
+test('명세의 로그인 성공 응답 후 쿠키로 사용자 정보를 조회한다', async () => {
+  globalThis.fetch = async (url, options) => {
+    calls.push({ url, options })
+    return Response.json(
+      url === '/api/login'
+        ? { ok: true, redirect: 'http://localhost:8008/index.html' }
+        : { ok: true, via: 'session', username: '000123' },
+    )
+  }
+  await login('000123', 'test-password')
+  assert.equal(calls[1].url, '/api/auth/check')
+  assert.deepEqual(currentUser.value, { name: '000123', employeeId: '000123' })
+})
+
+test('로그인 성공 이후 인증 확인이 실패하면 로그인으로 표시하지 않는다', async () => {
+  globalThis.fetch = async (url) =>
+    Response.json(url === '/api/login' ? { ok: true } : { ok: false }, {
+      status: url === '/api/login' ? 200 : 401,
+    })
+  await assert.rejects(login('000123', 'password'), /사원번호 또는 비밀번호/)
   assert.equal(currentUser.value, null)
 })
 
@@ -57,6 +74,7 @@ test('회원가입은 이름·사원번호·비밀번호를 서버에 전달한�
   await signup('홍길동', '000123', 'test-password')
   assert.deepEqual(Object.fromEntries(calls[0].options.body), {
     ...user,
+    username: '000123',
     password: 'test-password',
   })
 })

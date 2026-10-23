@@ -1,34 +1,20 @@
 # 휴가 낼게요 · Vue 프런트엔드
 
-Vue 3 + Vite + JavaScript + Vue Router 기반입니다. Vue 단일 파일 컴포넌트와 Composition API의 `<script setup>`을 사용합니다.
+Vue 3 + Vite + JavaScript + Vue Router 기반의 사내 지침 챗봇입니다. API 계약은 [APIS-15_41.md](APIS-15_41.md)를 기준으로 합니다.
 
 ## 화면
 
 | 경로 | 화면 | 기능 |
 | --- | --- | --- |
-| `/` | 사내 지침 챗봇 | 텍스트·음성 질문, 지침별 예시 질문, 현재 대화 초기화 |
-| `/login` | 로그인 | 사원번호·비밀번호 입력, 비밀번호 표시, 인증 요청, 게스트 진입 |
-| `/signup` | 회원가입 | 이름·사원번호·비밀번호 입력, 비밀번호 확인, 가입 후 로그인 안내 |
+| `/` | 사내 지침 챗봇 | 텍스트·음성 질문, 출처·검토 안내, 답변 듣기, 대화 초기화 |
+| `/login` | 로그인 | 사원번호·비밀번호 입력, 쿠키 기반 로그인 |
+| `/signup` | 회원가입 | 이름·사원번호·비밀번호 입력, 가입 후 로그인 안내 |
 
-휴가·근태, 출장·경비, 보안·업무 지침에 대한 질문을 입력할 수 있습니다. **사내 지침 문서 검색과 답변 생성은 아직 연결되지 않았으며**, 현재 답변은 연결 준비 안내만 표시합니다. 실제 회사 규정을 임의로 답하지 않습니다. 일회성 이용을 위해 대화 목록·검색·이전 대화 복원 기능은 제공하지 않습니다. 현재 화면의 질문·답변만 메모리에서 유지하며, **대화 초기화**, 새로고침 또는 페이지 이동 시 사라집니다. 브라우저 저장소나 DB에 대화 내역을 저장하지 않습니다.
+대화는 현재 화면의 메모리에만 유지합니다. 대화 목록·검색·이전 대화 복원은 제공하지 않으며, **대화 초기화**, 새로고침 또는 페이지 이동 시 사라집니다. 초기화와 페이지 이동은 요청·녹음·재생을 중단하고 늦은 응답도 버립니다. 서버 측 데이터 보관 정책은 별도입니다.
 
-## 음성으로 질문하기
+## 실행·검증
 
-1. MariaDB, Java 인증 서버(8080), 기존 음성 서버(8008)를 실행하고 로그인합니다.
-2. 메인 입력창의 **음성 질문**을 눌러 마이크 권한을 허용합니다.
-3. 질문을 말한 뒤 **녹음 종료**를 누릅니다. 녹음은 최대 60초입니다.
-4. 로컬 Whisper 서버가 인식한 질문을 **자동 전송**합니다. 입력창에 작성 중인 텍스트가 있다면 함께 전송됩니다.
-5. 챗봇의 답변을 텍스트로 표시하고 브라우저의 한국어 음성으로 **자동 재생**합니다. 답변 아래에서 **다시 듣기 / 중지**를 사용할 수 있습니다.
-
-녹음 또는 변환 중에는 **취소**할 수 있습니다. **대화 초기화**를 누르거나 페이지를 떠나면 녹음·변환·음성 재생을 중지하고 마이크를 해제합니다. 새로운 음성 질문을 시작할 때도 이전 답변의 재생을 중지합니다.
-
-개발 서버는 `POST /voice-api/stt/`를 기존 서버의 `POST http://localhost:8008/stt/`로 전달합니다. 인증 쿠키와 `audio` 폼 필드를 사용하며, STT는 기존 `faster-whisper` 로컬 모델을 사용합니다. WebM 녹음을 지원하는 브라우저에서 사용해야 하며, 미지원 시 화면에서 안내합니다. 마이크 접근에는 `localhost` 또는 HTTPS가 필요합니다.
-
-음성 출력은 브라우저의 Web Speech API를 사용하며, 한국어 음성 중 기기 내장 음성을 우선 선택합니다. 자동 재생이 차단되면 **다시 듣기**를 안내하며 텍스트 답변은 그대로 유지됩니다. 기기에 한국어 음성이 없거나 음성 합성이 지원되지 않으면 오류를 표시합니다. 현재 사내 지침 답변 생성은 미연결 상태이므로, 연결 준비 안내 답변을 읽습니다. 추후 실제 답변이 연결되면 동일한 답변 텍스트를 읽도록 되어 있습니다.
-
-## 실행
-
-저장소 루트에서 실행합니다. Node.js 22.12 이상을 사용하세요.
+Node.js 22.12 이상을 사용합니다. 저장소 루트에서 다음을 실행하세요.
 
 ```bash
 cd frontend
@@ -36,52 +22,67 @@ npm install
 npm run dev
 ```
 
-접속 주소: http://localhost:5173
-
-5173 포트를 이미 사용 중이면 서버가 오류로 종료됩니다. 다른 포트를 쓰려면 `npm run dev -- --port 5175`로 실행합니다.
-
-## 빌드
+접속 주소는 http://localhost:5173 입니다. 포트 사용 중이면 오류로 종료됩니다. 다른 포트는 `npm run dev -- --port 5175`로 지정합니다. 실제 API 사용에는 MariaDB, Java 인증 서버(8080), 음성·답변 서버(8008)가 필요합니다. 서버 실행은 [RUN.md](../RUN.md)를 참고하세요.
 
 ```bash
+npm test
 npm run build
 npm run preview
 ```
 
-빌드 결과는 `dist/`에 생성됩니다. 미리보기 주소는 실행 시 터미널에 표시됩니다.
+빌드 결과는 `dist/`에 생성됩니다. 테스트는 실제 마이크나 모델 API를 호출하지 않고 요청 형식, 응답 처리, 오류, 중복 전송 방지, 취소 및 재생 상태를 검증합니다.
+
+## API 연결
+
+| 기능 | 프런트엔드 요청 | 서버 |
+| --- | --- | --- |
+| 로그인·가입·인증 확인·로그아웃 | `/api/*` | 8080, 경로 유지 |
+| 텍스트 질문 | `POST http://localhost:8008/voice-query-text` | 8008 직접 요청 |
+| 음성 질문 | `POST http://localhost:8008/voice-query` | 8008 직접 요청 |
+| 서버 음성 재생 | `http://localhost:8008/voice-audio/*` | 8008 직접 요청 |
+
+위 주소는 개발 환경 기본값입니다. `voice.js`의 `VOICE_API_BASE_URL`로 음성·답변 요청 주소를 통일하며, `VITE_VOICE_API_BASE_URL`로 변경할 수 있습니다. 8008 서버 CORS에는 `http://localhost:5173`과 `http://127.0.0.1:5173`을 허용합니다. 인증 쿠키가 공유되도록 로그인과 메인은 모두 `localhost`로 접속하세요.
+
+모든 API 요청은 `credentials: include`로 서버 쿠키를 사용합니다. 비밀번호와 토큰을 브라우저 저장소에 저장하지 않습니다. 로그인 성공 시 서버의 기존 8008 리다이렉트 주소 대신 Vue 메인(`/`)으로 이동합니다.
+
+### 인증 호환성
+
+명세의 필수 필드 `username`, `password`에 사원번호와 비밀번호를 폼 데이터로 전달합니다. 현재 Java 코드는 `employeeId`를 사용하므로 같은 사원번호를 두 필드로 보내고, 회원가입에는 기존 `name`도 함께 보냅니다. 사원번호는 앞자리 `0`을 보존하는 문자열입니다.
+
+현재 Java 응답의 `user: { name, employeeId }`가 있으면 이름을 표시합니다. 명세처럼 로그인 응답에 사용자 정보가 없으면 `/api/auth/check`로 조회하며, `username`만 있으면 사원번호를 표시합니다. 명세에는 이름 저장·조회 필드가 없으므로 해당 서버에서 실제 이름을 표시하려면 백엔드 확장이 필요합니다.
+
+### 질문·음성 답변
+
+텍스트 질문은 `{"question":"질문"}` JSON으로 전송합니다. 질문은 1~2,000자이며 응답 대기 중 중복 전송을 막습니다. `VoiceAnswer`의 `answer`, `sources`, `needs_review`, `handoff`, `warning`을 표시하며, `mode`가 `demo` 또는 `mock`이면 데모·연결 테스트임을 표시합니다. 서버 실패 시 가짜 답변을 추가하지 않고 입력창에 질문을 복원합니다.
+
+음성 질문은 입력창을 비운 뒤 **음성 질문 → 녹음 종료**로 전송합니다. 최대 60초·10MB의 WebM을 `audio` 파일로 보내고, 서버가 반환한 `transcript`와 답변을 표시합니다. `/voice-query`가 인식·검색·음성 합성을 처리하므로 별도의 `/voice-transcribe` 수정 확인 단계는 호출하지 않습니다. 입력 중인 텍스트와 녹음은 각각 별개의 질문으로 전송합니다.
+
+음성 질문의 답변은 `audio_url`을 자동 재생합니다. 텍스트 질문의 음성은 **다시 듣기**를 눌러 재생합니다. 상대 음성 주소와 기존 프록시 주소도 같은 음성 API 기본 주소로 변환합니다. 오디오 요소의 `crossOrigin`은 `use-credentials`로 설정해 인증 쿠키를 전달합니다. 오디오가 없으면 브라우저 Web Speech API의 한국어 음성을 사용합니다. 자동 재생 차단·재생 실패·기간 만료 시 오류를 안내하고 텍스트는 유지합니다.
+
+401은 재로그인, 422는 입력 확인을 안내하며 서버의 문자열 `detail`도 표시합니다. 녹음·처리 중 취소할 수 있습니다. WebM 녹음 지원 브라우저와 `localhost` 또는 HTTPS, 마이크 권한이 필요합니다.
+
+### 503 오류와 실제 RAG 연결 시 확인 사항
+
+기존 개발 프록시에서도 브라우저에는 5173 주소가 표시되지만 실제 요청은 8008로 전달됩니다. 503이 발생하면 포트 표시만으로 오배선을 판단하지 말고 응답 JSON의 `detail`을 확인하세요. 직접 호출로 바꿔도 RAG 서비스가 중단되었거나 응답 계약이 맞지 않으면 503이 계속 발생할 수 있습니다.
+
+현재 `voice-ai_code/app/services/voice_pipeline.py`는 8001 RAG 응답에 `answer`, `sources`, `needs_review`, `handoff`를 요구하지만, 명세의 `/rag-query`는 `{prompt, response}` 형식입니다. 실제 `live` 연동은 백엔드에서 이 계약을 맞춰야 합니다. 프런트엔드는 8008의 `VoiceAnswer`를 사용하며 이 불일치가 발생하면 서버 오류를 표시합니다.
+
+### 배포
+
+빌드 환경은 `VITE_VOICE_API_BASE_URL`을 지정하지 않으면 `/voice-api`를 기본값으로 사용합니다. Vite `server.proxy`는 개발 전용이므로 `npm run preview`나 배포 환경에서는 웹 서버가 `/api/*`를 8080으로, `/voice-api/*`는 접두사를 제거해 8008로 전달해야 합니다. 배포 시 음성 API를 직접 호출하려면 `VITE_VOICE_API_BASE_URL`에 서버 주소를 지정하고 해당 프런트엔드 출처의 CORS를 허용해야 합니다. `/login`·`/signup` 직접 접근은 `index.html`로 연결합니다. 인증 쿠키가 전달되도록 같은 출처를 유지하세요.
+
+필요한 프런트엔드 환경변수는 `.env.local`의 `VITE_` 접두사로 지정합니다. 이 값은 브라우저에 노출되므로 API 비밀키를 넣지 않습니다. 개발 환경의 음성 API 주소 예시는 [.env.example](.env.example)에 있습니다. 주소를 변경하면 Vite를 재시작하세요. 프런트엔드 비밀키는 필요하지 않습니다.
 
 ## 주요 파일
 
-- `src/main.js`: Vue 앱 진입점
-- `src/App.vue`: 라우트 화면 표시
-- `src/router/index.js`: 세 페이지 라우팅
-- `src/config/project.js`: 화면에 표시할 프로젝트명 (`휴가 낼게요`)
-- `src/views/`: 로그인·회원가입·채팅 화면
-- `src/components/`: 공통 인증 레이아웃, 로고, 아이콘
-- `src/services/auth.js`: 쿠키 기반 인증 API 호출
-- `src/services/voice.js`: 음성 파일을 기존 STT API에 전송
-- `src/composables/useVoiceInput.js`: 녹음·변환·취소 및 마이크 해제
-- `src/composables/useSpeechOutput.js`: 한국어 음성 답변 재생·중지·오류 처리
-- `tests/speech-output.test.js`: 음성 출력 상태 및 자동 재생 차단 처리 검증 (`npm test`)
-- `tests/voice-input.test.js`: 실제 마이크나 서버 없이 음성 처리 흐름 검증 (`npm test`)
-- `tests/auth.test.js`: 사원번호 로그인·가입·이름 복원 검증 (`npm test`)
-- `src/style.css`: 전역 스타일
-- `vite.config.js`: 개발 서버 및 `@` → `src/` 경로 별칭
-- `jsconfig.json`: IDE 경로 별칭 설정
+- `src/services/auth.js`: 인증 API·사용자 상태
+- `src/services/voice.js`: 질의 API·응답 검증·공통 API 주소
+- `src/composables/useChat.js`: 일회성 대화·요청 대기·취소
+- `src/composables/useVoiceInput.js`: 녹음·업로드·마이크 해제
+- `src/composables/useSpeechOutput.js`: 서버 오디오·브라우저 음성 재생
+- `src/views/`: 세 페이지, `src/components/`: 공통 인증 레이아웃·브랜드·아이콘
+- `src/config/project.js`: 서비스명, `src/router/index.js`: 라우팅
+- `tests/`: 인증·질의·녹음·재생 테스트
+- `vite.config.js`: 개발 프록시, `@` 경로 별칭
 
-VS Code에서는 **Vue - Official** 확장을 사용하면 `.vue` 파일 자동 완성을 지원합니다.
-
-## 환경변수와 백엔드
-
-프런트엔드 환경변수가 필요하면 이 디렉터리에 `.env.local`을 만드세요. Vite는 `VITE_` 접두사가 붙은 값을 `import.meta.env.VITE_변수명`으로 제공합니다. 이 값은 브라우저에 노출되므로 API 비밀키를 넣으면 안 됩니다.
-
-개발 서버는 `/api` 요청을 `http://localhost:8080`의 Java 인증 서버로 프록시합니다. `POST /api/login`, `POST /api/signup`, `GET /api/auth/check`, `POST /api/logout`을 사용합니다. 인증 정보는 서버가 발급한 쿠키로 관리하며 프런트엔드 저장소에 비밀번호나 토큰을 저장하지 않습니다. 로그인 성공 시 기존 8008 화면 대신 Vue 메인(`/`)으로 이동합니다.
-
-회원가입은 `name`, `employeeId`, `password`를, 로그인은 `employeeId`, `password`를 폼 데이터로 전달합니다. 사원번호는 앞자리 `0`을 유지하는 문자열입니다. 로그인 및 인증 확인 응답의 `user: { name, employeeId }`를 사용해 헤더와 프로필에 `이름님.`을 표시합니다. 서버가 반환한 이름을 사용하므로 새로고침과 JWT 인증 이후에도 이름을 유지합니다.
-
-Java 인증 서버는 시작할 때 기존 `users` 테이블에 `name` 컬럼을 자동으로 추가합니다. 기존 DB 컬럼 `username`은 데이터를 보존하기 위해 사원번호 저장용으로 유지합니다. 이름이 없는 이전 계정은 등록된 식별자가 대신 표시되므로, 실제 이름 표시는 새 가입 또는 DB에 이름을 등록한 계정부터 적용됩니다. 계정 삭제나 DB 볼륨 초기화는 필요하지 않습니다.
-
-실제 가입·로그인은 MariaDB와 Java 인증 서버를 먼저 실행해야 합니다. 인증 서버가 꺼져 있어도 세 화면은 열 수 있고, 폼 제출 시 오류를 안내합니다. 기존 서버 실행 방법은 [RUN.md](../RUN.md)를 참고하세요.
-
-`server.proxy`는 개발 전용입니다. `npm run preview` 또는 배포 환경에서 인증·음성을 사용하려면 웹 서버에서 `/api`를 Java 인증 서버로, `/voice-api/*`는 접두사를 제거해 음성 서버로 전달하고, `/login`·`/signup` 직접 접근은 `index.html`로 연결하도록 설정해야 합니다.
-
-공식 문서: [Vue](https://vuejs.org/guide/quick-start.html), [Vite](https://vite.dev/guide/).
+VS Code는 Vue - Official 확장을 권장합니다. 공식 문서: [Vue](https://vuejs.org/guide/quick-start.html), [Vite](https://vite.dev/guide/).
