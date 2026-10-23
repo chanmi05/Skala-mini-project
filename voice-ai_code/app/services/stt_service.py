@@ -10,6 +10,19 @@ DEVICE = "cpu"
 #    On CPU, int8 provides better speed/memory stability.
 MODEL_NAME = os.getenv("WHISPER_MODEL", "small")
 model = WhisperModel(MODEL_NAME, device=DEVICE, compute_type="int8")
+DEFAULT_INITIAL_PROMPT = (
+    "사내 인사와 근태 규정에 관한 한국어 질문. "
+    "연차, 육아휴직, 출산전후휴가, 배우자 출산휴가, 경조휴가, "
+    "취업규칙, 복리후생, 연장근로, 가산수당, 휴가 신청 서류."
+)
+
+def recognition_settings() -> dict:
+    """Expose the settings actually used by this process, without audio or secrets."""
+    return {
+        "model": MODEL_NAME,
+        "language": os.getenv("WHISPER_LANGUAGE", "ko") or "auto",
+        "vocabulary_hint": bool(os.getenv("WHISPER_INITIAL_PROMPT", DEFAULT_INITIAL_PROMPT)),
+    }
 
 
 def convert_webm_to_wav(webm_path: str, wav_path: str) -> None:
@@ -51,7 +64,12 @@ def transcribe_audio_file_local(file_path: str) -> str:
     # faster-whisper returns a segments generator.
     segments, info = model.transcribe(
         file_path,
+        language=os.getenv("WHISPER_LANGUAGE", "ko") or None,
+        task="transcribe",
         beam_size=5,
+        temperature=0.0,
+        condition_on_previous_text=False,
+        initial_prompt=os.getenv("WHISPER_INITIAL_PROMPT", DEFAULT_INITIAL_PROMPT) or None,
         vad_filter=True,     # Remove silence (generally improves quality/speed)
     )
 
