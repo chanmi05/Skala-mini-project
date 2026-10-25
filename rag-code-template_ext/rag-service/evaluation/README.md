@@ -136,3 +136,16 @@ RAG 모듈·질문·모델·인덱스·컨텍스트 예산은 동일하게 유�
 사용 토큰·컨텍스트 개수와 질문별 검색 성공을 비교한다. 기존 출력 폴더는 덮어쓰지 않는다.
 답변 정확도는 검색률에서 추정하거나 서로 다른 리뷰 집계로 비교하지 않는다.
 k=5는 과거 실행 결과여서 지연·캐시·공급자 변동을 통제한 성능 실험은 아니다.
+
+
+## 인사규정 세션·업로드 실제 평가 (2026-10-25)
+
+기존 논문 질문·결과는 보존한다. 현재 기본 PDF 인덱스는 인사규정 115개이므로 논문용 questions.jsonl을 그대로 실행하지 않는다. 소규모 규정 평가는 다음 명령을 사용한다. 실제 OpenAI 호출과 사용량이 발생한다.
+
+```powershell
+# rag-code-template_ext에서, Python 3.11 이상 환경
+python -B rag-service/evaluation/run_hr_session_evaluation.py --trust-local-index
+python -B rag-service/evaluation/run_hr_api_smoke.py --trust-local-index
+```
+
+각 명령은 새 결과 폴더를 만들며 원본 인덱스를 보존한다. API 업로드는 별도 임시 인덱스에서만 수행한다. 실패한 개발 실행도 결과 폴더에 남아 있으며 최종 실행은 [연결 결과 문서](../../../rag-docs/HR_RAG_INTEGRATION_RESULT.md)에 지정했다.

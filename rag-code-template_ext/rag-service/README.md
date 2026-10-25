@@ -1,6 +1,8 @@
 # 독립 RAG 서비스 모듈
 
-기존 `soobin_rag` 폴더의 현재 이름은 `rag-service`다. State·세션 기억·증분 요약 연결은 구현했으며, 기존 FastAPI 서버와의 연결은 아직 구현하지 않았다. [세션 RAG 사용법](../../rag-docs/SESSION_RAG_WORKFLOW_USAGE.md)을 참고한다.
+기존 `soobin_rag` 폴더의 현재 이름은 `rag-service`다. State·세션 기억·증분 요약과 기존 FastAPI 진입점의 연결을 구현했다.
+- [RAG 설계·전략 및 LangChain/LangGraph·Python 모듈 상세 설명 (`ARCHITECTURE.md`)](ARCHITECTURE.md)
+- [현재 API 실행·화면 연결](../../rag-docs/HR_RAG_API_USAGE.md) 및 [세션 RAG 사용법](../../rag-docs/SESSION_RAG_WORKFLOW_USAGE.md)을 참고한다.
 
 [환경 설정을 포함한 서비스 디렉터리 구조](../프로젝트%20구조.md)
 

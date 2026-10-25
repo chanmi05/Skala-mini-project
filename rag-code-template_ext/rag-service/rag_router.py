@@ -2,7 +2,7 @@
 
 사용: service = RagService(vectorstore, llm)
       result = await service.ainvoke({"question": "...", "history": []})
-기존 FastAPI 서버는 이 모듈에 아직 연결하지 않았다.
+FastAPI 서버 진입점(rag_external-web_pdf_closed_llm.py)은 RagRuntime을 통해 이 모듈을 호출한다.
 """
 
 import asyncio
@@ -52,7 +52,7 @@ def _failure_reason(exc):
             return "session_storage_error"
         if isinstance(current, BudgetExceeded):
             return "budget_exhausted"
-        if isinstance(current, DecisionError):
+        if isinstance(current, (DecisionError, ValidationError)):
             return "invalid_model_decision"
         current = current.__cause__
     if isinstance(exc, TimeoutError):
@@ -79,7 +79,7 @@ SESSION_ROUTE_PROMPT = ChatPromptTemplate.from_messages([
 class RagService:
     """컴파일된 체인·그래프만 재사용하고 상태·예산은 매 호출 새로 생성한다."""
     def __init__(self, vectorstore, llm, *, settings=None, supported_scope="", count_tokens=None,
-                 session_store=None):
+                 session_store=None, session_coordinator=None):
         self.settings = settings or RagSettings()
         if not isinstance(self.settings, RagSettings):
             raise ValueError("settings must be RagSettings")
@@ -89,10 +89,12 @@ class RagService:
         self.llm = llm
         self.count_tokens = count_tokens
         self.session_store = session_store
-        self.sessions = SessionCoordinator(session_store, llm, self.settings) if session_store is not None else None
+        if session_coordinator is not None and session_coordinator.store is not session_store:
+            raise ValueError("Session coordinator must use the same store")
+        self.sessions = (session_coordinator or SessionCoordinator(session_store, llm, self.settings)) if session_store is not None else None
         self.graph = compile_document_graph(vectorstore, llm, self.settings, session_store=session_store)
         schema = InputDecision if self.sessions is not None else RouteDecision
-        self.route_model = llm.with_structured_output(schema, include_raw=True)
+        self.route_model = llm.with_structured_output(schema, include_raw=True, strict=True)
 
         # LCEL: 입력 분석 → RunnableBranch → 문서 경로에서는 LangGraph 실행.
         self.chain = RunnableLambda(self._classify) | RunnableBranch(
@@ -219,6 +221,7 @@ class RagService:
                         context = await self._store_call(self.session_store.get_context, session_id)
                         state["memory"] = {**state["memory"], "session_version": context.version,
                             "recent_history": list(context.recent_turns),
+                            "summary_available": context.summary_available,
                             "summary_is_current": context.summary_is_current}
                         summary_current = context.summary_is_current
                         previous = await self._store_call(self.session_store.get_turn_by_request, session_id, request_id)

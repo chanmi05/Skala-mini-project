@@ -40,7 +40,8 @@
     .progress{height:6px;background:#0e141b;border:1px solid var(--line);border-radius:999px;overflow:hidden}
     .bar{height:100%;background:linear-gradient(90deg,#22c1c3,#3a7bd5);width:0%}
     footer{color:var(--muted);font-size:12px;padding:24px 0 40px}
-  </style>
+    .answer-text { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; }
+</style>
 </head>
 <body>
 <header>
@@ -62,28 +63,11 @@
         </div>
         <button class="btn secondary" @click="toggleDebug">{{ debug ? '디버그 숨기기' : '디버그 표시' }}</button>
       </div>
-      <p class="desc">이 콘솔은 `POST /upload-topic`, `POST /upload-paper`, `POST /rag-query` 를 호출합니다. 프론트가 http로 열리고, 백엔드 CORS가 허용되어 있어야 합니다.</p>
-    </section>
-
-    <!-- 1. 업로드: Topic -->
-    <section class="panel col-6">
-      <h2>웹 주제 업로드 <span class="tag">POST /upload-topic</span></h2>
-      <p class="desc">주제를 입력하면 백엔드가 웹 검색→임베딩→벡터DB 저장을 수행합니다.</p>
-      <div class="row">
-        <div style="flex:1">
-          <label>topic</label>
-          <input type="text" v-model="topic.text" placeholder="예) Retrieval-Augmented Generation 활용사례" />
-        </div>
-      </div>
-      <div class="row">
-        <button class="btn" @click="postUploadTopic" :disabled="loading.topic">업로드 실행</button>
-      </div>
-      <div class="progress" v-if="loading.topic"><div class="bar" :style="{width:'85%'}"></div></div>
-      <pre class="code" v-if="topic.result">{{ pretty(topic.result) }}</pre>
+      <p class="desc">이 콘솔은 `POST /upload-paper`, `POST /rag-query` 를 호출합니다. 프론트가 http로 열리고, 백엔드 CORS가 허용되어 있어야 합니다.</p>
     </section>
 
     <!-- 2. 업로드: PDF -->
-    <section class="panel col-6">
+    <section class="panel col-12">
       <h2>PDF 업로드 <span class="tag">POST /upload-paper</span></h2>
       <p class="desc">선택한 PDF 파일을 서버로 업로드하면 임베딩되어 벡터DB에 저장됩니다.</p>
       <div class="row">
@@ -104,6 +88,7 @@
     <!-- 3. RAG Query -->
     <section class="panel col-12">
       <h2>질의/응답 <span class="tag">POST /rag-query</span></h2>
+          <button class="btn" @click="newConversation" :disabled="loading.query">새 대화</button>
       <p class="desc">선택한 소스(pdf|web)의 벡터DB에서 관련 문서를 검색하고, 프롬프트에 대한 응답을 생성합니다.</p>
       <div class="row">
         <div style="flex:1">
@@ -131,17 +116,17 @@
 
       <div v-if="rq.result">
         <div class="pill">Latency: {{ rq.result.__latency_ms || '—' }} ms</div>
-        <div class="pill">Hit count: {{ (rq.result.hits||[]).length }}</div>
+        <div class="pill">Hit count: {{ rq.result.retrieved_count ?? (rq.result.hits || []).length }}</div>
         <hr class="sep"/>
-        <div class="muted">Answer</div>
-        <pre class="code">{{ rq.result.answer || rq.result.output || pretty(rq.result) }}</pre>
-        <div class="muted" v-if="rq.result.hits && rq.result.hits.length">Top Docs</div>
-        <pre class="code" v-if="rq.result.hits && rq.result.hits.length">{{ pretty(rq.result.hits) }}</pre>
+        <div class="muted">Answer</div><p class="muted" v-if="rq.result.warning">{{ rq.result.warning }}</p>
+        <pre class="code answer-text">{{ rq.result.answer || rq.result.output || pretty(rq.result) }}</pre>
+        <div class="muted" v-if="(rq.result.sources || rq.result.hits || []).length">출처 문서·조항·페이지</div>
+        <pre class="code" v-if="(rq.result.sources || rq.result.hits || []).length">{{ pretty(rq.result.sources || rq.result.hits) }}</pre>
       </div>
     </section>
 
     <footer class="col-12">
-      © RAG Console • minimal & clean • Works with /upload-topic, /upload-paper, /rag-query
+      © RAG Console • minimal & clean • Works with  /upload-paper, /rag-query
     </footer>
 
   </div>
@@ -181,10 +166,7 @@ window.addEventListener('DOMContentLoaded', () => {
   createApp({
     data(){
       const saved = localStorage.getItem('closed_rag_base_url');
-      const guess = (saved ? saved :
-        (location.origin === 'null' || location.protocol === 'file:') ? 'http://localhost:8001'
-          : (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 'http://localhost:8001'
-          : location.origin);
+      const guess = location.port === '8001' ? location.origin : (saved || (location.hostname === '127.0.0.1' ? 'http://127.0.0.1:8001' : 'http://localhost:8001'));
       return {
         baseUrl: normalizeBaseUrl(guess),
         debug: false,
@@ -210,7 +192,7 @@ window.addEventListener('DOMContentLoaded', () => {
       async _postJson(path, body){
         const url = this.baseUrl.replace(/\/+$/,'') + path;
         const t0 = performance.now();
-        const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+        const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body:JSON.stringify(body) });
         const latency = Math.round(performance.now() - t0);
         if(!res.ok){
           const msg = await res.text().catch(()=>res.statusText);
@@ -271,9 +253,16 @@ window.addEventListener('DOMContentLoaded', () => {
           const data = await this._postForm('/upload-paper', fd);
           this.paperProgress = 100;
           this.pdf.result = data;
+          await this.newConversation();
         }catch(e){
           this.pdf.result = { error: e.message, file: this.pdf.file?.name };
         }finally{ setTimeout(()=>{ this.loading.paper = false; this.paperProgress = 0; }, 600); }
+      },
+
+      async newConversation(){
+        const sid = this.rq.session_id;
+        this.rq.session_id = null; this.rq.request_id = null; this.rq.last_prompt = null; this.rq.result = null;
+        if (sid) await fetch(`${this.baseUrl.replace(/\/+$/, '')}/sessions/${sid}`, {method:'DELETE', credentials:'include'});
       },
 
       async postRagQuery(){
@@ -285,7 +274,18 @@ window.addEventListener('DOMContentLoaded', () => {
         };
         try{
           if(!payload.prompt) throw new Error('prompt를 입력하세요.');
+          if (!this.rq.session_id || this.rq.session_source !== payload.source) {
+            const created = await this._postJson('/sessions', { source: payload.source });
+            this.rq.session_id = created.session_id;
+            this.rq.session_source = payload.source;
+          }
+          payload.session_id = this.rq.session_id;
+          if (this.rq.last_prompt !== payload.prompt) this.rq.request_id = crypto.randomUUID();
+          payload.request_id = this.rq.request_id || crypto.randomUUID();
+          this.rq.last_prompt = payload.prompt;
           const data = await this._postJson('/rag-query', payload);
+          this.rq.request_id = null;
+          this.rq.last_prompt = null;
           this.rq.result = data;
         }catch(e){
           this.rq.result = { error: e.message, payload };
@@ -303,5 +303,5 @@ window.addEventListener('DOMContentLoaded', () => {
 #### 실습 코드는 학습 목적으로만 사용 바랍니다. audit@korea.ac.kr 임성열 Ph.D.
 python -m http.server 5174
 # → http://localhost:5174/external_index.html 접속
---> 
+-->
 </html>

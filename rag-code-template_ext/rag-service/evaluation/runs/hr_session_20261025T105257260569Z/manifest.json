@@ -1,0 +1,39 @@
+{
+  "started_at_utc": "2026-10-25T10:52:57.692523+00:00",
+  "model": "gpt-4o",
+  "embedding_model": "text-embedding-ada-002",
+  "index_sha256": {
+    "index.faiss": "fa95d63f7d0171b072cb3ea7b0a656a70be18e3de0b8f49af85f8d294444fff0",
+    "index.pkl": "303b80eddcfa230f4d3a16d67fe67d95bbfd241e6bca75d567da3ce5d1ff027b"
+  },
+  "settings": {
+    "top_k": 5,
+    "max_retries": 1,
+    "max_input_tokens": 6000,
+    "max_total_input_tokens": 24000,
+    "max_model_calls": 8,
+    "timeout_seconds": 60,
+    "max_history_messages": 10,
+    "summary_max_chars": 2000
+  },
+  "module_sha256": {
+    "rag_agent.py": "b952b5c6e866237a737943c3609af6d61ee13495e6d1a683cef913e4e4f255c0",
+    "rag_state.py": "c0c78d8b0942bb31bb94ae98c79844a18e283f80dca135f3bc6bcde0af930be2",
+    "rag_router.py": "526a8e006681d81d9621a59d5fd9e8b4a9c030464c8ba5d21ceb8776a0de83af",
+    "rag_workflow.py": "2bec27ba6d576fbd8b8c9d22111ec63b710b6b8b7f65e613d3e15d21115db6ef",
+    "rag_session.py": "668b5242ea0661cb598e036ad9b0f24b95a53b40d5a98306cbe5a173ed52b449",
+    "session_memory.py": "58041b76dfbcbe859cf7a3cc4a789cd7fbe232538c0b7f5adde57e68cccb17ce"
+  },
+  "limitations": [
+    "Small provided-draft HR sample, not a legal determination.",
+    "Lexical expected-value/source checks are not independent factual-accuracy grading.",
+    "Model memory and summary quality require review against the supplied documents."
+  ],
+  "finished_at_utc": "2026-10-25T10:53:33.636188+00:00",
+  "index_unchanged": true,
+  "completed_cases": 9,
+  "summary_until_turn_id": 4,
+  "status_matches": 9,
+  "model_calls": 34,
+  "input_tokens_reported": 41889
+}

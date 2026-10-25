@@ -32,7 +32,7 @@ class SessionCoordinator:
     def __init__(self, store, llm, settings):
         self.store = store
         self.settings = settings
-        self.summarizer = llm.with_structured_output(SummaryDecision, include_raw=True)
+        self.summarizer = llm.with_structured_output(SummaryDecision, include_raw=True, strict=True)
         self._locks = {}
 
     @asynccontextmanager

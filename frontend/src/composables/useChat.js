@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { MAX_QUESTION_LENGTH, queryText } from '../services/voice.js'
+import { MAX_QUESTION_LENGTH, queryText, endRagSession } from '../services/voice.js'
 
 export function useChat(onAnswer = () => {}) {
   const messages = ref([])
@@ -7,8 +7,15 @@ export function useChat(onAnswer = () => {}) {
   const error = ref('')
   let controller = null
   let generation = 0
+  let sessionId = null
+  let retry = null
+
+  function requestContext() {
+    return { sessionId, requestId: crypto.randomUUID() }
+  }
 
   function appendAnswer(result) {
+    if (result.session_id) sessionId = result.session_id
     const message = {
       id: crypto.randomUUID(),
       role: 'assistant',
@@ -38,13 +45,20 @@ export function useChat(onAnswer = () => {}) {
     pending.value = true
     messages.value.push({ id: crypto.randomUUID(), role: 'user', content })
     try {
-      const result = await queryText(content, { signal: controller.signal })
+      const requestId = retry?.question === content ? retry.requestId : crypto.randomUUID()
+      retry = { question: content, requestId }
+      const result = await queryText(content, { signal: controller.signal, sessionId, requestId })
       if (token !== generation) return null
       const answer = appendAnswer(result)
+      retry = null
       onAnswer(answer, false)
       return true
     } catch (e) {
       if (token !== generation) return null
+      if ([404, 409, 410].includes(e.status)) {
+        sessionId = null
+        retry = null
+      }
       error.value = e.message
       return false
     } finally {
@@ -67,6 +81,10 @@ export function useChat(onAnswer = () => {}) {
   }
 
   function reset() {
+    const previous = sessionId
+    sessionId = null
+    retry = null
+    if (previous) endRagSession(previous).catch(() => {})
     generation += 1
     controller?.abort()
     controller = null
@@ -75,5 +93,5 @@ export function useChat(onAnswer = () => {}) {
     error.value = ''
   }
 
-  return { messages, pending, error, send, receiveVoiceAnswer, reset }
+  return { messages, pending, error, send, receiveVoiceAnswer, reset, requestContext }
 }

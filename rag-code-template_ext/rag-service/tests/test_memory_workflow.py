@@ -26,12 +26,12 @@ def lookup():
 
 
 class MemoryModel(FakeModel):
-    def with_structured_output(self, schema, include_raw):
-        if schema.__name__ not in {"InputDecision", "MemoryDecision", "SummaryDecision"}:
+    def with_structured_output(self, schema, include_raw, **kwargs):
+        if schema.__name__ not in {"InputDecision", "MemoryDecisionOutput", "SummaryDecision"}:
             return super().with_structured_output(schema, include_raw)
 
         async def call(messages):
-            name = schema.__name__
+            name = "MemoryDecision" if schema.__name__ == "MemoryDecisionOutput" else schema.__name__
             self.calls.append(name)
             self.inputs.append(messages)
             queued = self.decisions.get(name)
@@ -43,6 +43,10 @@ class MemoryModel(FakeModel):
                           "SummaryDecision": {"summary": "사용자 선택은 육아휴직 (turn_id=1)."}}[name]
             if isinstance(result, Exception):
                 raise result
+            if name == "MemoryDecision":
+                result = {"decision": {key: value for key, value in result.items() if key != "reason_code"}}
+            elif name == "InputDecision":
+                result = {key: value for key, value in result.items() if key != "reason_code"}
             return {"parsed": result, "parsing_error": None, "raw": SimpleNamespace(usage_metadata={})}
         return RunnableLambda(call)
 
@@ -372,12 +376,12 @@ class MemoryWorkflowTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_summary_timeout_preserves_already_committed_output(self):
         class SlowSummaryModel(MemoryModel):
-            def with_structured_output(self, schema, include_raw):
+            def with_structured_output(self, schema, include_raw, **kwargs):
                 if schema.__name__ == "SummaryDecision":
                     async def wait(messages):
                         await asyncio.Event().wait()
                     return RunnableLambda(wait)
-                return super().with_structured_output(schema, include_raw)
+                return super().with_structured_output(schema, include_raw, **kwargs)
         store = CountingStore()
         sid = await seed(store, 5)
         service = RagService(FakeStore(), SlowSummaryModel(), session_store=store,

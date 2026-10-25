@@ -2,7 +2,7 @@
 
 작성일: 2026-10-25 (Asia/Seoul)
 
-문서의 다섯 묶음 State를 코드에 반영하고 SessionStore·최근 대화 해석·조건부 요약 조회·증분 요약을 연결했다. 기존 FastAPI와 화면에는 아직 연결하지 않았다.
+문서의 다섯 묶음 State를 코드에 반영하고 SessionStore·최근 대화 해석·조건부 요약 조회·증분 요약을 연결했다. 현재 FastAPI·음성 프록시·콘솔·Vue 세션 흐름에 연결했다. [HTTP API 계약](HR_RAG_API_USAGE.md)을 참고한다.
 
 ## 호출
 
@@ -83,4 +83,7 @@ await sessions.end_session(session.session_id)
 
 기존 회귀 테스트와 실제 LangChain/LangGraph·메모리 저장소에 모의 모델을 연결한 통합 테스트로 검증한다. 실행은 `rag-code-template_ext`에서 `python -B -m unittest discover -s rag-service/tests`다.
 
-실제 외부 모델의 분류·문맥 복원·정정·요약 정확도와 지연은 아직 재평가하지 않았다. 다음 단계는 실제 다중 턴 평가, 도메인 session_facts 계약, API/화면의 인증·세션 생성/종료·output 전환 연결이다. 메모리 저장소는 프로세스 재시작 시 사라지며 다중 워커 공유가 필요하면 별도 저장소와 분산 실행 제어가 필요하다.
+실제 외부 모델의 분류·문맥 복원·정정·요약 정확도와 지연은 아직 재평가하지 않았다. 다음 단계는 실제 다중 턴 평가, 도메인 session_facts 계약, 독립된 추가 평가 세트·도메인 session_facts·배포용 직접 접근 인증이다. HTTP 세션 생성/종료·output 호환 연결은 완료했다. 메모리 저장소는 프로세스 재시작 시 사라지며 다중 워커 공유가 필요하면 별도 저장소와 분산 실행 제어가 필요하다.
+
+
+2026-10-25 실호출 보완: 모델 출력은 MemoryDecisionOutput의 분기별 중첩 union으로 받고 strict schema를 사용한 뒤 기존 MemoryDecision 계약으로 검증한다. State에는 summary_available도 전달한다. 동일 SessionCoordinator를 top_k별 서비스가 공유한다. 상세 결과는 [단계별 연결 결과](HR_RAG_INTEGRATION_RESULT.md)를 참고한다.

@@ -43,7 +43,7 @@ class FakeModel:
     def get_num_tokens_from_messages(self, messages):
         return sum(len(m.content) for m in messages)
 
-    def with_structured_output(self, schema, include_raw):
+    def with_structured_output(self, schema, include_raw, **kwargs):
         async def call(messages):
             name = schema.__name__
             self.calls.append(name)
@@ -81,6 +81,13 @@ class WorkflowTests(unittest.IsolatedAsyncioTestCase):
                 await service.ainvoke(data)
         self.assertEqual(model.calls, [])
         self.assertEqual(store.calls, [])
+
+    async def test_empty_model_explanation_does_not_reject_valid_business_decision(self):
+        model = FakeModel({"RouteDecision": [{"intent": "document_question", "standalone_question": "q", "reason_code": ""}],
+                           "EvidenceDecision": [{"decision": "sufficient", "supported_source_ids": ["S1"], "reason_code": ""}]})
+        result = await RagService(FakeStore(), model).ainvoke({"question": "q"})
+        self.assertEqual(result["status"], "answered")
+        self.assertEqual(result["reason_code"], "evidence_sufficient")
 
     async def test_greeting_does_not_search_or_call_model(self):
         model, store = FakeModel(), FakeStore()

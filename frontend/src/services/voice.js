@@ -72,7 +72,10 @@ export function queryText(question, options = {}) {
       new VoiceApiError('질문은 1~2,000자로 입력해 주세요.'),
     )
   }
-  return request('/voice-query-text', { question }, { ...options, json: true })
+  const body = { question }
+  if (options.sessionId) body.session_id = options.sessionId
+  if (options.requestId) body.request_id = options.requestId
+  return request('/voice-query-text', body, { ...options, json: true })
 }
 
 export function queryAudio(audio, options = {}) {
@@ -85,6 +88,8 @@ export function queryAudio(audio, options = {}) {
   }
   const body = new FormData()
   body.append('audio', audio, `recording-${crypto.randomUUID()}.webm`)
+  if (options.sessionId) body.append('session_id', options.sessionId)
+  if (options.requestId) body.append('request_id', options.requestId)
   return request('/voice-query', body, options)
 }
 
@@ -108,4 +113,14 @@ export function resolveVoiceAudioUrl(value) {
   let path = url.pathname.replace(/^\/voice-api(?=\/)/, '')
   if (prefix && path.startsWith(`${prefix}/`)) path = path.slice(prefix.length)
   return `${VOICE_API_BASE_URL}${path}${url.search}`
+}
+
+export async function endRagSession(sessionId) {
+  if (!sessionId) return
+  await fetch(`${VOICE_API_BASE_URL}/voice-session-end`, {
+    method: 'POST', credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_id: sessionId }),
+    signal: AbortSignal.timeout(10000),
+  })
 }

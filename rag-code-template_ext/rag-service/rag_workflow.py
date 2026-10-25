@@ -16,7 +16,7 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, START, StateGraph
 
 from rag_agent import build_context, ContextError, generate_answer, NO_EVIDENCE, retrieve_documents
-from rag_state import EvidenceDecision, MemoryDecision, RagSettings, RagState, RewrittenQuery
+from rag_state import EvidenceDecision, MemoryDecision, MemoryDecisionOutput, RagSettings, RagState, RewrittenQuery
 
 
 class DecisionError(RuntimeError):
@@ -126,8 +126,19 @@ MEMORY_PROMPT = ChatPromptTemplate.from_messages([
 질문 대상을 알면 ready와 독립 질문을 반환하세요. 문서 지식 부족은 ready 후 검색할 사항입니다.
 과거 참조가 있지만 최근 이력에 대상이 없으면 조회 전에만 load_summary와 missing_reference를 반환하세요.
 사용자의 새 선택이 필요하면 clarify와 확인 질문을 반환하세요.
-요약 조회 후에는 ready 또는 clarify만 허용됩니다. 불완전한 기억의 누락을 추측으로 채우지 마세요."""),
-    ("human", "최근 완료 턴(JSON): {history}\n요약 조회 여부: {checked}\n요약 최신 여부: {current}\n"
+요약 조회 후에는 ready 또는 clarify만 허용됩니다. 불완전한 기억의 누락을 추측으로 채우지 마세요.
+문서명·조항·질문 대상이 현재 질문에 있으면 문서 본문을 여기서 몰라도 ready입니다.
+예: '출장규정 제12조의 정산 기한은?'은 ready이며 문서 본문을 사용자에게 요청하지 않습니다.
+새 주제의 문서가 최근 대화에 없다는 이유로 요약을 조회하지 마세요. 문서 내용은 뒤의 검색에서 찾습니다.
+'본인 혼인 경조금의 회사 제안액' 같은 표현의 본인·회사는 일반 적용 대상을 뜻하며 과거 대화 참조가 아닙니다.
+과거 대화의 대상에 대한 참조가 명시되지 않았다면 load_summary를 사용하지 마세요.
+아직 요약을 읽지 않았고 요약이 존재하며 '맨 처음 질문했던' 같은 과거 참조가 최근 턴에서
+해결되지 않으면 사용자에게 묻기 전에 load_summary로 보관된 요약을 확인하세요.
+decision 객체에는 선택한 action의 필드만 넣으세요. 다른 분기의 필드는 생략합니다.
+ready: action, standalone_question.
+load_summary: action, missing_reference.
+clarify: action, clarification_question."""),
+    ("human", "최근 완료 턴(JSON): {history}\n요약 존재 여부: {available}\n요약 조회 여부: {checked}\n요약 최신 여부: {current}\n"
               "과거 요약(JSON): {summary}\n현재 질문: {question}"),
 ])
 
@@ -138,9 +149,9 @@ class MemoryReadError(RuntimeError):
 
 def compile_document_graph(vectorstore: Any, llm: Any, settings: RagSettings, *, session_store=None):
     """기억 해석과 문서 질의 그래프. 세션 없는 기존 호출도 중첩 State를 사용한다."""
-    assessor = llm.with_structured_output(EvidenceDecision, include_raw=True)
-    rewriter = llm.with_structured_output(RewrittenQuery, include_raw=True)
-    resolver = llm.with_structured_output(MemoryDecision, include_raw=True) if session_store is not None else None
+    assessor = llm.with_structured_output(EvidenceDecision, include_raw=True, strict=True)
+    rewriter = llm.with_structured_output(RewrittenQuery, include_raw=True, strict=True)
+    resolver = llm.with_structured_output(MemoryDecisionOutput, include_raw=True, strict=True) if session_store is not None else None
 
     def runtime(config):
         return config["configurable"]["runtime"]
@@ -152,11 +163,13 @@ def compile_document_graph(vectorstore: Any, llm: Any, settings: RagSettings, *,
                    for t in memory["recent_history"]]
         messages = MEMORY_PROMPT.format_messages(
             history=json.dumps(history, ensure_ascii=False), checked=checked,
+            available=memory.get("summary_available", False),
             current=memory.get("summary_is_current", False),
             summary=json.dumps(memory.get("summary"), ensure_ascii=False),
             question=state["request"]["original_question"])
         stage = "resolve_with_summary" if checked else "resolve_recent"
-        decision = parse_decision(await rt.invoke(resolver, messages, stage), MemoryDecision)
+        envelope = parse_decision(await rt.invoke(resolver, messages, stage), MemoryDecisionOutput)
+        decision = MemoryDecision.model_validate({**envelope.decision.model_dump(), "reason_code": "memory_" + envelope.decision.action})
         if checked and decision.action == "load_summary":
             raise DecisionError("Summary may only be loaded once")
         rt.record("memory_decision", action=decision.action, summary_checked=checked)

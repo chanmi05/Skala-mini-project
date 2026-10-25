@@ -18,13 +18,13 @@ class StructuredDecision(BaseModel):
 class InputDecision(StructuredDecision):
     """세션 모드 분류. 문맥 복원은 기억 노드에서만 수행한다."""
     intent: Literal["greeting", "document_question", "out_of_scope"]
-    reason_code: str = Field(min_length=1, max_length=100)
 
 
 class MemoryDecision(StructuredDecision):
     action: Literal["ready", "load_summary", "clarify"]
     standalone_question: str | None = Field(default=None, min_length=1, max_length=4000)
-    missing_reference: str | None = Field(default=None, min_length=1, max_length=1000)
+    missing_reference: str | None = Field(default=None, min_length=1, max_length=1000,
+        description="과거 대화에서만 알 수 있는 미해결 참조. 현재 질문에 명시한 문서명·조항 자체는 누락 참조가 아니다. ready/clarify에서는 null.")
     clarification_question: str | None = Field(default=None, min_length=1, max_length=1000)
     reason_code: str = Field(min_length=1, max_length=100)
 
@@ -38,6 +38,26 @@ class MemoryDecision(StructuredDecision):
         return self
 
 
+class ReadyMemory(StructuredDecision):
+    action: Literal["ready"]
+    standalone_question: str = Field(min_length=1, max_length=4000)
+
+
+class LoadMemory(StructuredDecision):
+    action: Literal["load_summary"]
+    missing_reference: str = Field(min_length=1, max_length=1000)
+
+
+class ClarifyMemory(StructuredDecision):
+    action: Literal["clarify"]
+    clarification_question: str = Field(min_length=1, max_length=1000)
+
+
+class MemoryDecisionOutput(StructuredDecision):
+    """모델의 wire schema: 중첩 union으로 분기별 필드 조합을 강제한다."""
+    decision: ReadyMemory | LoadMemory | ClarifyMemory
+
+
 class SummaryDecision(StructuredDecision):
     summary: str = Field(min_length=1, max_length=4000)
 
@@ -47,7 +67,7 @@ class RouteDecision(StructuredDecision):
     intent: Literal["greeting", "clarify", "document_question", "out_of_scope"]
     standalone_question: str | None = Field(default=None, min_length=1, max_length=4000)
     clarification_question: str | None = Field(default=None, min_length=1, max_length=1000)
-    reason_code: str = Field(min_length=1, max_length=100)
+    reason_code: str = Field(default="", max_length=100)
 
     @model_validator(mode="after")
     def check_required_fields(self):
@@ -67,7 +87,7 @@ class EvidenceDecision(StructuredDecision):
     supported_source_ids: list[str] = Field(default_factory=list, max_length=50)
     missing_information: list[str] = Field(default_factory=list, max_length=20)
     clarification_question: str | None = Field(default=None, min_length=1, max_length=1000)
-    reason_code: str = Field(min_length=1, max_length=100)
+    reason_code: str = Field(default="", max_length=100)
 
     @model_validator(mode="after")
     def check_decision(self):
@@ -133,6 +153,7 @@ class MemoryState(TypedDict, total=False):
     summary: str | None
     summary_until_turn_id: int | None
     summary_is_current: bool
+    summary_available: bool
 
 
 class InterpretationState(TypedDict, total=False):

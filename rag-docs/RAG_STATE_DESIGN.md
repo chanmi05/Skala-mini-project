@@ -263,7 +263,7 @@ State에 session_id가 있다는 사실만으로 세션 접근을 허용하지 �
 
 ## 9. 현재 코드와의 차이 및 다음 결정 사항
 
-현재 `rag_state.py`는 다섯 묶음 State를 사용한다. 노드 갱신·MemoryDecision·세션 저장·증분 요약도 연결했다. `retry_count`는 응답에서 파생하고, `summary_is_current`와 코드 소유 판정 사유를 추가했다. `session_facts`는 빈 예약 필드다. 새 서비스는 output과 호환 answer를 반환하지만 기존 FastAPI·화면 계약은 아직 변경하지 않았다.
+현재 `rag_state.py`는 다섯 묶음 State를 사용한다. 노드 갱신·MemoryDecision·세션 저장·증분 요약도 연결했다. `retry_count`는 응답에서 파생하고, `summary_is_current`와 코드 소유 판정 사유를 추가했다. `session_facts`는 빈 예약 필드다. 새 서비스는 output과 호환 answer를 반환하지만 FastAPI·화면에 output/answer/response 호환 계약과 세션 처리를 연결했다. 현재 계약은 [HTTP API 사용법](HR_RAG_API_USAGE.md)을 참고한다.
 
 다음 논의는 기억과 질문 해석 묶음부터 확정하는 순서를 권장한다.
 
