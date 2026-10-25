@@ -4,7 +4,7 @@
 
 ## 1. 구현 범위
 
-`rag-code-template_ext/session_memory.py`에 세션 보관 기반을 구현했다.
+`rag-code-template_ext/rag-service/session_memory.py`에 세션 보관 기반을 구현했다.
 LangChain·LangGraph·FastAPI·외부 모델 호출에 의존하지 않으며 추가 패키지가 필요 없다.
 
 - 세션 생성·조회·종료, 미사용 만료와 만료 항목 정리.
@@ -185,7 +185,7 @@ SessionStore는 비동기 Protocol이며 InMemorySessionStore가 구현한다.
 
 ```bash
 cd rag-code-template_ext
-.venv/bin/python -B -m unittest discover -s tests -v
+.venv/bin/python -B -m unittest discover -s rag-service/tests -v
 ```
 
 신규 저장소 테스트 22개와 기존 38개, 전체 60개 통과.
@@ -201,5 +201,5 @@ cd rag-code-template_ext
 모든 대화 원문을 보관하므로 활성 세션의 대화량이 커지면 메모리 사용량도 증가한다.
 외부 모델·API·그래프 통합은 이번 테스트에 포함하지 않는다.
 
-다음 단계는 이 인터페이스를 이용한 **증분 요약기 구현**이며, 그 뒤 기억 노드를 그래프에 연결한다.
+2026-10-25 이 인터페이스에 **증분 요약기·기억 노드·세션 서비스 흐름을 연결**했다. [세션 RAG 사용법](SESSION_RAG_WORKFLOW_USAGE.md)을 참고한다. 위 60개 결과와 저장소 단독 검증은 최초 구현 시점 기록이다.
 이력·확정 조건·요약 State 구조는 [State 정의 전략](RAG_STATE_DESIGN.md)을 참고한다.

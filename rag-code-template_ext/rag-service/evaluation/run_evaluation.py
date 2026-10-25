@@ -15,7 +15,9 @@ import statistics
 import sys
 import time
 
+# Python modules live in rag-service; shared data and .env stay in its parent.
 ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = ROOT.parent
 sys.path.insert(0, str(ROOT))
 
 from dotenv import load_dotenv
@@ -263,7 +265,7 @@ async def evaluate(args, store, cases):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--index", type=Path, default=ROOT / "faiss_db/pdf")
+    parser.add_argument("--index", type=Path, default=PROJECT_ROOT / "faiss_db/pdf")
     parser.add_argument("--cases", type=Path, default=Path(__file__).parent / "questions.jsonl")
     parser.add_argument("--output", type=Path, default=Path(__file__).parent / "runs" /
                         datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ"))
@@ -280,7 +282,7 @@ def main():
         return
     if not args.trust_local_index:
         parser.error("Pass --trust-local-index only for a known trusted FAISS pickle")
-    load_dotenv(ROOT / ".env")
+    load_dotenv(PROJECT_ROOT / ".env")
     args.index = args.index.resolve()
     embeddings = NoNetworkEmbeddings() if args.export_corpus else OpenAIEmbeddings(model=args.embedding_model)
     store = FAISS.load_local(str(args.index), embeddings, allow_dangerous_deserialization=True)

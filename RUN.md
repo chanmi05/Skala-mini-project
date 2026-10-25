@@ -93,6 +93,8 @@ docker compose --env-file app/.env up -d --build
 
 ## 3. 외부 웹·PDF RAG API (`rag-code-template_ext`)
 
+별도 개발 중인 RAG 모듈은 `rag-code-template_ext/rag-service/`에 있다. 설치·테스트·평가 경로는 [RAG 모듈 안내](rag-code-template_ext/rag-service/README.md)를 참고한다. 아래 명령은 기존 FastAPI 서버를 실행한다.
+
 ### 최초 준비
 
 ```bash

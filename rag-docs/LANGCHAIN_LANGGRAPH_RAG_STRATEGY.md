@@ -256,7 +256,7 @@ LangGraph의 `recursion_limit`은 노드 단계 제한이며 재검색 횟수와
 제안 파일 구조(추가 구현 단계에서 확정):
 
 ```text
-rag-code-template_ext/
+rag-code-template_ext/rag-service/
 ├── rag_agent.py        # 기존 기본 RAG와 공통 검색·컨텍스트·생성 기능
 ├── rag_router.py       # 입력 검증, LangChain 분류·분기, 공통 응답
 ├── rag_workflow.py     # LangGraph 상태·노드·전이·재검색 정책

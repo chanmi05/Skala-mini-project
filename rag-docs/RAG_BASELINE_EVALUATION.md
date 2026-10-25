@@ -56,9 +56,9 @@ LLM 첫 토큰 시간은 측정하지 않았다. 단일 문서·소규모 질문
 
 ## 파일 위치
 
-- 실행·재현 방법: `rag-code-template_ext/evaluation/README.md`
-- 평가 코드: `rag-code-template_ext/evaluation/run_evaluation.py`
-- 평가 질문: `rag-code-template_ext/evaluation/questions.jsonl`
-- 실제 결과·리뷰·리포트: `rag-code-template_ext/evaluation/runs/baseline_20261023/`
+- 실행·재현 방법: `rag-code-template_ext/rag-service/evaluation/README.md`
+- 평가 코드: `rag-code-template_ext/rag-service/evaluation/run_evaluation.py`
+- 평가 질문: `rag-code-template_ext/rag-service/evaluation/questions.jsonl`
+- 실제 결과·리뷰·리포트: `rag-code-template_ext/rag-service/evaluation/runs/baseline_20261023/`
 
 실제 통합과 평가는 완료했지만 기존 서버에 새 모듈을 연결한 상태는 아니다.

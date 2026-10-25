@@ -4,7 +4,7 @@
 
 ## 구현 범위
 
-`rag-code-template_ext/rag_agent.py`에 검색·컨텍스트·답변 로직을 구현했다.
+`rag-code-template_ext/rag-service/rag_agent.py`에 검색·컨텍스트·답변 로직을 구현했다.
 기존 서버·화면·저장소·업로드 API는 수정하지 않았다. 현재 실행 중인 `/rag-query`는
 여전히 기존 함수를 사용한다.
 
@@ -26,7 +26,7 @@ result = await answer_question(
 )
 ```
 
-`rag_agent.py`를 import할 수 있는 경로에서 `from rag_agent import answer_question`으로 사용한다.
+`rag-code-template_ext/rag-service`를 작업 디렉터리 또는 `PYTHONPATH`로 설정한 뒤 `from rag_agent import answer_question`으로 사용한다.
 저장소와 LLM은 호출자가 준비한다. 모듈에서 API 키나 FAISS 파일 경로를 관리하지 않는다.
 
 | 인자 | 계약 |
@@ -129,7 +129,7 @@ return AnswerResponse(
 
 ```bash
 cd rag-code-template_ext
-.venv/bin/python -B -m unittest discover -s tests -v
+.venv/bin/python -B -m unittest discover -s rag-service/tests -v
 ```
 
 가짜 저장소·모델로 테스트 9개 통과:

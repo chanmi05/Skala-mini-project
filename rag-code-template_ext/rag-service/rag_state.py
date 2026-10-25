@@ -8,10 +8,38 @@ from langchain_core.documents import Document
 from langchain_core.messages import BaseMessage
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+from session_memory import Turn
 
 
 class StructuredDecision(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+
+class InputDecision(StructuredDecision):
+    """세션 모드 분류. 문맥 복원은 기억 노드에서만 수행한다."""
+    intent: Literal["greeting", "document_question", "out_of_scope"]
+    reason_code: str = Field(min_length=1, max_length=100)
+
+
+class MemoryDecision(StructuredDecision):
+    action: Literal["ready", "load_summary", "clarify"]
+    standalone_question: str | None = Field(default=None, min_length=1, max_length=4000)
+    missing_reference: str | None = Field(default=None, min_length=1, max_length=1000)
+    clarification_question: str | None = Field(default=None, min_length=1, max_length=1000)
+    reason_code: str = Field(min_length=1, max_length=100)
+
+    @model_validator(mode="after")
+    def check_fields(self):
+        required = {"ready": "standalone_question", "load_summary": "missing_reference",
+                    "clarify": "clarification_question"}[self.action]
+        for name in ("standalone_question", "missing_reference", "clarification_question"):
+            if bool(getattr(self, name)) != (name == required):
+                raise ValueError("Memory decision fields do not match action")
+        return self
+
+
+class SummaryDecision(StructuredDecision):
+    summary: str = Field(min_length=1, max_length=4000)
 
 
 class RouteDecision(StructuredDecision):
@@ -73,12 +101,14 @@ class RagSettings:
     max_model_calls: int = 8
     timeout_seconds: float = 45
     max_history_messages: int = 10
+    summary_max_chars: int = 4000
 
     def __post_init__(self):
         for name, low, high in [
             ("top_k", 1, 50), ("max_retries", 0, 2),
             ("max_input_tokens", 1, 1000000), ("max_total_input_tokens", 1, 1000000),
             ("max_model_calls", 1, 20), ("max_history_messages", 0, 50),
+            ("summary_max_chars", 1, 4000),
         ]:
             value = getattr(self, name)
             if type(value) is not int or not low <= value <= high:
@@ -88,21 +118,54 @@ class RagSettings:
             raise ValueError("Invalid timeout_seconds")
 
 
-class RagState(TypedDict, total=False):
-    """LangGraph의 노드가 변경분을 반환하는 요청 전용 상태. 기본 갱신 방식은 덮어쓰기다."""
+class RequestState(TypedDict):
+    request_id: str
     original_question: str
+
+
+class MemoryState(TypedDict, total=False):
+    session_id: str
+    session_version: int
+    recent_history: list[Turn]
+    session_facts: dict
+    summary_checked: bool
+    summary_status: Literal["unchecked", "loaded", "empty"]
+    summary: str | None
+    summary_until_turn_id: int | None
+    summary_is_current: bool
+
+
+class InterpretationState(TypedDict, total=False):
+    memory_action: Literal["ready", "load_summary", "clarify"]
+    missing_reference: str | None
     standalone_question: str
+    clarification_question: str | None
+    reason_code: str
+
+
+class RetrievalState(TypedDict, total=False):
     search_query: str
     previous_queries: list[str]
     search_count: int
-    retry_count: int
     current_documents: list[tuple[Document, float]]
     messages: list[BaseMessage]
     sources: list[dict]
     previous_evidence_ids: list[str]
     missing_information: list[str]
     evidence_decision: Literal["sufficient", "insufficient", "clarify"]
-    clarification_question: str | None
-    answer: str
-    status: Literal["answered", "clarification_needed", "no_evidence"]
     reason_code: str
+
+
+class ResultState(TypedDict, total=False):
+    output: str
+    status: Literal["answered", "clarification_needed", "no_evidence", "greeting", "out_of_scope", "error"]
+    reason_code: str
+
+
+class RagState(TypedDict, total=False):
+    """중첩 묶음은 노드에서 기존 키를 보존해 교체한다. 전체 대화 DB는 별도다."""
+    request: RequestState
+    memory: MemoryState
+    interpretation: InterpretationState
+    retrieval: RetrievalState
+    result: ResultState

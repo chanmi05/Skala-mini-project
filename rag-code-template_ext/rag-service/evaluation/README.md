@@ -18,27 +18,29 @@
 
 ## 실행
 
-프로젝트 루트에서 다음과 같이 실행한다. `.venv`와 기존 requirements를 사용한다.
+저장소 루트에서 아래처럼 `rag-code-template_ext`로 이동해 실행한다. `.venv`와 기존 requirements를 사용한다.
 API 키는 환경변수 또는 `rag-code-template_ext/.env`에서 읽고 결과에 저장하지 않는다.
+
+Windows PowerShell 설치·실행 예시는 [RAG 모듈 안내](../README.md)를 참고한다. 아래 예시는 macOS/Linux용이다.
 
 ```bash
 cd rag-code-template_ext
 
 # 로컬 원문 목록 확인: 외부 API 호출 없음
-.venv/bin/python -B evaluation/run_evaluation.py \
-  --trust-local-index --export-corpus evaluation/corpus.jsonl
+.venv/bin/python -B rag-service/evaluation/run_evaluation.py \
+  --trust-local-index --export-corpus rag-service/evaluation/corpus.jsonl
 
 # 실제 평가: 질문 임베딩과 답변 생성에 OpenAI API 사용
 # --output을 생략하면 새 시각 이름의 디렉터리를 자동 생성
-.venv/bin/python -B evaluation/run_evaluation.py --trust-local-index
+.venv/bin/python -B rag-service/evaluation/run_evaluation.py --trust-local-index
 
 # 기존 결과와 리뷰로 리포트만 재생성: 외부 API 호출 없음
-.venv/bin/python -B evaluation/run_evaluation.py \
-  --summarize evaluation/runs/baseline_20261023 \
-  --reviews evaluation/runs/baseline_20261023/reviews.agent.jsonl
+.venv/bin/python -B rag-service/evaluation/run_evaluation.py \
+  --summarize rag-service/evaluation/runs/baseline_20261023 \
+  --reviews rag-service/evaluation/runs/baseline_20261023/reviews.agent.jsonl
 
 # 외부 API 없이 평가 계산·기록과 RAG 로직 테스트
-.venv/bin/python -B -m unittest discover -s tests -v
+.venv/bin/python -B -m unittest discover -s rag-service/tests -v
 ```
 
 `--trust-local-index`는 신뢰하는 기존 pickle 저장소를 읽겠다는 옵션이다. 실행 시
@@ -118,16 +120,16 @@ RAG 모듈·질문·모델·인덱스·컨텍스트 예산은 동일하게 유�
 
 ```bash
 # 각 값 실행: 출력 폴더는 기존에 없는 이름으로 지정한다.
-.venv/bin/python -B evaluation/run_evaluation.py --trust-local-index \
-  --top-k 7 --output evaluation/runs/topk_7_new
+.venv/bin/python -B rag-service/evaluation/run_evaluation.py --trust-local-index \
+  --top-k 7 --output rag-service/evaluation/runs/topk_7_new
 
 # 완료된 실행을 로컬에서 집계한다. API 호출 없음.
-.venv/bin/python -B evaluation/compare_runs.py \
-  --runs evaluation/runs/topk_3_20261023 \
-         evaluation/runs/baseline_20261023 \
-         evaluation/runs/topk_7_20261023 \
-         evaluation/runs/topk_10_20261023 \
-  --output evaluation/comparisons/topk_20261023
+.venv/bin/python -B rag-service/evaluation/compare_runs.py \
+  --runs rag-service/evaluation/runs/topk_3_20261023 \
+         rag-service/evaluation/runs/baseline_20261023 \
+         rag-service/evaluation/runs/topk_7_20261023 \
+         rag-service/evaluation/runs/topk_10_20261023 \
+  --output rag-service/evaluation/comparisons/topk_new
 ```
 
 `compare_runs.py`는 같은 조건의 완결된 실행인지 확인한 후 검색 지표·지연·실제

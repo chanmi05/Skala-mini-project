@@ -3,6 +3,8 @@
 작성일: 2026-10-23 (Asia/Seoul)  
 작업 브랜치: `dev-rag`
 
+2026-10-25 도메인 확인: 신규 인사규정 PDF 등을 등록하는 서비스다. `origin/data-preprocessing`의 전처리·적재 코드를 확인했으며, 영어 논문 중심의 평가와 구분한 [신규 인사규정 연결 방향](HR_DOCUMENT_INTEGRATION_PLAN.md)을 정리했다. 이 연결 계획의 보완 사항은 아직 구현하지 않았다.
+
 구현 진행: 이후 `rag_agent.py`와 오프라인 테스트를 추가했다. 기존 API는 변경하지 않았다.
 아래는 최초 논의 기록이며, 현재 구현·검증 범위는 [독립 RAG 모듈 사용법](RAG_AGENT_USAGE.md)을 참고한다.
 실제 저장소·OpenAI 연결 평가도 24개 수행했다. [최초 평가 결과](RAG_BASELINE_EVALUATION.md)에 기록했다.
@@ -84,8 +86,9 @@ API 응답 → 화면
 ```text
 rag-code-template_ext/
 ├── rag_external-web_pdf_closed_llm.py  # 기존 API 연결부
-├── rag_agent.py                       # 새 검색·답변 모듈
-└── tests/                             # 검색·답변 로직 검증
+└── rag-service/
+    ├── rag_agent.py                   # 새 검색·답변 모듈
+    └── tests/                         # 검색·답변 로직 검증
 ```
 
 함수 인터페이스의 초안:

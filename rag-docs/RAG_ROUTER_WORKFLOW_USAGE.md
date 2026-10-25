@@ -2,7 +2,11 @@
 
 작성일: 2026-10-23 (Asia/Seoul)
 
+2026-10-25 State를 중첩 구조로 전환하고 선택적 세션 모드를 추가했다. 세션 모드의 기억 해석·요약·저장과 최신 응답 필드는 [세션 RAG 사용법](SESSION_RAG_WORKFLOW_USAGE.md)을 참고한다. 아래 최초 평가 수치는 세션 연결 전 결과다.
+
 ## 1. 구현한 호출 구조
+
+아래는 세션 저장소를 주입하지 않는 호환 호출 흐름이다. 세션 모드는 문맥 복원을 기억 그래프에서 수행한다.
 
 ```text
 RagService.ainvoke({question, history})
@@ -36,7 +40,7 @@ LangChain: ChatPromptTemplate → 구조화 분류 → RunnableBranch
 
 ## 2. 사용 예시
 
-`rag-code-template_ext`에서 다음 객체를 만들어 재사용한다. 저장소 적재는 이 코드의 책임이 아니다.
+`rag-code-template_ext/rag-service`에서 다음 객체를 만들어 재사용한다. 저장소 적재는 이 코드의 책임이 아니다.
 
 ```python
 from langchain_openai import ChatOpenAI
@@ -76,8 +80,8 @@ result = await service.ainvoke({
 
 ```bash
 cd rag-code-template_ext
-.venv/bin/python -m pip install -r requirements-rag-workflow.txt
-.venv/bin/python -B -m unittest discover -s tests -v
+.venv/bin/python -m pip install -r rag-service/requirements-rag-workflow.txt
+.venv/bin/python -B -m unittest discover -s rag-service/tests -v
 ```
 
 새 requirements는 기존 파일을 포함하고 직접 사용하는 LangGraph 1.0.10을 명시한다.
@@ -92,17 +96,13 @@ cd rag-code-template_ext
 
 | 묶음 | 필드 | 갱신 방식 |
 |---|---|---|
-| 질문 | `original_question` | 사용자 원문. 노드에서 변경하지 않음 |
-| 질문 | `standalone_question` | 이력을 반영한 독립 질문. 최초 라우팅 후 유지 |
-| 검색 | `search_query` | 재구성 시 변경 |
-| 검색 | `previous_queries` | 실제 실행한 질의를 새 리스트로 추가 |
-| 횟수 | `search_count`, `retry_count` | 실제 검색 시작 횟수에 따라 갱신 |
-| 근거 | `current_documents` | 현재 회차의 `(Document, score)` 목록으로 교체 |
-| 컨텍스트 | `messages`, `sources` | 이번 회차의 예산에 맞춘 메시지·출처로 교체 |
-| 진전 확인 | `previous_evidence_ids` | 이전 컨텍스트의 내용·출처 해시. 회차별 교체 |
-| 진전 확인 | `missing_information` | 최신 근거에서 부족한 정보 목록 |
-| 판정 | `evidence_decision` | sufficient / insufficient / clarify |
-| 종료 | `clarification_question`, `answer`, `status`, `reason_code` | 종료 경로에서 설정 |
+| request | request_id, original_question | 요청 시작 후 고정 |
+| memory | 세션 버전, 최근 완료 턴, 요약 조회 상태·본문 | 최근 스냅샷 고정, 요약은 조건부 1회 조회 |
+| interpretation | 독립 질문, 미해결 참조, 확인 질문 | 문맥 복원 후 독립 질문 유지 |
+| retrieval | 검색 질의·횟수·이전 질의·현재 문서·메시지·출처·근거 판정 | 이전 질의만 누적, 현재 문서·메시지·출처는 회차별 교체 |
+| result | status, output, reason_code | 종료 노드에서 작성 |
+
+각 노드는 변경 묶음의 기존 필드를 보존한다. retry_count는 State에 중복 보관하지 않고 search_count로부터 응답 시 계산한다.
 
 원질문과 복원 질문이 다르면 근거 판단과 생성에 둘 다 전달한다. 모델이 이력에서
 대상을 복원할 때 조건을 만들지 않도록 지시하지만, 의미 보존을 자동 보장하지는 않는다.
@@ -121,7 +121,8 @@ cd rag-code-template_ext
 - `max_total_input_tokens=24000`: 요청 전체 입력 예산.
 - `max_model_calls=8`: 분류·판정·재구성·생성 합산.
 - `timeout_seconds=45`: 바깥 라우팅부터 전체 종료까지.
-- `max_history_messages=10`: 요청에 제공하는 이력 길이 제한.
+- `max_history_messages=10`: 레거시 요청에 제공하는 이력 길이 제한.
+- `summary_max_chars=4000`: 증분 요약 문자 한도. 요약 호출도 전체 시간·모델·입력 예산에 포함한다.
 
 ### C. 실행 의존성·계측: 요청 Runtime
 
@@ -156,6 +157,7 @@ checkpointer나 대화 DB는 붙이지 않았으며 프로세스 재시작 시 �
 ```json
 {
   "status": "answered",
+  "output": "문서에 따른 답변 [S1]",
   "answer": "문서에 따른 답변 [S1]",
   "sources": [],
   "retrieved_count": 5,
@@ -205,7 +207,7 @@ status는 answered / greeting / clarification_needed / out_of_scope / no_evidenc
   호출·입력 예산·실제 usage 보정·장애·시간 초과·취소·동시 요청 상태 분리를 검증했다.
 - 실제 공개 논문 검증은 `evaluation/run_workflow_smoke.py`로 수행한다.
   최종 코드의 기대 상태 6/6 일치를 확인했다. 정보 부재 사례는 재검색 1회 후 유보했다.
-  [최종 실제 연동 결과](../rag-code-template_ext/evaluation/runs/workflow_smoke_20261023_v2/report.md)에
+  [최종 실제 연동 결과](../rag-code-template_ext/rag-service/evaluation/runs/workflow_smoke_20261023_v2/report.md)에
   상태·호출 수·지연·답변을 기록했다. 문서 질문은 약 3.94~5.64초였다.
 
 실제 분류와 충분성 판단은 모델이 수행하므로 별도 데이터별 품질 평가가 필요하다.

@@ -77,11 +77,11 @@ q06의 multi-head 핵심 근거는 k=3에서 빠졌으나 k=5부터 포함됐다
 
 ## 산출물
 
-- 실행별 원문 결과: `rag-code-template_ext/evaluation/runs/topk_{3,7,10}_20261023/`
-- 기존 k=5: `rag-code-template_ext/evaluation/runs/baseline_20261023/` (변경 없음)
-- 재사용 가능한 집계 코드: `rag-code-template_ext/evaluation/compare_runs.py`
-- 전체 집계와 질문별 검색 성공: `rag-code-template_ext/evaluation/comparisons/topk_20261023/`
-- 비교 실행 안내: `rag-code-template_ext/evaluation/README.md`
+- 실행별 원문 결과: `rag-code-template_ext/rag-service/evaluation/runs/topk_{3,7,10}_20261023/`
+- 기존 k=5: `rag-code-template_ext/rag-service/evaluation/runs/baseline_20261023/` (변경 없음)
+- 재사용 가능한 집계 코드: `rag-code-template_ext/rag-service/evaluation/compare_runs.py`
+- 전체 집계와 질문별 검색 성공: `rag-code-template_ext/rag-service/evaluation/comparisons/topk_20261023/`
+- 비교 실행 안내: `rag-code-template_ext/rag-service/evaluation/README.md`
 
 각 실행의 원시 답변·검색 후보·사용 근거·점수·토큰·지연은 results.jsonl에 보존했다.
 기존 서버·UI·RAG 함수·원본 저장소는 변경하지 않았다.

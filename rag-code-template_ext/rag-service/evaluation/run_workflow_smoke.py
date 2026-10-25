@@ -7,7 +7,9 @@ import json
 from pathlib import Path
 import sys
 
+# Python modules live in rag-service; shared data and .env stay in its parent.
 ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = ROOT.parent
 sys.path.insert(0, str(ROOT))
 
 from dotenv import load_dotenv
@@ -37,7 +39,7 @@ async def run(args):
     started_at = datetime.now(timezone.utc).isoformat()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=False)
-    index = ROOT / "faiss_db/pdf"
+    index = PROJECT_ROOT / "faiss_db/pdf"
     before = {name: sha256(index / name) for name in ["index.faiss", "index.pkl"]}
     store = FAISS.load_local(str(index), OpenAIEmbeddings(model="text-embedding-ada-002"),
                              allow_dangerous_deserialization=True)
@@ -74,5 +76,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if not args.trust_local_index:
         parser.error("Known trusted repository FAISS index requires --trust-local-index")
-    load_dotenv(ROOT / ".env")
+    load_dotenv(PROJECT_ROOT / ".env")
     asyncio.run(run(args))
