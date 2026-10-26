@@ -6,6 +6,7 @@
 - fixed   : 고정 크기 500자, 중첩 50자 (Day2 기본값)
 - article : 조문(제N조) 단위, 긴 조문은 항(1. 2. 3.) 단위로 다시 나눔 (Day3 개선)
 """
+import logging
 import os
 import re
 import shutil
@@ -18,7 +19,7 @@ from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from pypdf import PdfReader
+import pdfplumber
 
 BASE_DIR = Path(__file__).resolve().parent
 PDF_STORE_PATH = BASE_DIR / "faiss_db" / "pdf"
@@ -116,10 +117,45 @@ class ParsedDoc:
 
 # ---------------------------------------------------------------- 추출·정제
 
+# 우리 PDF의 폰트 정보 경고(FontBBox)는 추출 결과와 무관해서 숨긴다.
+logging.getLogger("pdfminer").setLevel(logging.ERROR)
+
+
 def extract_pages(file_path: str | Path) -> list[str]:
-    """페이지별 텍스트. 페이지 번호는 1부터 센다."""
-    reader = PdfReader(str(file_path))
-    return [page.extract_text() or "" for page in reader.pages]
+    """페이지별 텍스트. 표는 pdfplumber로 따로 읽어 원래 위치에 "행: 열 값" 문장으로 넣는다."""
+    pages = []
+    with pdfplumber.open(str(file_path)) as pdf:
+        for page in pdf.pages:
+            parts, top = [], 0
+            for table in sorted(page.find_tables(), key=lambda t: t.bbox[1]):
+                parts.append(page.crop((0, top, page.width, table.bbox[1])).extract_text() or "")
+                parts.append(table_to_text(table.extract()))
+                top = table.bbox[3]
+            parts.append(page.crop((0, top, page.width, page.height)).extract_text() or "")
+            pages.append("\n".join(p for p in parts if p.strip()))
+    return pages
+
+
+def table_to_text(rows: list[list[str | None]]) -> str:
+    """표를 행마다 한 줄로 바꾼다. 텍스트만 뽑으면 "일반 출산 90일 45일"처럼 어느 칸 값인지 사라지기 때문이다.
+
+    2열 표:  - 문서번호: SCT-HR-004
+    3열 이상: - 일반 출산: 총 기간, 역일 90일; 출산 후 최소 확보기간 45일
+    """
+    def cell(value: str | None) -> str:
+        return re.sub(r"\s+", " ", value or "").strip()
+
+    rows = [[cell(c) for c in row] for row in rows if any(row)]
+    if len(rows) < 2:
+        return "\n".join(" ".join(r) for r in rows)
+    header, lines = rows[0], []
+    for row in rows[1:]:
+        if len(row) == 2:
+            lines.append(f"- {row[0]}: {row[1]}")
+        else:
+            pairs = "; ".join(f"{h} {v}".strip() for h, v in zip(header[1:], row[1:]) if v)
+            lines.append(f"- {row[0]}: {pairs}")
+    return "\n".join(lines)
 
 
 def is_heading(line: str) -> bool:
