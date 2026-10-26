@@ -102,6 +102,17 @@ class EvidenceDecision(StructuredDecision):
         return self
 
 
+class AnswerReview(StructuredDecision):
+    decision: Literal["grounded", "unsupported", "not_found"]
+    reason_code: str = Field(min_length=1, max_length=100)
+
+
+class GenerationDecision(StructuredDecision):
+    """문서 사실 답변과 생성 단계의 유보를 명시적으로 구분한다."""
+    status: Literal["answered", "no_evidence"]
+    answer: str = Field(min_length=1, max_length=12000)
+
+
 class RewrittenQuery(StructuredDecision):
     search_query: str = Field(min_length=1, max_length=4000)
 
@@ -118,7 +129,7 @@ class RagSettings:
     max_retries: int = 1
     max_input_tokens: int = 6000
     max_total_input_tokens: int = 24000
-    max_model_calls: int = 8
+    max_model_calls: int = 9
     timeout_seconds: float = 45
     max_history_messages: int = 10
     summary_max_chars: int = 4000
@@ -173,6 +184,9 @@ class RetrievalState(TypedDict, total=False):
     sources: list[dict]
     previous_evidence_ids: list[str]
     missing_information: list[str]
+    supported_source_ids: list[str]
+    exact_target: object
+    lookup_clarification: str | None
     evidence_decision: Literal["sufficient", "insufficient", "clarify"]
     reason_code: str
 
