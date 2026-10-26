@@ -31,8 +31,8 @@ async function submit() {
 <template>
   <AuthLayout>
     <div class="form-heading">
-      <span class="form-eyebrow">EMPLOYEE ACCESS</span>
-      <h1>로그인</h1>
+      <span class="form-eyebrow">반가워요</span>
+      <h1>로그인하고 시작하세요</h1>
       <p>사원번호와 비밀번호를 입력해 주세요.</p>
     </div>
     <div

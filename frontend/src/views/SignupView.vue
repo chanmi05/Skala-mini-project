@@ -53,8 +53,8 @@ async function submit() {
 <template>
   <AuthLayout class="registration-layout">
     <div class="form-heading">
-      <span class="form-eyebrow">ACCOUNT REGISTRATION</span>
-      <h1>임직원 계정 등록</h1>
+      <span class="form-eyebrow">처음 오셨나요?</span>
+      <h1>임직원 회원가입</h1>
       <p>이름과 회사에서 발급한 사원번호를 입력해 주세요.</p>
     </div>
     <form class="auth-form" @submit.prevent="submit">
