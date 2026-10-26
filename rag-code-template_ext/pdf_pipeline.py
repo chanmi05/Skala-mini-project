@@ -8,6 +8,9 @@
 """
 import os
 import re
+import shutil
+import tempfile
+import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -19,6 +22,11 @@ from pypdf import PdfReader
 
 BASE_DIR = Path(__file__).resolve().parent
 PDF_STORE_PATH = BASE_DIR / "faiss_db" / "pdf"
+EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-ada-002")
+
+
+def embeddings():
+    return OpenAIEmbeddings(model=os.getenv("OPENAI_EMBEDDING_MODEL", EMBEDDING_MODEL), request_timeout=30, max_retries=0)
 
 CHUNK_MODE = os.getenv("CHUNK_MODE", "fixed")
 FIXED_CHUNK_SIZE = 500
@@ -229,20 +237,20 @@ def _chunk_ids(docs: list[Document]) -> list[str]:
     return [f"{d.metadata['source']}::{i}" for i, d in enumerate(docs)]
 
 
-def load_store(path: Path | None = None) -> FAISS | None:
+def load_store(path: Path | None = None, embedding=None) -> FAISS | None:
     path = path or PDF_STORE_PATH
     if (path / "index.faiss").exists() and (path / "index.pkl").exists():
-        return FAISS.load_local(str(path), embeddings=OpenAIEmbeddings(), allow_dangerous_deserialization=True)
+        return FAISS.load_local(str(path), embeddings=embedding or embeddings(), allow_dangerous_deserialization=True)
     return None
 
 
-def upsert(store: FAISS | None, docs: list[Document]) -> FAISS:
+def upsert(store: FAISS | None, docs: list[Document], embedding=None) -> FAISS:
     """같은 source 의 기존 청크를 지우고 새 청크를 추가한다. 저장소가 없으면 새로 만든다."""
     if not docs:
         raise ValueError("적재할 청크가 없습니다.")
     ids = _chunk_ids(docs)
     if store is None:
-        return FAISS.from_documents(docs, OpenAIEmbeddings(), ids=ids)
+        return FAISS.from_documents(docs, embedding or embeddings(), ids=ids)
 
     source = docs[0].metadata["source"]
     old_ids = [doc_id for doc_id, d in store.docstore._dict.items() if d.metadata.get("source") == source]
@@ -253,9 +261,40 @@ def upsert(store: FAISS | None, docs: list[Document]) -> FAISS:
 
 
 def save_store(store: FAISS, path: Path | None = None) -> None:
-    path = path or PDF_STORE_PATH
-    path.mkdir(parents=True, exist_ok=True)
-    store.save_local(str(path))
+    """새 인덱스를 별도 디렉터리에 완성한 후 교체한다. 실패하면 기존 파일을 복구한다."""
+    path = (path or PDF_STORE_PATH).resolve()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists() and any(p.name not in {"index.faiss", "index.pkl"} for p in path.iterdir()):
+        raise ValueError("Index directory contains unrelated files")
+    stage = Path(tempfile.mkdtemp(prefix=f".{path.name}-stage-", dir=path.parent)).resolve()
+    backup = path.with_name(f".{path.name}-backup-{uuid.uuid4().hex}").resolve()
+    assert stage.parent == backup.parent == path.parent and stage != path and backup != path
+    moved = False
+    try:
+        store.save_local(str(stage))
+        if path.exists():
+            path.rename(backup)
+            moved = True
+        try:
+            stage.rename(path)
+        except BaseException:
+            if moved:
+                backup.rename(path)
+            raise
+    finally:
+        if stage.exists():
+            shutil.rmtree(stage)
+        if moved and backup.exists() and path.exists():
+            shutil.rmtree(backup, ignore_errors=True)
+
+
+def clone_store(store: FAISS) -> FAISS:
+    """검색 중인 원본을 변경하지 않도록 인덱스와 문서 매핑을 복제한다."""
+    import faiss
+    from langchain_community.docstore.in_memory import InMemoryDocstore
+    return FAISS(store.embedding_function, faiss.clone_index(store.index),
+                 InMemoryDocstore(dict(store.docstore._dict)), dict(store.index_to_docstore_id),
+                 normalize_L2=store._normalize_L2, distance_strategy=store.distance_strategy)
 
 
 def count_by_source(store: FAISS) -> dict[str, int]:

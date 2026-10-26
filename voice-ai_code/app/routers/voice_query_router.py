@@ -3,7 +3,7 @@ import re
 import time
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field
@@ -22,9 +22,10 @@ def voice_config(identity=Depends(voice_identity)):
             "stt": recognition_settings()}
 
 @router.post("/voice-query", response_model=pipeline.VoiceAnswer)
-async def voice_query(audio: UploadFile = File(...), identity=Depends(voice_identity)):
+async def voice_query(audio: UploadFile = File(...), session_id: str | None = Form(None),
+                      request_id: str | None = Form(None), identity=Depends(voice_identity)):
     data, suffix = await read_audio(audio)
-    return await run_in_threadpool(pipeline.run_pipeline, data, suffix, identity)
+    return await run_in_threadpool(pipeline.run_pipeline, data, suffix, identity, session_id, request_id)
 
 @router.post("/voice-transcribe", response_model=TranscriptReview)
 async def voice_transcribe(audio: UploadFile = File(...), identity=Depends(voice_identity)):
@@ -36,10 +37,12 @@ async def voice_transcribe(audio: UploadFile = File(...), identity=Depends(voice
 
 class ConfirmedQuestion(BaseModel):
     question: str = Field(min_length=1, max_length=2000)
+    session_id: str | None = Field(default=None, min_length=1, max_length=128)
+    request_id: str | None = Field(default=None, min_length=1, max_length=128)
 
 @router.post("/voice-query-text", response_model=pipeline.VoiceAnswer)
 def voice_query_text(body: ConfirmedQuestion, identity=Depends(voice_identity)):
-    return pipeline.answer_question(body.question, identity)
+    return pipeline.answer_question(body.question, identity, session_id=body.session_id, request_id=body.request_id)
 
 async def read_audio(audio: UploadFile):
     suffix = Path(audio.filename or "").suffix.lower()
@@ -70,3 +73,12 @@ def voice_audio(filename: str, identity=Depends(voice_identity)):
         path.unlink(missing_ok=True)
         raise HTTPException(404, "음성 재생 기간이 만료되었습니다. 다시 질문해 주세요.")
     return FileResponse(path, media_type="audio/mpeg", headers={"Cache-Control": "no-store"})
+
+
+class SessionEnd(BaseModel):
+    session_id: str = Field(min_length=1, max_length=128, pattern=r"^[a-f0-9]+$")
+
+
+@router.post("/voice-session-end")
+def end_session(body: SessionEnd, identity=Depends(voice_identity)):
+    return pipeline.end_rag_session(body.session_id, identity["token"])

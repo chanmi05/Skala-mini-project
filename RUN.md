@@ -96,6 +96,8 @@ docker compose --env-file app/.env up -d --build
 
 ## 3. 외부 웹·PDF RAG API (`rag-code-template_ext`)
 
+RAG 모듈은 `rag-code-template_ext/rag-service/`에 있다. 기존 uvicorn 진입점에서 새 세션 API를 실행한다. [RAG 모듈 안내](rag-code-template_ext/rag-service/README.md)와 [API·업로드·세션 계약](rag-docs/HR_RAG_API_USAGE.md)을 참고한다.
+
 ### 최초 준비
 
 ```bash
@@ -103,18 +105,18 @@ cd /Users/u085/Desktop/share/rag-code-template_ext
 python3.11 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip setuptools wheel
-python -m pip install -r requirements-e.txt
+python -m pip install -r rag-service/requirements-rag-workflow.txt
 ```
 
 `rag-code-template_ext/.env`에 다음 항목을 설정합니다.
 
 ```dotenv
 OPENAI_API_KEY=발급받은_OpenAI_API_키
-NAVER_CLIENT_ID=발급받은_네이버_클라이언트_ID
-NAVER_CLIENT_SECRET=발급받은_네이버_클라이언트_시크릿
+RAG_MODEL=gpt-4o
+OPENAI_EMBEDDING_MODEL=text-embedding-ada-002
 ```
 
-네이버 인증 정보는 웹 검색 기능에서 사용합니다. DB 연결 설정이 필요하면 같은 파일에 `ASYNC_DB_URL`을 추가합니다. 기본값은 `mysql+aiomysql://root:password@127.0.0.1:53301/sql_db?charset=utf8mb4`이며, 위 Docker DB의 사용자·비밀번호와 다르므로 DB를 사용할 때 실제 연결 정보로 바꿉니다.
+PDF 기반 세션 RAG에는 네이버 키나 관계형 DB가 필요하지 않습니다. `.env.example`에서 선택 설정을 확인할 수 있습니다.
 
 ### 실행
 
@@ -126,7 +128,9 @@ python -m uvicorn rag_external-web_pdf_closed_llm:app --host 127.0.0.1 --port 80
 
 API 문서: http://localhost:8001/docs
 
-처음에는 벡터 저장소가 없을 수 있습니다. 화면에서 웹 검색 또는 PDF 업로드로 자료를 등록한 뒤 질문합니다.
+PDF 업로드·질의 콘솔: http://localhost:8001/console
+
+현재 저장소의 인사규정 인덱스를 사용하거나 PDF를 등록한 뒤 질문합니다. 재업로드는 같은 파일명의 문서만 교체하며 다른 문서는 유지합니다. 문서가 바뀌면 새 대화가 필요합니다. 현재 콘솔은 새 대화와 업로드 후 초기화를 지원합니다.
 
 ## 4. HTML 화면 서버 (저장소 루트)
 
