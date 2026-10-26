@@ -160,3 +160,10 @@ python -B rag-service/evaluation/run_hr_api_smoke.py --trust-local-index
 - `compare_improvement.py runs/improvement_20261026`: 인덱스·질문·모델·k가 같은지 확인한 뒤 `comparison.json`, `case_comparison.md`를 생성한다. 에이전트 검토는 결과 해시와 연결해 다른 실행에 재사용하지 않는다.
 - `run_evaluation.py`는 레거시 `rag_agent` 기준선 도구다. 이번 개선의 구조화 생성·검증·기억 경로는 `evaluate_improvement.py`의 `RagService` 경로로 평가한다.
 - 실제 API 전송은 이번 작업에서 사용자에게 명시적으로 승인받았다. 기존 실행 원자료는 `runs/improvement_20261026/`에 있다. 현재 32문항은 개발 중 확인한 자료이며 미사용 holdout은 아니다.
+
+
+## Git에 저장하는 범위
+
+질문·기대값과 평가 코드, Markdown 보고서는 유지한다. `runs/`, `comparisons/`, `inspections/` 아래 Markdown 이외의 생성물과 내보낸 `corpus.jsonl`은 로컬에만 보관한다. 검색 평가의 `data/eval/result.csv`도 제외한다. 위의 원자료 경로는 로컬 실행 위치를 설명하며 새 체크아웃에서 제공되는 파일을 뜻하지 않는다. `--summarize` 및 `compare_improvement.py` 실행에는 해당 실행의 로컬 결과·검토 파일이 필요하다. 원자료가 없으면 새 출력 폴더로 평가를 실행하거나 코퍼스를 export해야 한다.
+
+정확한 제외 목록은 [평가 생성물 Git 제외 정책](../../../rag-docs/rag-improve/평가_생성물_Git_제외_정책.md)에 기록했다.
