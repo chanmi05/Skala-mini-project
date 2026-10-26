@@ -274,7 +274,7 @@ def main():
     parser.add_argument("--summarize", type=Path, help="Rebuild report for an existing run; no API calls")
     parser.add_argument("--reviews", type=Path)
     parser.add_argument("--model", default="gpt-4o")
-    parser.add_argument("--embedding-model", default="text-embedding-ada-002")
+    parser.add_argument("--embedding-model", default="text-embedding-3-large")
     parser.add_argument("--top-k", type=int, choices=range(1, 51), default=5)
     args = parser.parse_args()
     if args.summarize:

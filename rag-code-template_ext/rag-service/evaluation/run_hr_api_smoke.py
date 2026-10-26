@@ -22,7 +22,7 @@ def run(output):
     index = PROJECT / "faiss_db/pdf"
     digest = lambda: {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in index.iterdir() if p.is_file()}
     before = digest()
-    embedding = OpenAIEmbeddings(model="text-embedding-ada-002", request_timeout=30, max_retries=0)
+    embedding = OpenAIEmbeddings(model="text-embedding-3-large", request_timeout=30, max_retries=0)
     model = ChatOpenAI(model="gpt-4o", temperature=0, max_tokens=1200, timeout=30, max_retries=0)
     store = pdf_pipeline.load_store(index, embedding)
     results = []

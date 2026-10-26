@@ -41,7 +41,7 @@ async def run(args):
     output.mkdir(parents=True, exist_ok=False)
     index = PROJECT_ROOT / "faiss_db/pdf"
     before = {name: sha256(index / name) for name in ["index.faiss", "index.pkl"]}
-    store = FAISS.load_local(str(index), OpenAIEmbeddings(model="text-embedding-ada-002"),
+    store = FAISS.load_local(str(index), OpenAIEmbeddings(model="text-embedding-3-large"),
                              allow_dangerous_deserialization=True)
     recorder = RecordingStore(store)
     llm = ChatOpenAI(model="gpt-4o", temperature=0, max_tokens=600, timeout=30, max_retries=0)
@@ -57,7 +57,7 @@ async def run(args):
               "calls", result["model_calls"], flush=True)
     manifest = {"started_at_utc": started_at,
                 "finished_at_utc": datetime.now(timezone.utc).isoformat(),
-                "model": "gpt-4o", "embedding_model": "text-embedding-ada-002",
+                "model": "gpt-4o", "embedding_model": "text-embedding-3-large",
                 "settings": settings.__dict__, "index_before": before,
                 "index_unchanged": before == {name: sha256(index / name) for name in before},
                 "module_sha256": {name: sha256(ROOT / name) for name in

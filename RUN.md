@@ -113,7 +113,7 @@ python -m pip install -r rag-service/requirements-rag-workflow.txt
 ```dotenv
 OPENAI_API_KEY=발급받은_OpenAI_API_키
 RAG_MODEL=gpt-4o
-OPENAI_EMBEDDING_MODEL=text-embedding-ada-002
+OPENAI_EMBEDDING_MODEL=text-embedding-3-large
 ```
 
 PDF 기반 세션 RAG에는 네이버 키나 관계형 DB가 필요하지 않습니다. `.env.example`에서 선택 설정을 확인할 수 있습니다.
