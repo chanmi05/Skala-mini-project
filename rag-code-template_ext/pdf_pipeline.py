@@ -22,7 +22,8 @@ from pypdf import PdfReader
 
 BASE_DIR = Path(__file__).resolve().parent
 PDF_STORE_PATH = BASE_DIR / "faiss_db" / "pdf"
-EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-ada-002")
+# 평가셋 기준 ada-002 보다 검색이 좋아서 전환했다(fixed MRR 0.778 → 0.823). 바꾸면 차원이 달라지므로 ingest.py 로 다시 적재한다.
+EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-large")
 
 
 def embeddings():
@@ -43,6 +44,34 @@ SECTION_RE = re.compile(r"^(부칙|부록)\S*")
 DROP_FROM_RE = re.compile(r"^(법령\S*\s*확인\s*근거|부록\s*[A-Z]?\.?\s*확인 법령과 출처)")
 CHECKLIST_RE = re.compile(r"^(\d+\.\s*)?☐")
 LIST_ITEM_RE = re.compile(r"^(\d+\.|-|☐)\s")
+# 규정 용어 → 직원이 실제로 쓰는 말. 조문 제목·본문에 규정 용어가 있으면 제목 줄에 관련어로 덧붙여
+# "월급", "출산휴가"처럼 규정과 다른 말로 물어도 검색되게 한다(질의 표현 차이 대응).
+# 평가셋 fixed 기준 MRR 0.823 → 0.833, 튜닝에 안 쓴 새 질문 12개 기준 0.715 → 0.767 (임베딩 3-large).
+SYNONYMS = {
+    "출산전후휴가": ["출산휴가"],
+    "배우자 출산전후휴가": ["배우자 출산휴가", "남편 출산휴가"],
+    "임금": ["월급", "급여"],
+    "지급일": ["월급날"],
+    "혼인": ["결혼"],
+    "사망": ["상(喪)", "장례"],
+    "경조금": ["부조금", "조의금", "축의금"],
+    "경조휴가": ["결혼휴가", "상조휴가"],
+    "노동절": ["근로자의 날"],
+    "연장근로": ["야근", "초과근무"],
+    "야간근로": ["밤샘 근무", "야간 근무"],
+    "휴게": ["점심시간", "쉬는 시간"],
+    "시업": ["출근 시간"],
+    "종업": ["퇴근 시간"],
+    "연차": ["연차휴가"],
+    "여비": ["출장비"],
+    "식대": ["밥값", "점심값"],
+    "정년": ["은퇴 나이"],
+    "수습": ["수습사원", "인턴 기간"],
+    "감액": ["깎임"],
+    "병가": ["아플 때 휴가"],
+    "퇴직급여": ["퇴직금"],
+    "괴롭힘": ["갑질"],
+}
 DOC_NO_RE = re.compile(r"SCT-[A-Z]+-\d{3}")
 VERSION_RE = re.compile(r"(\d+\.\d+)\s*/\s*\S+")
 
@@ -63,6 +92,17 @@ class Section:
     @property
     def text(self) -> str:
         return "\n".join(self.lines)
+
+    @property
+    def label_with_aliases(self) -> str:
+        """제목 줄 + 규정 용어의 일상어. 예: 제10조 출산전후휴가 (관련어: 출산휴가)"""
+        body = f"{self.title}\n{self.text}"
+        found = []
+        for term, words in SYNONYMS.items():
+            # 제목에 있거나 본문에 2번 이상 나오는 용어만. 한 번 스치듯 언급된 조문까지 붙이면 검색이 흐려진다.
+            if term in self.title or self.text.count(term) >= 2:
+                found += [w for w in words if w not in body and w not in found]
+        return f"{self.label} (관련어: {', '.join(found)})" if found else self.label
 
 
 @dataclass
@@ -185,7 +225,7 @@ def chunk_fixed(parsed: ParsedDoc) -> list[Document]:
     """문서 전체를 500/50 고정 크기로 자른다. 메타데이터는 청크 시작 위치의 조문을 따른다."""
     full, starts = "", []
     for s in parsed.sections:
-        block = f"{s.label}\n{s.text}\n\n"
+        block = f"{s.label_with_aliases}\n{s.text}\n\n"
         starts.append((len(full), s))
         full += block
 
@@ -206,7 +246,7 @@ def chunk_article(parsed: ParsedDoc) -> list[Document]:
     """조문 하나를 청크 하나로. 길면 항 단위로 묶어 나누고 앞에 조문 제목을 붙인다."""
     docs = []
     for s in parsed.sections:
-        header = f"[{parsed.doc} {s.label}]"
+        header = f"[{parsed.doc} {s.label_with_aliases}]"
         for part in _split_long(s.lines):
             docs.append(Document(page_content=f"{header}\n{part}", metadata=_metadata(parsed, s, "article")))
     return docs

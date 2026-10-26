@@ -101,7 +101,7 @@ if __name__ == "__main__":
     parser.add_argument("--index", type=Path, default=PROJECT / "faiss_db/pdf")
     parser.add_argument("--output", type=Path, default=Path(__file__).parent / "runs" / ("hr_session_" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")))
     parser.add_argument("--model", default="gpt-4o")
-    parser.add_argument("--embedding-model", default="text-embedding-ada-002")
+    parser.add_argument("--embedding-model", default="text-embedding-3-large")
     args = parser.parse_args()
     if not args.trust_local_index:
         parser.error("Known trusted local FAISS index requires --trust-local-index")

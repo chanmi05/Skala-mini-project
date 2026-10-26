@@ -7,6 +7,7 @@
     .venv/bin/python eval_retrieval.py                     # fixed, article 둘 다
     .venv/bin/python eval_retrieval.py --modes article     # 하나만
     .venv/bin/python eval_retrieval.py --k 5 --out ../data/eval/result.csv
+    .venv/bin/python eval_retrieval.py --embedding-model text-embedding-3-small
 """
 import argparse
 import csv
@@ -77,6 +78,8 @@ def main() -> None:
     parser.add_argument("--modes", nargs="+", default=["fixed", "article"], choices=["fixed", "article"])
     parser.add_argument("--k", type=int, default=5)
     parser.add_argument("--out", type=Path, help="문항별 결과를 저장할 CSV")
+    parser.add_argument("--embedding-model", default=pdf_pipeline.EMBEDDING_MODEL,
+                        help="OpenAI 임베딩 모델 (기본값은 적재에 쓰는 pdf_pipeline.EMBEDDING_MODEL)")
     args = parser.parse_args()
 
     load_dotenv(BASE_DIR / ".env")
@@ -84,9 +87,10 @@ def main() -> None:
         raise SystemExit("OPENAI_API_KEY가 없습니다. rag-code-template_ext/.env 를 확인하세요.")
 
     rows = load_eval(args.eval)
-    embeddings = OpenAIEmbeddings()
+    embeddings = OpenAIEmbeddings(model=args.embedding_model)
     all_detail = []
-    print(f"평가셋 {len(rows)}문항 (정답 있는 문항 {sum(1 for r in rows if r['근거_조문'])}개), top-k={args.k}\n")
+    print(f"평가셋 {len(rows)}문항 (정답 있는 문항 {sum(1 for r in rows if r['근거_조문'])}개), "
+          f"top-k={args.k}, 임베딩={args.embedding_model}\n")
 
     for mode in args.modes:
         summary, detail = evaluate(build_store(mode, embeddings), rows, args.k)
@@ -95,7 +99,7 @@ def main() -> None:
         misses = [d for d in detail if d["정답"] and not d["정답_순위"]]
         for d in misses:
             print(f"   ✗ {d['id']} {d['질문']}  (정답 {d['정답']} / 1위 {d['1위_검색결과']})")
-        all_detail += [{"mode": mode, **d} for d in detail]
+        all_detail += [{"mode": mode, "embedding": args.embedding_model, **d} for d in detail]
 
     if args.out:
         with open(args.out, "w", newline="", encoding="utf-8-sig") as f:

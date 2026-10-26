@@ -149,5 +149,5 @@ if __name__ == '__main__':
     parser.add_argument('--live', action='store_true')
     parser.add_argument('--cases', type=Path, default=PROJECT.parent/'data/eval/eval_set.csv')
     parser.add_argument('--top-k', type=int, default=5)
-    parser.add_argument('--embedding-model', default='text-embedding-ada-002')
+    parser.add_argument('--embedding-model', default='text-embedding-3-large')
     asyncio.run(main(parser.parse_args()))
