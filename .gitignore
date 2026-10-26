@@ -85,3 +85,6 @@ Thumbs.db
 !/rag-code-template_ext/rag-service/evaluation/inspections/**/*.md
 /rag-code-template_ext/rag-service/evaluation/corpus.jsonl
 /data/eval/result.csv
+
+# RAG documentation and work logs are maintained locally.
+/rag-docs/
