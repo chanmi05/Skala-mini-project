@@ -88,3 +88,6 @@ Thumbs.db
 
 # RAG documentation and work logs are maintained locally.
 /rag-docs/
+
+# Local copies of original source files.
+/original/
