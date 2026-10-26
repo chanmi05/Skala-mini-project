@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import AppIcon from '@/components/AppIcon.vue'
 import BrandLogo from '@/components/BrandLogo.vue'
@@ -14,6 +14,7 @@ const router = useRouter()
 const draft = ref('')
 const input = ref(null)
 const messageEnd = ref(null)
+const reviewInput = ref(null)
 const notice = ref('')
 const loggingOut = ref(false)
 const {
@@ -39,6 +40,12 @@ const {
   seconds: recordingSeconds,
   error: voiceError,
   busy: voiceBusy,
+  requireConfirmation,
+  review: voiceReview,
+  question: reviewedQuestion,
+  reviewing,
+  confirm: confirmVoiceQuestion,
+  useOriginal,
   start: startVoice,
   stop: stopVoice,
   cancel: cancelVoice,
@@ -50,26 +57,28 @@ const voiceStatus = computed(() => {
     return `녹음 중 · ${recordingSeconds.value}초 / 60초 · 마이크 버튼을 눌러 종료하세요.`
   }
   if (voicePhase.value === 'transcribing')
-    return '음성을 인식하고 지침 답변을 준비하고 있어요.'
+    return '음성을 인식하고 질문을 교정하고 있어요.'
+  if (voicePhase.value === 'answering')
+    return '확인한 질문으로 지침 답변과 음성을 준비하고 있어요.'
   return ''
+})
+watch(reviewing, async (value) => {
+  if (!value) return
+  await nextTick()
+  reviewInput.value?.focus()
+  reviewInput.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
 })
 const suggestions = [
   {
-    icon: 'calendar',
-    label: '휴가·근태',
-    text: '연차 신청과 근무 기준',
+    text: '연차는 어떻게 신청하나요?',
     prompt: '연차를 신청하려면 어떤 절차를 따라야 하나요?',
   },
   {
-    icon: 'receipt',
-    label: '출장·경비',
-    text: '출장 신청과 비용 정산',
+    text: '출장 경비 정산에 어떤 서류가 필요한가요?',
     prompt: '출장 경비를 정산할 때 필요한 서류와 절차가 궁금해요.',
   },
   {
-    icon: 'shield',
-    label: '보안·업무',
-    text: '사내 자료와 보안 지침',
+    text: '사내 자료를 외부에 공유해도 되나요?',
     prompt: '사내 자료를 외부에 공유하려면 어떤 보안 절차를 확인해야 하나요?',
   },
 ]
@@ -105,7 +114,7 @@ async function scrollToAnswer() {
 }
 
 async function send() {
-  if (voiceBusy.value || pending.value) return
+  if (voiceBusy.value || reviewing.value || pending.value) return
   const content = draft.value.trim()
   if (!content) return
   if (!currentUser.value) {
@@ -205,17 +214,17 @@ onUnmounted(() => {
             :aria-label="`${PROJECT_NAME} 메인으로`"
             ><BrandLogo
           /></RouterLink>
-          <span class="header-tag">사내 지침 챗봇</span>
+          <span class="header-tag">우리 회사 업무 도우미</span>
         </div>
         <div class="header-actions">
           <button
-            v-if="messages.length || draft || voiceBusy"
+            v-if="messages.length || draft || voiceBusy || voiceReview"
             type="button"
             class="reset-chat-button"
             aria-label="현재 대화 초기화"
             @click="resetConversation"
           >
-            <AppIcon name="plus" :size="16" /><span>대화 초기화</span>
+            <AppIcon name="plus" :size="16" /><span>처음부터 질문하기</span>
           </button>
           <RouterLink v-if="!currentUser" to="/login" class="header-login"
             >로그인<AppIcon name="right" :size="15" /></RouterLink
@@ -240,38 +249,34 @@ onUnmounted(() => {
         <p v-if="notice" class="form-notice error chat-notice" role="alert">
           {{ notice }}
         </p>
-        <section v-if="!messages.length" class="welcome">
-          <div class="welcome-heading">
-            <span class="welcome-eyebrow">POLICY WORKSPACE</span
-            ><span class="workspace-caption">사내 업무 지원</span>
+        <section v-if="!messages.length && !voiceReview" class="welcome">
+          <p class="chat-section-label">사내 지침 안내</p>
+          <div class="welcome-assistant">
+            <span class="assistant-avatar"><BrandLogo compact /></span>
+            <div class="welcome-bubble">
+              <p class="welcome-author">{{ PROJECT_NAME }}</p>
+              <h1>안녕하세요. 무엇이 궁금하세요?</h1>
+              <p class="welcome-description">
+                휴가부터 출장, 보안 지침까지<br />회사 생활에 필요한 내용을 함께
+                찾아드릴게요.
+              </p>
+            </div>
           </div>
-          <h1>사내 지침 조회</h1>
-          <p class="welcome-description">
-            확인할 규정이나 절차를 질문해 주세요.<br />텍스트 입력과 음성 질문을
-            지원합니다.
-          </p>
-          <div class="topics-heading">
-            <h2>분야별 질문 예시</h2>
-            <span>항목을 선택해 질문을 입력하세요</span>
-          </div>
-          <div class="suggestion-grid">
-            <button
-              v-for="(item, index) in suggestions"
-              :key="item.label"
-              class="suggestion-card"
-              @click="useSuggestion(item.prompt)"
-            >
-              <span class="suggestion-index">{{
-                String(index + 1).padStart(2, '0')
-              }}</span>
-              <span class="suggestion-title"
-                ><AppIcon :name="item.icon" :size="18" /><strong>{{
-                  item.label
-                }}</strong></span
+          <div class="welcome-questions">
+            <div class="topics-heading">
+              <h2>이런 질문을 많이 찾아요</h2>
+              <span>질문을 선택해 보세요</span>
+            </div>
+            <div class="suggestion-grid">
+              <button
+                v-for="item in suggestions"
+                :key="item.prompt"
+                class="suggestion-card"
+                @click="useSuggestion(item.prompt)"
               >
-              <span class="suggestion-description">{{ item.text }}</span>
-              <AppIcon class="suggestion-arrow" name="right" :size="17" />
-            </button>
+                <span class="suggestion-description">{{ item.text }}</span>
+              </button>
+            </div>
           </div>
         </section>
         <section
@@ -368,8 +373,83 @@ onUnmounted(() => {
           </p>
           <div ref="messageEnd"></div>
         </section>
+        <section
+          v-if="voiceReview"
+          class="question-review"
+          aria-labelledby="review-title"
+        >
+          <div class="question-review-heading">
+            <h2 id="review-title">
+              {{ reviewing ? '답변 전 질문 확인' : '음성 질문 확인 내용' }}
+            </h2>
+            <button type="button" class="voice-cancel" @click="resetVoice">
+              {{ voiceBusy ? '취소' : '닫기' }}
+            </button>
+          </div>
+          <h3>음성 인식 원문</h3>
+          <p class="question-original">{{ voiceReview.raw_transcript }}</p>
+          <label for="review-question">문맥을 반영한 질문</label>
+          <textarea
+            id="review-question"
+            ref="reviewInput"
+            v-model="reviewedQuestion"
+            rows="3"
+            :maxlength="MAX_QUESTION_LENGTH"
+            :readonly="!reviewing || pending"
+            aria-describedby="review-help review-warning"
+          ></textarea>
+          <p id="review-warning" class="question-review-note" role="status">
+            {{
+              voiceReview.warning ||
+              (voiceReview.changed
+                ? '문맥 교정 제안입니다. 원래 의도와 맞는지 확인해 주세요.'
+                : '추가 교정 없이 원문을 유지했습니다.')
+            }}
+          </p>
+          <p id="review-help" class="question-review-note">
+            이름·숫자·부정 표현이 맞는지 확인해 주세요. 설정 변경은 다음
+            녹음부터 적용됩니다.
+          </p>
+          <div v-if="reviewing" class="question-review-actions">
+            <button
+              type="button"
+              class="secondary-button"
+              :disabled="pending"
+              @click="useOriginal"
+            >
+              원문 사용
+            </button>
+            <button
+              type="button"
+              class="primary-button"
+              :disabled="pending || !reviewedQuestion.trim()"
+              @click="confirmVoiceQuestion"
+            >
+              이 질문으로 답변 받기<AppIcon name="right" :size="16" />
+            </button>
+          </div>
+        </section>
       </main>
       <div class="composer-area">
+        <div class="question-confirmation-setting">
+          <label
+            ><input
+              v-model="requireConfirmation"
+              type="checkbox"
+              role="switch"
+              :disabled="voiceBusy || pending"
+              aria-describedby="confirmation-help"
+            />음성 질문 먼저 확인하기
+            <span>{{ requireConfirmation ? '켜짐' : '꺼짐' }}</span></label
+          >
+          <p id="confirmation-help">
+            {{
+              requireConfirmation
+                ? '말씀하신 내용을 확인하고 답변을 요청해요.'
+                : '말씀하신 내용으로 바로 답변을 찾아드려요.'
+            }}
+          </p>
+        </div>
         <p v-if="chatError" class="voice-feedback error" role="alert">
           {{ chatError }}
         </p>
@@ -403,17 +483,14 @@ onUnmounted(() => {
             v-model="draft"
             rows="1"
             :maxlength="MAX_QUESTION_LENGTH"
-            placeholder="사내 지침에 대해 질문해 주세요."
-            :readonly="voiceBusy || pending"
+            placeholder="궁금한 사내 지침을 물어보세요."
+            :readonly="voiceBusy || reviewing || pending"
             @input="resizeInput"
             @keydown="onKeydown"
           ></textarea>
           <div class="composer-bottom">
-            <span
-              ><AppIcon name="shield" :size="16" /> 사내 지침<span
-                class="composer-divider"
-              ></span
-              ><span class="composer-mode">텍스트·음성</span></span
+            <span class="composer-keyboard-hint"
+              >Enter로 전송 · Shift + Enter로 줄바꿈</span
             >
             <div class="composer-actions">
               <button
@@ -424,7 +501,7 @@ onUnmounted(() => {
                 :aria-pressed="voicePhase === 'recording'"
                 :aria-label="
                   voicePhase === 'recording'
-                    ? '녹음 종료 후 질문 전송'
+                    ? '녹음 종료 후 질문 인식'
                     : '음성으로 질문하기'
                 "
                 @click="toggleVoice"
@@ -440,7 +517,7 @@ onUnmounted(() => {
                 class="send-button"
                 type="submit"
                 aria-label="메시지 보내기"
-                :disabled="!draft.trim() || voiceBusy || pending"
+                :disabled="!draft.trim() || voiceBusy || reviewing || pending"
               >
                 <AppIcon name="arrow" :size="20" />
               </button>
@@ -448,8 +525,7 @@ onUnmounted(() => {
           </div>
         </form>
         <p class="composer-disclaimer">
-          질문은 2,000자까지 입력할 수 있습니다. 음성 질문은 녹음 종료 후 자동
-          전송되며 답변을 음성으로 재생합니다.
+          음성으로 질문하시면 답변도 소리로 들려드려요.
         </p>
       </div>
     </div>

@@ -1,12 +1,20 @@
 import { computed, ref } from 'vue'
-import { queryAudio } from '../services/voice.js'
+import {
+  MAX_QUESTION_LENGTH,
+  queryText,
+  transcribeAudio,
+} from '../services/voice.js'
 
 // 녹음은 저장하지 않으며 페이지를 떠날 때 cancel()을 호출합니다.
 export function useVoiceInput(onAnswer) {
   const phase = ref('idle')
   const seconds = ref(0)
   const error = ref('')
-  const busy = computed(() => phase.value !== 'idle')
+  const requireConfirmation = ref(true)
+  const review = ref(null)
+  const question = ref('')
+  const reviewing = computed(() => phase.value === 'reviewing')
+  const busy = computed(() => phase.value !== 'idle' && !reviewing.value)
   let generation = 0
   let stream = null
   let recorder = null
@@ -37,7 +45,43 @@ export function useVoiceInput(onAnswer) {
     stream = null
     clearTimer()
     seconds.value = 0
+    review.value = null
+    question.value = ''
     phase.value = 'idle'
+  }
+
+  function useOriginal() {
+    if (reviewing.value) question.value = review.value.raw_transcript
+  }
+
+  async function requestAnswer(token) {
+    const content = question.value.trim()
+    if (!content || content.length > MAX_QUESTION_LENGTH) {
+      error.value = '질문은 1~2,000자로 입력해 주세요.'
+      phase.value = 'reviewing'
+      return
+    }
+    error.value = ''
+    phase.value = 'answering'
+    controller = new AbortController()
+    let succeeded = false
+    try {
+      const answer = await queryText(content, { signal: controller.signal })
+      if (token !== generation) return
+      await onAnswer(answer)
+      succeeded = true
+    } catch (e) {
+      if (token === generation) error.value = e.message
+    } finally {
+      if (token === generation) {
+        phase.value = succeeded ? 'idle' : 'reviewing'
+        controller = null
+      }
+    }
+  }
+
+  function confirm() {
+    if (reviewing.value) return requestAnswer(generation)
   }
 
   function stop() {
@@ -68,6 +112,9 @@ export function useVoiceInput(onAnswer) {
     }
 
     const token = ++generation
+    const confirmBeforeAnswer = requireConfirmation.value
+    review.value = null
+    question.value = ''
     phase.value = 'requesting'
     try {
       const acquired = await media.getUserMedia({ audio: true })
@@ -103,15 +150,21 @@ export function useVoiceInput(onAnswer) {
         }
         controller = new AbortController()
         try {
-          const answer = await queryAudio(audio, {
+          const transcript = await transcribeAudio(audio, {
             signal: controller.signal,
           })
-          if (token === generation) await onAnswer(answer)
+          if (token !== generation) return
+          review.value = transcript
+          question.value = transcript.corrected_question
+          if (confirmBeforeAnswer) phase.value = 'reviewing'
+          else await requestAnswer(token)
         } catch (e) {
-          if (token === generation) error.value = e.message
+          if (token === generation) {
+            error.value = e.message
+            phase.value = 'idle'
+          }
         } finally {
           if (token === generation) {
-            phase.value = 'idle'
             seconds.value = 0
             controller = null
           }
@@ -134,5 +187,19 @@ export function useVoiceInput(onAnswer) {
     }
   }
 
-  return { phase, seconds, error, busy, start, stop, cancel }
+  return {
+    phase,
+    seconds,
+    error,
+    busy,
+    requireConfirmation,
+    review,
+    question,
+    reviewing,
+    start,
+    stop,
+    cancel,
+    confirm,
+    useOriginal,
+  }
 }

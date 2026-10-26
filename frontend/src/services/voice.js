@@ -47,6 +47,10 @@ async function request(path, body, { signal, json = false } = {}) {
       response.status,
     )
   }
+  return data
+}
+
+function readAnswer(data) {
   if (
     typeof data?.answer !== 'string' ||
     !data.answer.trim() ||
@@ -72,20 +76,45 @@ export function queryText(question, options = {}) {
       new VoiceApiError('질문은 1~2,000자로 입력해 주세요.'),
     )
   }
-  return request('/voice-query-text', { question }, { ...options, json: true })
+  return request(
+    '/voice-query-text',
+    { question },
+    { ...options, json: true },
+  ).then(readAnswer)
 }
 
-export function queryAudio(audio, options = {}) {
+function audioForm(audio) {
   if (!audio.size || audio.size > 10 * 1024 * 1024) {
-    return Promise.reject(
-      new VoiceApiError(
-        '녹음 파일은 0바이트보다 크고 10MB 이하여야 합니다. 다시 녹음해 주세요.',
-      ),
+    throw new VoiceApiError(
+      '녹음 파일은 0바이트보다 크고 10MB 이하여야 합니다. 다시 녹음해 주세요.',
     )
   }
   const body = new FormData()
   body.append('audio', audio, `recording-${crypto.randomUUID()}.webm`)
-  return request('/voice-query', body, options)
+  return body
+}
+
+export async function queryAudio(audio, options = {}) {
+  return readAnswer(await request('/voice-query', audioForm(audio), options))
+}
+
+export async function transcribeAudio(audio, options = {}) {
+  const data = await request('/voice-transcribe', audioForm(audio), options)
+  if (
+    typeof data?.raw_transcript !== 'string' ||
+    !data.raw_transcript.trim() ||
+    typeof data.corrected_question !== 'string' ||
+    !data.corrected_question.trim() ||
+    data.corrected_question.length > MAX_QUESTION_LENGTH ||
+    typeof data.changed !== 'boolean' ||
+    (data.confirmation_required != null &&
+      typeof data.confirmation_required !== 'boolean')
+  ) {
+    throw new VoiceApiError(
+      '질문 확인 응답 형식을 확인할 수 없습니다. 다시 녹음해 주세요.',
+    )
+  }
+  return data
 }
 
 // Use the same API origin for answers and authenticated audio playback.

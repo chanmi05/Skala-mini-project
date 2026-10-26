@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import {
   queryText,
   queryAudio,
+  transcribeAudio,
   resolveVoiceAudioUrl,
 } from '../src/services/voice.js'
 
@@ -36,6 +37,32 @@ test('빈 질문과 2000자 초과 질문은 서버에 보내지 않는다', asy
   globalThis.fetch = () => assert.fail('invalid request')
   await assert.rejects(queryText(' '), /2,000/)
   await assert.rejects(queryText('가'.repeat(2001)), /2,000/)
+})
+
+test('질문 확인은 8008 음성 인식 API에 audio 파일을 보내고 교정 결과를 받는다', async () => {
+  const review = {
+    raw_transcript: '유가 휴직',
+    corrected_question: '육아휴직',
+    changed: true,
+    warning: null,
+  }
+  globalThis.fetch = async (url, options) => {
+    assert.equal(url, 'http://localhost:8008/voice-transcribe')
+    assert.equal(options.credentials, 'include')
+    assert.equal(options.body.get('audio').size, 5)
+    return Response.json(review)
+  }
+  assert.deepEqual(await transcribeAudio(new Blob(['audio'])), review)
+})
+
+test('잘못된 교정 응답은 확인 화면이나 자동 답변에 사용하지 않는다', async () => {
+  for (const body of [
+    { answer: '다른 응답' },
+    { raw_transcript: '원문', corrected_question: ' ', changed: true },
+  ]) {
+    globalThis.fetch = async () => Response.json(body)
+    await assert.rejects(transcribeAudio(new Blob(['audio'])), /질문 확인 응답/)
+  }
 })
 
 test('빈 음성과 10MB 초과 음성은 서버에 보내지 않는다', async () => {

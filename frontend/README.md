@@ -38,7 +38,8 @@ npm run preview
 | --- | --- | --- |
 | 로그인·가입·인증 확인·로그아웃 | `/api/*` | 8080, 경로 유지 |
 | 텍스트 질문 | `POST http://localhost:8008/voice-query-text` | 8008 직접 요청 |
-| 음성 질문 | `POST http://localhost:8008/voice-query` | 8008 직접 요청 |
+| 음성 인식·질문 확인 | `POST http://localhost:8008/voice-transcribe` | 8008 직접 요청 |
+| 확인한 음성 질문의 답변 | `POST http://localhost:8008/voice-query-text` | 8008 직접 요청 |
 | 서버 음성 재생 | `http://localhost:8008/voice-audio/*` | 8008 직접 요청 |
 
 위 주소는 개발 환경 기본값입니다. `voice.js`의 `VOICE_API_BASE_URL`로 음성·답변 요청 주소를 통일하며, `VITE_VOICE_API_BASE_URL`로 변경할 수 있습니다. 8008 서버 CORS에는 `http://localhost:5173`과 `http://127.0.0.1:5173`을 허용합니다. 인증 쿠키가 공유되도록 로그인과 메인은 모두 `localhost`로 접속하세요.
@@ -55,7 +56,11 @@ npm run preview
 
 텍스트 질문은 `{"question":"질문"}` JSON으로 전송합니다. 질문은 1~2,000자이며 응답 대기 중 중복 전송을 막습니다. `VoiceAnswer`의 `answer`, `sources`, `needs_review`, `handoff`, `warning`을 표시하며, `mode`가 `demo` 또는 `mock`이면 데모·연결 테스트임을 표시합니다. 서버 실패 시 가짜 답변을 추가하지 않고 입력창에 질문을 복원합니다.
 
-음성 질문은 입력창을 비운 뒤 **음성 질문 → 녹음 종료**로 전송합니다. 최대 60초·10MB의 WebM을 `audio` 파일로 보내고, 서버가 반환한 `transcript`와 답변을 표시합니다. `/voice-query`가 인식·검색·음성 합성을 처리하므로 별도의 `/voice-transcribe` 수정 확인 단계는 호출하지 않습니다. 입력 중인 텍스트와 녹음은 각각 별개의 질문으로 전송합니다.
+음성 질문은 입력창을 비운 뒤 **음성 질문 → 녹음 종료**로 전송합니다. 최대 60초·10MB의 WebM을 `audio` 파일로 `/voice-transcribe`에 보내고, `raw_transcript`, `corrected_question`, `changed`, `warning`을 질문 확인 화면에 표시합니다. 입력 중인 텍스트와 녹음은 각각 별개의 질문으로 전송합니다.
+
+**답변 전 질문 확인**은 기본 ON입니다. 원문과 교정 질문을 비교하고 질문을 수정하거나 **원문 사용**으로 되돌린 뒤 **이 질문으로 답변 받기**를 눌러야 `/voice-query-text`를 호출합니다. OFF이면 인식·교정 결과를 표시하고 교정 질문으로 자동 요청합니다. 설정은 녹음 시작 시 확정되므로 다음 녹음부터 적용됩니다. `confirmation_required`의 서버 기본값과 별도로 사용자 ON/OFF 선택을 따르는 동작은 기존 `voice-query.html`과 같습니다.
+
+답변 요청 실패 시 확인 화면과 수정한 질문을 유지해 재시도할 수 있습니다. 확인 화면의 **닫기/취소**, 대화 초기화, 페이지 이동은 확인 내용과 진행 중 요청을 정리합니다. 확인 중인 음성 질문은 일반 텍스트 전송과 섞이지 않으며 질문·확인 설정은 브라우저 저장소에 저장하지 않습니다.
 
 음성 질문의 답변은 `audio_url`을 자동 재생합니다. 텍스트 질문의 음성은 **다시 듣기**를 눌러 재생합니다. 상대 음성 주소와 기존 프록시 주소도 같은 음성 API 기본 주소로 변환합니다. 오디오 요소의 `crossOrigin`은 `use-credentials`로 설정해 인증 쿠키를 전달합니다. 오디오가 없으면 브라우저 Web Speech API의 한국어 음성을 사용합니다. 자동 재생 차단·재생 실패·기간 만료 시 오류를 안내하고 텍스트는 유지합니다.
 
@@ -78,7 +83,7 @@ npm run preview
 - `src/services/auth.js`: 인증 API·사용자 상태
 - `src/services/voice.js`: 질의 API·응답 검증·공통 API 주소
 - `src/composables/useChat.js`: 일회성 대화·요청 대기·취소
-- `src/composables/useVoiceInput.js`: 녹음·업로드·마이크 해제
+- `src/composables/useVoiceInput.js`: 녹음·교정 질문 확인·확인 후 질의·취소·마이크 해제
 - `src/composables/useSpeechOutput.js`: 서버 오디오·브라우저 음성 재생
 - `src/views/`: 세 페이지, `src/components/`: 공통 인증 레이아웃·브랜드·아이콘
 - `src/config/project.js`: 서비스명, `src/router/index.js`: 라우팅
