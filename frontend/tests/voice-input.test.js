@@ -103,7 +103,7 @@ test('녹음 종료 후 마이크를 해제하고 인증 쿠키와 함께 음성
   voice.stop()
   await recordings[0].finished
   assert.equal(tracks[0].stopped, true)
-  assert.equal(uploads[0].url, 'http://localhost:8008/voice-query')
+  assert.equal(uploads[0].url, '/voice-api/voice-query')
   assert.equal(uploads[0].options.credentials, 'include')
   assert.match(
     uploads[0].options.body.get('audio').name,

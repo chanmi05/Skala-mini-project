@@ -37,11 +37,11 @@ npm run preview
 | 기능 | 프런트엔드 요청 | 서버 |
 | --- | --- | --- |
 | 로그인·가입·인증 확인·로그아웃 | `/api/*` | 8080, 경로 유지 |
-| 텍스트 질문 | `POST http://localhost:8008/voice-query-text` | 8008 직접 요청 |
-| 음성 질문 | `POST http://localhost:8008/voice-query` | 8008 직접 요청 |
-| 서버 음성 재생 | `http://localhost:8008/voice-audio/*` | 8008 직접 요청 |
+| 텍스트 질문 | `POST /voice-api/voice-query-text` | 8008, 접두사 제거 |
+| 음성 질문 | `POST /voice-api/voice-query` | 8008, 접두사 제거 |
+| 서버 음성 재생 | `/voice-api/voice-audio/*` | 8008, 접두사 제거 |
 
-위 주소는 개발 환경 기본값입니다. `voice.js`의 `VOICE_API_BASE_URL`로 음성·답변 요청 주소를 통일하며, `VITE_VOICE_API_BASE_URL`로 변경할 수 있습니다. 8008 서버 CORS에는 `http://localhost:5173`과 `http://127.0.0.1:5173`을 허용합니다. 인증 쿠키가 공유되도록 로그인과 메인은 모두 `localhost`로 접속하세요.
+개발·Docker 실행의 기본 주소는 현재 화면과 같은 출처의 `/voice-api`입니다. 로그인과 음성 요청이 동일한 호스트의 쿠키를 사용하므로 `127.0.0.1:5173`에서도 인증이 유지됩니다. 로그인 후 `localhost`와 `127.0.0.1` 사이를 이동하면 별도 쿠키 영역이므로 다시 로그인해야 합니다. `voice.js`의 `VOICE_API_BASE_URL`로 음성·답변·재생·세션 종료 주소를 통일하며, 별도 환경에서는 `VITE_VOICE_API_BASE_URL`로 변경할 수 있습니다.
 
 모든 API 요청은 `credentials: include`로 서버 쿠키를 사용합니다. 비밀번호와 토큰을 브라우저 저장소에 저장하지 않습니다. 로그인 성공 시 서버의 기존 8008 리다이렉트 주소 대신 Vue 메인(`/`)으로 이동합니다.
 
@@ -71,7 +71,7 @@ npm run preview
 
 빌드 환경은 `VITE_VOICE_API_BASE_URL`을 지정하지 않으면 `/voice-api`를 기본값으로 사용합니다. Vite `server.proxy`는 개발 전용이므로 `npm run preview`나 배포 환경에서는 웹 서버가 `/api/*`를 8080으로, `/voice-api/*`는 접두사를 제거해 8008로 전달해야 합니다. 배포 시 음성 API를 직접 호출하려면 `VITE_VOICE_API_BASE_URL`에 서버 주소를 지정하고 해당 프런트엔드 출처의 CORS를 허용해야 합니다. `/login`·`/signup` 직접 접근은 `index.html`로 연결합니다. 인증 쿠키가 전달되도록 같은 출처를 유지하세요.
 
-필요한 프런트엔드 환경변수는 `.env.local`의 `VITE_` 접두사로 지정합니다. 이 값은 브라우저에 노출되므로 API 비밀키를 넣지 않습니다. 개발 환경의 음성 API 주소 예시는 [.env.example](.env.example)에 있습니다. 주소를 변경하면 Vite를 재시작하세요. 프런트엔드 비밀키는 필요하지 않습니다.
+필요한 프런트엔드 환경변수는 `.env.local`의 `VITE_` 접두사로 지정합니다. 이 값은 브라우저에 노출되므로 API 비밀키를 넣지 않습니다. 기본 프록시를 사용할 때는 프런트엔드 환경 파일을 만들 필요가 없습니다. 주소를 변경하면 Vite를 재시작하세요. 프런트엔드 비밀키는 필요하지 않습니다.
 
 ## 주요 파일
 

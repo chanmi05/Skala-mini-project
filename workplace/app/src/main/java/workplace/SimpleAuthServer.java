@@ -112,10 +112,9 @@ Modification history:
 public class SimpleAuthServer {
 
     // ==== DB CONFIG (modify according to your environment) ==== //
-    private static final String DB_URL = "jdbc:mariadb://localhost:53301/sql_db";
-    private static final String DB_USER = "user";
-    // private static final String DB_PASSWORD = System.getenv("DB_PASSWORD");
     private static final Dotenv DOTENV = loadDotenv();
+    private static final String DB_URL = DOTENV.get("DB_URL", "jdbc:mariadb://localhost:53301/sql_db");
+    private static final String DB_USER = DOTENV.get("DB_USER", "user");
     private static final String DB_PASSWORD = DOTENV.get("DB_PASSWORD");
     // ==== SESSION STORE ==== //
     private static final Map<String, User> SESSION_STORE = new ConcurrentHashMap<>();

@@ -1,0 +1,90 @@
+name: mini-project
+
+services:
+  mariadb:
+    image: mariadb:11.8
+    env_file: ./workplace/.env
+    entrypoint: ["/bin/sh", "/usr/local/bin/mini-project-mariadb.sh"]
+    command: ["mariadbd"]
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:53301:3306"
+    environment:
+      MARIADB_DATABASE: sql_db
+      MARIADB_USER: user
+      MARIADB_RANDOM_ROOT_PASSWORD: "1"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./workplace/docker/mariadb/entrypoint.sh:/usr/local/bin/mini-project-mariadb.sh:ro
+      - ./workplace/docker/mariadb/init.sql:/docker-entrypoint-initdb.d/01-users.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  workplace:
+    build: ./workplace
+    env_file: ./workplace/.env
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      DB_URL: jdbc:mariadb://mariadb:3306/sql_db
+      DB_USER: user
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+  rag:
+    build: ./rag-code-template_ext
+    env_file: ./rag-code-template_ext/.env
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8001:8001"
+    volumes:
+      - ./rag-code-template_ext/faiss_db:/app/faiss_db
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health', timeout=5)"]
+      interval: 10s
+      timeout: 6s
+      retries: 12
+      start_period: 30s
+
+  voice-ai:
+    build: ./voice-ai_code
+    env_file: ./voice-ai_code/.env
+    restart: unless-stopped
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8008"]
+    ports:
+      - "127.0.0.1:8008:8008"
+    environment:
+      VOICE_RAG_MODE: live
+      RAG_BASE_URL: http://rag:8001
+      HF_HOME: /models
+    volumes:
+      - whisper_cache:/models
+    depends_on:
+      workplace:
+        condition: service_started
+      rag:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5173:5173"
+    environment:
+      AUTH_PROXY_TARGET: http://workplace:8080
+      VOICE_PROXY_TARGET: http://voice-ai:8008
+    depends_on:
+      workplace:
+        condition: service_started
+      voice-ai:
+        condition: service_started
+
+volumes:
+  mariadb_data:
+  whisper_cache:
