@@ -1,0 +1,229 @@
+{
+  "case": {
+    "id": "Q10",
+    "유형": "사실",
+    "질문": "일주일에 최대 몇 시간까지 일할 수 있어?",
+    "기대답변": "연장근로는 주 12시간 이내로, 주 40시간과 합쳐 일반적으로 52시간이 한도다.",
+    "근거_규정": "스칼라테크 근태규정",
+    "근거_조문": "제9조",
+    "쪽": "3",
+    "정확": "",
+    "근거": "",
+    "환각": ""
+  },
+  "result": {
+    "status": "answered",
+    "output": "일주일에 최대 몇 시간까지 일할 수 있는지는 통상 근로자의 경우 주 40시간의 기본 근로시간에 연장근로 12시간을 더하여 총 52시간입니다. 이 규정은 연장근로가 당사자 합의에 따라 주 12시간 이내로 제한되기 때문입니다. 휴일근로도 주간 한도 관리에 포함됩니다 [S5].",
+    "reason_code": "evidence_sufficient",
+    "answer": "일주일에 최대 몇 시간까지 일할 수 있는지는 통상 근로자의 경우 주 40시간의 기본 근로시간에 연장근로 12시간을 더하여 총 52시간입니다. 이 규정은 연장근로가 당사자 합의에 따라 주 12시간 이내로 제한되기 때문입니다. 휴일근로도 주간 한도 관리에 포함됩니다 [S5].",
+    "sources": [
+      {
+        "id": "S1",
+        "chunk_id": "03_근태규정.pdf::11",
+        "metadata": {
+          "source": "03_근태규정.pdf",
+          "doc": "스칼라테크 근태규정",
+          "doc_no": "SCT-HR-003",
+          "version": "1.0",
+          "doc_type": "사내규정",
+          "chapter": "제3장 연장·야간·휴일근로와 보상",
+          "article": "제9조",
+          "title": "신청·동의·시간한도",
+          "page": 3,
+          "chunk_mode": "fixed"
+        },
+        "text": "6. 단시간근로자는 계약상 소정근로시간을 넘는 근로에 동의가 필요하며 주 12시간 이내로 제한한다. 법정 8시간·40시간 미만이어도 계약시간 초과분에 통상임금의 50% 이상을 가산한다.",
+        "score": 0.4247640371322632
+      },
+      {
+        "id": "S2",
+        "chunk_id": "01_취업규정.pdf::2",
+        "metadata": {
+          "source": "01_취업규정.pdf",
+          "doc": "스칼라테크 취업규정",
+          "doc_no": "SCT-HR-001",
+          "version": "1.0",
+          "doc_type": "사내규정",
+          "chapter": "제1장 총칙",
+          "article": "제2조",
+          "title": "적용 대상과 회사의 보장 기준",
+          "page": 1,
+          "chunk_mode": "fixed"
+        },
+        "text": "제2조 적용 대상과 회사의 보장 기준\n1. 이 규정은 회사와 근로계약을 체결한 모든 근로자에게 적용한다. 정규직·기간제·단시간·수습이라는 명칭만으로 근로자의 권리를 제한하지 않는다.\n2. 임원·위탁계약자도 실제 업무의 지휘·감독, 보수 및 근무 실태상 근로자에 해당하면 관련 노동법과 이 규정을 적용한다.\n3. 회사는 상시근로자 수가 5명 미만이더라도 이 규정에 정한 주 40시간, 연장·야간·휴일근로 가산수당, 공휴일, 연차, 정당한 이유 없는 해고 금지 및 괴롭힘 보호 절차를 회사의 근로조건으로 보장한다. 이는 해당 법률이 사업장 규모와 무관하게 모두 강제 적용된다는 뜻은 아니다.\n4. 단시간근로자는 근로시간에 비례하여 정할 수 있는 사항만 합리적으로 비례 적용한다. 주 15시간 미만 근로자의 주휴일·연차 적용은 근태·휴가규정에 따르며, 회사가 더 유리하게 약정한 조건은 유지한다.",
+        "score": 0.4290037751197815
+      },
+      {
+        "id": "S3",
+        "chunk_id": "04_휴가규정.pdf::5",
+        "metadata": {
+          "source": "04_휴가규정.pdf",
+          "doc": "스칼라테크 휴가규정",
+          "doc_no": "SCT-HR-004",
+          "version": "1.0",
+          "doc_type": "사내규정",
+          "chapter": "제2장 연차 유급휴가",
+          "article": "제4조",
+          "title": "발생 기준",
+          "page": 2,
+          "chunk_mode": "fixed"
+        },
+        "text": "6. 정확히 1년인 근로계약이 종료되어 다음 날 근로관계가 없다면 그 다음 날 발생하는 15일은 원칙적으로 발생하지 않는다. 갱신·재고용·실제 계속근로가 있는지는 형식적 계약서만으로 판단하지 않는다.\n7. 4주 평균 주 소정근로시간 15시간 미만이면 법정 연차 적용 대상에서 제외하되, 회사가 별도로 약정한 유급휴가는 이행한다.\n8. 연차가 적용되는 단시간근로자는 통상근로자 연차일수 × 단시간 소정근로시간/통상근로자 소정근로시간 × 8시간으로 시간 단위 산정하고, 산정 결과의 1시간 미만은 1시간으로 처리한다. 실제 해당일 소정근로시간만큼 사용 처리한다.",
+        "score": 0.42911726236343384
+      },
+      {
+        "id": "S4",
+        "chunk_id": "03_근태규정.pdf::4",
+        "metadata": {
+          "source": "03_근태규정.pdf",
+          "doc": "스칼라테크 근태규정",
+          "doc_no": "SCT-HR-003",
+          "version": "1.0",
+          "doc_type": "사내규정",
+          "chapter": "제1장 기본 근무와 휴일",
+          "article": "제4조",
+          "title": "휴일과 유급 처리",
+          "page": 2,
+          "chunk_mode": "fixed"
+        },
+        "text": "제4조 휴일과 유급 처리\n1. 1주 소정근로일을 개근한 근로자에게 일요일을 유급 주휴일로 보장한다. 법정 유급휴가·출근 간주 등은 각 법령에 맞게 처리하며 지각·조퇴 몇 회를 결근 1일로 임의 환산하지 않는다.\n2. 4주 평균 주 소정근로시간 15시간 미만인 경우 근로기준법 제55조상 휴일은 법정 적용 대상에서 제외된다. 더 유리한 개별 약정이 있으면 이를 적용한다.\n3. 제2항의 적용 제외를 제외하고, 관공서 공휴일 규정에 따른 공휴일·대체공휴일을 유급휴일로 보장한다. 토요일은 공휴일 등 별도 휴일에 해당하지 않는 한 무급 휴무일이다.\n4. 5월 1일 노동절은 별도 법률에 따른 유급휴일로 처리한다. 주 15시간 미만이라는 이유만으로 일괄 제외하지 않으며, 근로관계의 계속 여부와 단시간근로자의 산정기준을 확인한다.\n5. 유급휴일 임금과 실제 휴일근로의 임금·가산수당은 구분한다. 월급에 이미 포함된 유급휴일분을 중복 계산하지 않되 실제 근로분을 누락하지 않는다.",
+        "score": 0.43133440613746643
+      },
+      {
+        "id": "S5",
+        "chunk_id": "03_근태규정.pdf::10",
+        "metadata": {
+          "source": "03_근태규정.pdf",
+          "doc": "스칼라테크 근태규정",
+          "doc_no": "SCT-HR-003",
+          "version": "1.0",
+          "doc_type": "사내규정",
+          "chapter": "제3장 연장·야간·휴일근로와 보상",
+          "article": "제9조",
+          "title": "신청·동의·시간한도",
+          "page": 3,
+          "chunk_mode": "fixed"
+        },
+        "text": "제9조 신청·동의·시간한도\n1. 초과근로가 필요하면 사유·업무·예상시간·휴게계획을 사전에 신청한다. 관리자는 업무량·대체방안·법정한도를 확인한다.\n2. 통상 근로자의 연장근로는 당사자 합의에 따라 원칙적으로 주 12시간 이내로 실시한다. 일반적인 운영한도는 주 40시간에 연장 12시간을 더한 52시간이다. 휴일근로도 주간 한도 관리에 포함한다.\n3. 이 규정의 포괄적인 승인 문구만으로 모든 장래 연장근로에 동의한 것으로 보지 않는다. 동의의 범위와 실제 시간한도를 관리한다.\n4. 긴급근로는 우선 연락 후 사후 기록할 수 있다. 긴급하다는 이유만으로 특별연장근로 인가 등 법정 요건을 생략하거나 한도를 초과하지 않는다.\n5. 회사가 지시·승인·묵인한 실제 근로는 사전승인 누락만으로 수당을 부지급하지 않는다. 근로시간 인정과 승인절차 위반의 처리는 구분한다.",
+        "score": 0.43684104084968567
+      }
+    ],
+    "source_ids": [
+      "03_근태규정.pdf::11",
+      "01_취업규정.pdf::2",
+      "04_휴가규정.pdf::5",
+      "03_근태규정.pdf::4",
+      "03_근태규정.pdf::10"
+    ],
+    "session_id": "fd482ab277844af9bd1ece2d4ef30ae5",
+    "request_id": "Q10",
+    "replayed": false,
+    "summary_checked": false,
+    "summary_update_status": "up_to_date",
+    "summary_is_current": true,
+    "retrieved_count": 5,
+    "search_count": 2,
+    "retry_count": 1,
+    "model_calls": 6,
+    "input_tokens_estimate": 6744,
+    "budget_input_tokens": 7450,
+    "elapsed_ms": 7265.69,
+    "trace": [
+      {
+        "stage": "route",
+        "input_tokens_estimate": 163,
+        "usage": {
+          "input_tokens": 294,
+          "output_tokens": 6,
+          "total_tokens": 300
+        },
+        "elapsed_ms": 892.27
+      },
+      {
+        "stage": "route_decision",
+        "intent": "document_question"
+      },
+      {
+        "stage": "resolve_recent",
+        "input_tokens_estimate": 517,
+        "usage": {
+          "input_tokens": 798,
+          "output_tokens": 28,
+          "total_tokens": 826
+        },
+        "elapsed_ms": 1026.71
+      },
+      {
+        "stage": "memory_decision",
+        "action": "ready",
+        "summary_checked": false
+      },
+      {
+        "stage": "retrieve",
+        "search_count": 1,
+        "elapsed_ms": 362.97
+      },
+      {
+        "stage": "assess",
+        "input_tokens_estimate": 1935,
+        "usage": {
+          "input_tokens": 2062,
+          "output_tokens": 45,
+          "total_tokens": 2107
+        },
+        "elapsed_ms": 1113.67
+      },
+      {
+        "stage": "evidence_decision",
+        "decision": "insufficient",
+        "reason_code": "evidence_insufficient",
+        "source_count": 5
+      },
+      {
+        "stage": "rewrite",
+        "input_tokens_estimate": 173,
+        "usage": {
+          "input_tokens": 213,
+          "output_tokens": 22,
+          "total_tokens": 235
+        },
+        "elapsed_ms": 901.41
+      },
+      {
+        "stage": "query_rewrite",
+        "duplicate": false
+      },
+      {
+        "stage": "retrieve",
+        "search_count": 2,
+        "elapsed_ms": 495.85
+      },
+      {
+        "stage": "assess",
+        "input_tokens_estimate": 2088,
+        "usage": {
+          "input_tokens": 2215,
+          "output_tokens": 31,
+          "total_tokens": 2246
+        },
+        "elapsed_ms": 1111.93
+      },
+      {
+        "stage": "evidence_decision",
+        "decision": "sufficient",
+        "reason_code": "evidence_sufficient",
+        "source_count": 5
+      },
+      {
+        "stage": "generate",
+        "input_tokens_estimate": 1868,
+        "usage": {
+          "input_tokens": 1868,
+          "output_tokens": 91,
+          "total_tokens": 1959
+        },
+        "elapsed_ms": 1337.03
+      }
+    ]
+  }
+}

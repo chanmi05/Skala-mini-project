@@ -1,0 +1,137 @@
+{
+  "case": {
+    "id": "Q17",
+    "유형": "절차",
+    "질문": "책이나 강의 수강료 지원받을 수 있어?",
+    "기대답변": "직무 관련 강의·도서·자격시험 응시료를 사전 승인받으면 1인당 매년 최대 500,000원까지 실비 지원한다.",
+    "근거_규정": "스칼라테크 복리후생규정",
+    "근거_조문": "제8조",
+    "쪽": "3",
+    "정확": "",
+    "근거": "",
+    "환각": ""
+  },
+  "result": {
+    "status": "answered",
+    "output": "회사의 정책에 따르면, 자발적으로 직무와 관련된 강의, 도서, 자격시험 응시료에 대해 사전 신청하여 승인을 받은 경우, 1인당 매년 최대 500,000원까지 실비 지원을 받을 수 있습니다. 이 지원은 직무 관련성, 교육 내용, 비용의 합리성을 기준으로 승인 여부가 결정됩니다. 회사가 지시한 필수교육은 이 한도의 적용을 받지 않으며, 전액 회사가 부담하고 근로시간으로 처리됩니다 [S1].",
+    "reason_code": "evidence_sufficient",
+    "answer": "회사의 정책에 따르면, 자발적으로 직무와 관련된 강의, 도서, 자격시험 응시료에 대해 사전 신청하여 승인을 받은 경우, 1인당 매년 최대 500,000원까지 실비 지원을 받을 수 있습니다. 이 지원은 직무 관련성, 교육 내용, 비용의 합리성을 기준으로 승인 여부가 결정됩니다. 회사가 지시한 필수교육은 이 한도의 적용을 받지 않으며, 전액 회사가 부담하고 근로시간으로 처리됩니다 [S1].",
+    "sources": [
+      {
+        "id": "S1",
+        "chunk_id": "02_복리후생규정.pdf::8",
+        "metadata": {
+          "source": "02_복리후생규정.pdf",
+          "doc": "스칼라테크 복리후생규정",
+          "doc_no": "SCT-HR-002",
+          "version": "1.0",
+          "doc_type": "사내규정",
+          "chapter": "제3장 회사 추가 복지 — 제안 기준",
+          "article": "제8조",
+          "title": "직무교육·도서 지원",
+          "page": 3,
+          "chunk_mode": "fixed"
+        },
+        "text": "제8조 직무교육·도서 지원\n1. 자발적 직무 관련 강의·도서·자격시험 응시료를 사전 신청하여 승인받은 경우 1명당 매년 최대 500,000원까지 실비 지원한다.\n2. 회사가 지시한 필수교육은 위 한도의 적용 대상이 아니며 전액 회사가 부담하고 근로시간으로 처리한다.\n3. 승인 여부는 직무 관련성·교육 내용·비용의 합리성을 기준으로 결정하고, 부지급 시 이유를 알린다. 이미 승인·사용한 비용을 사후 예산 부족만으로 부지급하지 않는다.\n4. 이 조항의 지원은 퇴사·휴직을 이유로 반환받지 않으며 의무 재직기간을 부과하지 않는다.\n5. 선택적 교육시간의 근로시간 해당 여부는 자발성, 회사 지시 및 실제 참여 의무를 확인하여 판단한다. 형식적으로만 자율교육으로 표시하지 않는다.",
+        "score": 0.24359077215194702
+      }
+    ],
+    "source_ids": [
+      "02_복리후생규정.pdf::8"
+    ],
+    "session_id": "de0e7be24eb94002b324800633183fc1",
+    "request_id": "Q17",
+    "replayed": false,
+    "summary_checked": false,
+    "summary_update_status": "up_to_date",
+    "summary_is_current": true,
+    "retrieved_count": 5,
+    "search_count": 1,
+    "retry_count": 0,
+    "model_calls": 5,
+    "input_tokens_estimate": 4241,
+    "budget_input_tokens": 4983,
+    "elapsed_ms": 6196.58,
+    "trace": [
+      {
+        "stage": "route",
+        "input_tokens_estimate": 163,
+        "usage": {
+          "input_tokens": 294,
+          "output_tokens": 6,
+          "total_tokens": 300
+        },
+        "elapsed_ms": 790.79
+      },
+      {
+        "stage": "route_decision",
+        "intent": "document_question"
+      },
+      {
+        "stage": "resolve_recent",
+        "input_tokens_estimate": 667,
+        "usage": {
+          "input_tokens": 948,
+          "output_tokens": 36,
+          "total_tokens": 984
+        },
+        "elapsed_ms": 1150.16
+      },
+      {
+        "stage": "memory_decision",
+        "action": "ready",
+        "summary_checked": false
+      },
+      {
+        "stage": "retrieve",
+        "search_count": 1,
+        "elapsed_ms": 355.17,
+        "method": "semantic"
+      },
+      {
+        "stage": "assess",
+        "input_tokens_estimate": 2031,
+        "usage": {
+          "input_tokens": 2158,
+          "output_tokens": 31,
+          "total_tokens": 2189
+        },
+        "elapsed_ms": 1214.3
+      },
+      {
+        "stage": "evidence_decision",
+        "decision": "sufficient",
+        "reason_code": "evidence_sufficient",
+        "source_count": 5
+      },
+      {
+        "stage": "generate",
+        "input_tokens_estimate": 630,
+        "usage": {
+          "input_tokens": 774,
+          "output_tokens": 125,
+          "total_tokens": 899
+        },
+        "elapsed_ms": 1481.66
+      },
+      {
+        "stage": "verify_answer",
+        "input_tokens_estimate": 750,
+        "usage": {
+          "input_tokens": 809,
+          "output_tokens": 27,
+          "total_tokens": 836
+        },
+        "elapsed_ms": 1188.31
+      },
+      {
+        "stage": "answer_review",
+        "decision": "grounded"
+      },
+      {
+        "stage": "generation_sources",
+        "selected_count": 1
+      }
+    ]
+  }
+}

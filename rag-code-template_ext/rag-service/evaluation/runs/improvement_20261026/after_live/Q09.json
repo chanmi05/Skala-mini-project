@@ -1,0 +1,123 @@
+{
+  "case": {
+    "id": "Q09",
+    "유형": "조건",
+    "질문": "야간근로는 몇 시부터고 수당은 얼마나 더 받아?",
+    "기대답변": "22:00부터 다음 날 06:00까지가 야간이며, 통상임금의 50% 이상을 추가로 받는다.",
+    "근거_규정": "스칼라테크 근태규정",
+    "근거_조문": "제10조",
+    "쪽": "4",
+    "정확": "",
+    "근거": "",
+    "환각": ""
+  },
+  "result": {
+    "status": "answered",
+    "output": "야간근로는 오후 10시부터 다음 날 오전 6시까지입니다. 야간근로 수당은 해당 근로에 대한 임금에 통상임금의 50% 이상이 추가로 가산됩니다 [S1].",
+    "reason_code": "evidence_sufficient",
+    "answer": "야간근로는 오후 10시부터 다음 날 오전 6시까지입니다. 야간근로 수당은 해당 근로에 대한 임금에 통상임금의 50% 이상이 추가로 가산됩니다 [S1].",
+    "sources": [
+      {
+        "id": "S1",
+        "chunk_id": "03_근태규정.pdf::12",
+        "metadata": {
+          "source": "03_근태규정.pdf",
+          "doc": "스칼라테크 근태규정",
+          "doc_no": "SCT-HR-003",
+          "version": "1.0",
+          "doc_type": "사내규정",
+          "chapter": "제3장 연장·야간·휴일근로와 보상",
+          "article": "제10조",
+          "title": "가산수당",
+          "page": 4,
+          "chunk_mode": "fixed"
+        },
+        "text": "제10조 가산수당\n구분 실제 근로에 대한 지급 기준 평일 등 연장근로 해당 시간 통상임금 100% + 가산 50% 이상 야간근로, 22:00~다음 날 06:00 해당 근로에 대한 임금에 통상임금 50% 이상 추가 가산 휴일근로 1일 8시간 이내 해당 시간 통상임금 100% + 가산 50% 이상 휴일근로 1일 8시간 초과 해당 시간 통상임금 100% + 가산 100% 이상\n1. 연장 또는 휴일근로와 야간근로가 겹치면 야간 가산을 별도로 합산한다. 같은 시간의 연장·휴일 가산은 법정 중복 적용 여부에 맞게 계산하여 이중 계산이나 누락을 피한다.\n2. 위 표의 실제 근로분 외에 유급휴일 임금이 발생하는 경우 별도 반영한다.\n3. 토요일이라는 이유만으로 항상 휴일 가산을 적용하는 것은 아니다. 무급 휴무일의 근로는 1일·1주 실제 근로시간에 따라 연장근로 등을 판단한다. 별도 약정상 휴일이면 해당 약정을 따른다.",
+        "score": 0.26568812131881714
+      }
+    ],
+    "source_ids": [
+      "03_근태규정.pdf::12"
+    ],
+    "session_id": "1e9c417d476e4435b350a3c907f7b633",
+    "request_id": "Q09",
+    "replayed": false,
+    "summary_checked": false,
+    "summary_update_status": "up_to_date",
+    "summary_is_current": true,
+    "retrieved_count": 5,
+    "search_count": 1,
+    "retry_count": 0,
+    "model_calls": 4,
+    "input_tokens_estimate": 3578,
+    "budget_input_tokens": 4261,
+    "elapsed_ms": 4603.41,
+    "trace": [
+      {
+        "stage": "route",
+        "input_tokens_estimate": 166,
+        "usage": {
+          "input_tokens": 297,
+          "output_tokens": 6,
+          "total_tokens": 303
+        },
+        "elapsed_ms": 884.88
+      },
+      {
+        "stage": "route_decision",
+        "intent": "document_question"
+      },
+      {
+        "stage": "resolve_recent",
+        "input_tokens_estimate": 617,
+        "usage": {
+          "input_tokens": 898,
+          "output_tokens": 35,
+          "total_tokens": 933
+        },
+        "elapsed_ms": 1055.22
+      },
+      {
+        "stage": "memory_decision",
+        "action": "ready",
+        "summary_checked": false
+      },
+      {
+        "stage": "retrieve",
+        "search_count": 1,
+        "elapsed_ms": 398.09,
+        "method": "semantic"
+      },
+      {
+        "stage": "assess",
+        "input_tokens_estimate": 2146,
+        "usage": {
+          "input_tokens": 2273,
+          "output_tokens": 30,
+          "total_tokens": 2303
+        },
+        "elapsed_ms": 1092.95
+      },
+      {
+        "stage": "evidence_decision",
+        "decision": "sufficient",
+        "reason_code": "evidence_sufficient",
+        "source_count": 5
+      },
+      {
+        "stage": "generate",
+        "input_tokens_estimate": 649,
+        "usage": {
+          "input_tokens": 793,
+          "output_tokens": 61,
+          "total_tokens": 854
+        },
+        "elapsed_ms": 1157.06
+      },
+      {
+        "stage": "generation_sources",
+        "selected_count": 1
+      }
+    ]
+  }
+}

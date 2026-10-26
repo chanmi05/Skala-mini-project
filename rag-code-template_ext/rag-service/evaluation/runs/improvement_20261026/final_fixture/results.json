@@ -1,0 +1,685 @@
+[
+  {
+    "id": "normal",
+    "question": "질문",
+    "expected_status": "answered",
+    "pass": true,
+    "result": {
+      "status": "answered",
+      "output": "정상 답변 [S1]",
+      "reason_code": "evidence_sufficient",
+      "answer": "정상 답변 [S1]",
+      "sources": [
+        {
+          "id": "S1",
+          "chunk_id": "a",
+          "metadata": {
+            "doc": "휴가규정"
+          },
+          "text": "본인 혼인 5일",
+          "score": 0.1
+        }
+      ],
+      "source_ids": [
+        "a"
+      ],
+      "session_id": "b3f222580bbb4b33a0aaa2abfe694463",
+      "request_id": "normal",
+      "replayed": false,
+      "summary_checked": false,
+      "summary_update_status": "up_to_date",
+      "summary_is_current": true,
+      "retrieved_count": 2,
+      "search_count": 1,
+      "retry_count": 0,
+      "model_calls": 5,
+      "input_tokens_estimate": 500,
+      "budget_input_tokens": 500,
+      "elapsed_ms": 5.14,
+      "trace": [
+        {
+          "stage": "route",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.15
+        },
+        {
+          "stage": "route_decision",
+          "intent": "document_question"
+        },
+        {
+          "stage": "resolve_recent",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.14
+        },
+        {
+          "stage": "memory_decision",
+          "action": "ready",
+          "summary_checked": false
+        },
+        {
+          "stage": "retrieve",
+          "search_count": 1,
+          "elapsed_ms": 0.0,
+          "method": "semantic"
+        },
+        {
+          "stage": "assess",
+          "input_tokens_estimate": 100,
+          "usage": {
+            "input_tokens": 10,
+            "output_tokens": 5
+          },
+          "elapsed_ms": 0.18
+        },
+        {
+          "stage": "evidence_decision",
+          "decision": "sufficient",
+          "reason_code": "evidence_sufficient",
+          "source_count": 2
+        },
+        {
+          "stage": "generate",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.13
+        },
+        {
+          "stage": "verify_answer",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.13
+        },
+        {
+          "stage": "answer_review",
+          "decision": "grounded"
+        },
+        {
+          "stage": "generation_sources",
+          "selected_count": 1
+        }
+      ]
+    },
+    "generation_contains_unselected": false
+  },
+  {
+    "id": "unselected_source",
+    "question": "질문",
+    "expected_status": "error",
+    "pass": true,
+    "result": {
+      "status": "error",
+      "output": "처리 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+      "reason_code": "generation_error",
+      "answer": "처리 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+      "sources": [],
+      "source_ids": [],
+      "session_id": "a1bdd0c54ee9408589804bc7d753703c",
+      "request_id": "unselected_source",
+      "replayed": false,
+      "summary_checked": false,
+      "summary_update_status": "not_applicable",
+      "summary_is_current": true,
+      "retrieved_count": 0,
+      "search_count": 1,
+      "retry_count": 0,
+      "model_calls": 4,
+      "input_tokens_estimate": 400,
+      "budget_input_tokens": 400,
+      "elapsed_ms": 3.91,
+      "trace": [
+        {
+          "stage": "route",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.13
+        },
+        {
+          "stage": "route_decision",
+          "intent": "document_question"
+        },
+        {
+          "stage": "resolve_recent",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.13
+        },
+        {
+          "stage": "memory_decision",
+          "action": "ready",
+          "summary_checked": false
+        },
+        {
+          "stage": "retrieve",
+          "search_count": 1,
+          "elapsed_ms": 0.0,
+          "method": "semantic"
+        },
+        {
+          "stage": "assess",
+          "input_tokens_estimate": 100,
+          "usage": {
+            "input_tokens": 10,
+            "output_tokens": 5
+          },
+          "elapsed_ms": 0.14
+        },
+        {
+          "stage": "evidence_decision",
+          "decision": "sufficient",
+          "reason_code": "evidence_sufficient",
+          "source_count": 2
+        },
+        {
+          "stage": "generate",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.16
+        },
+        {
+          "stage": "error",
+          "reason_code": "generation_error",
+          "error_type": "GenerationError"
+        }
+      ]
+    },
+    "generation_contains_unselected": false
+  },
+  {
+    "id": "uncited",
+    "question": "질문",
+    "expected_status": "error",
+    "pass": true,
+    "result": {
+      "status": "error",
+      "output": "처리 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+      "reason_code": "generation_error",
+      "answer": "처리 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+      "sources": [],
+      "source_ids": [],
+      "session_id": "c3991bcf5c3141678754811a62a5ff03",
+      "request_id": "uncited",
+      "replayed": false,
+      "summary_checked": false,
+      "summary_update_status": "not_applicable",
+      "summary_is_current": true,
+      "retrieved_count": 0,
+      "search_count": 1,
+      "retry_count": 0,
+      "model_calls": 4,
+      "input_tokens_estimate": 400,
+      "budget_input_tokens": 400,
+      "elapsed_ms": 3.69,
+      "trace": [
+        {
+          "stage": "route",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.13
+        },
+        {
+          "stage": "route_decision",
+          "intent": "document_question"
+        },
+        {
+          "stage": "resolve_recent",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.14
+        },
+        {
+          "stage": "memory_decision",
+          "action": "ready",
+          "summary_checked": false
+        },
+        {
+          "stage": "retrieve",
+          "search_count": 1,
+          "elapsed_ms": 0.0,
+          "method": "semantic"
+        },
+        {
+          "stage": "assess",
+          "input_tokens_estimate": 100,
+          "usage": {
+            "input_tokens": 10,
+            "output_tokens": 5
+          },
+          "elapsed_ms": 0.13
+        },
+        {
+          "stage": "evidence_decision",
+          "decision": "sufficient",
+          "reason_code": "evidence_sufficient",
+          "source_count": 2
+        },
+        {
+          "stage": "generate",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.14
+        },
+        {
+          "stage": "error",
+          "reason_code": "generation_error",
+          "error_type": "GenerationError"
+        }
+      ]
+    },
+    "generation_contains_unselected": false
+  },
+  {
+    "id": "abstention",
+    "question": "질문",
+    "expected_status": "no_evidence",
+    "pass": true,
+    "result": {
+      "status": "no_evidence",
+      "output": "제공된 문서에서 답변에 사용할 근거를 찾지 못했습니다.",
+      "reason_code": "generation_abstained",
+      "answer": "제공된 문서에서 답변에 사용할 근거를 찾지 못했습니다.",
+      "sources": [],
+      "source_ids": [],
+      "session_id": "47fc13adcd7844ffa56f28acb6ca572b",
+      "request_id": "abstention",
+      "replayed": false,
+      "summary_checked": false,
+      "summary_update_status": "up_to_date",
+      "summary_is_current": true,
+      "retrieved_count": 2,
+      "search_count": 1,
+      "retry_count": 0,
+      "model_calls": 4,
+      "input_tokens_estimate": 400,
+      "budget_input_tokens": 400,
+      "elapsed_ms": 3.64,
+      "trace": [
+        {
+          "stage": "route",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.13
+        },
+        {
+          "stage": "route_decision",
+          "intent": "document_question"
+        },
+        {
+          "stage": "resolve_recent",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.13
+        },
+        {
+          "stage": "memory_decision",
+          "action": "ready",
+          "summary_checked": false
+        },
+        {
+          "stage": "retrieve",
+          "search_count": 1,
+          "elapsed_ms": 0.0,
+          "method": "semantic"
+        },
+        {
+          "stage": "assess",
+          "input_tokens_estimate": 100,
+          "usage": {
+            "input_tokens": 10,
+            "output_tokens": 5
+          },
+          "elapsed_ms": 0.13
+        },
+        {
+          "stage": "evidence_decision",
+          "decision": "sufficient",
+          "reason_code": "evidence_sufficient",
+          "source_count": 2
+        },
+        {
+          "stage": "generate",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.13
+        }
+      ]
+    },
+    "generation_contains_unselected": false
+  },
+  {
+    "id": "selected_second",
+    "question": "질문",
+    "expected_status": "answered",
+    "pass": true,
+    "result": {
+      "status": "answered",
+      "output": "정상 답변 [S1]",
+      "reason_code": "evidence_sufficient",
+      "answer": "정상 답변 [S1]",
+      "sources": [
+        {
+          "id": "S1",
+          "chunk_id": "b",
+          "metadata": {
+            "doc": "출장규정"
+          },
+          "text": "출장 중 주차비 실비",
+          "score": 0.2
+        }
+      ],
+      "source_ids": [
+        "b"
+      ],
+      "session_id": "5ff327994f3e4614b0dfac06061818e8",
+      "request_id": "selected_second",
+      "replayed": false,
+      "summary_checked": false,
+      "summary_update_status": "up_to_date",
+      "summary_is_current": true,
+      "retrieved_count": 2,
+      "search_count": 1,
+      "retry_count": 0,
+      "model_calls": 5,
+      "input_tokens_estimate": 500,
+      "budget_input_tokens": 500,
+      "elapsed_ms": 3.84,
+      "trace": [
+        {
+          "stage": "route",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.13
+        },
+        {
+          "stage": "route_decision",
+          "intent": "document_question"
+        },
+        {
+          "stage": "resolve_recent",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.14
+        },
+        {
+          "stage": "memory_decision",
+          "action": "ready",
+          "summary_checked": false
+        },
+        {
+          "stage": "retrieve",
+          "search_count": 1,
+          "elapsed_ms": 0.0,
+          "method": "semantic"
+        },
+        {
+          "stage": "assess",
+          "input_tokens_estimate": 100,
+          "usage": {
+            "input_tokens": 10,
+            "output_tokens": 5
+          },
+          "elapsed_ms": 0.17
+        },
+        {
+          "stage": "evidence_decision",
+          "decision": "sufficient",
+          "reason_code": "evidence_sufficient",
+          "source_count": 2
+        },
+        {
+          "stage": "generate",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.13
+        },
+        {
+          "stage": "verify_answer",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.13
+        },
+        {
+          "stage": "answer_review",
+          "decision": "grounded"
+        },
+        {
+          "stage": "generation_sources",
+          "selected_count": 1
+        }
+      ]
+    },
+    "generation_contains_unselected": true
+  },
+  {
+    "id": "exact_article",
+    "question": "휴가규정 제12조 내용은?",
+    "expected_status": "answered",
+    "pass": true,
+    "result": {
+      "status": "answered",
+      "output": "정상 답변 [S1]",
+      "reason_code": "evidence_sufficient",
+      "answer": "정상 답변 [S1]",
+      "sources": [
+        {
+          "id": "S1",
+          "chunk_id": "chunk-25",
+          "metadata": {
+            "doc": "스칼라테크 휴가규정",
+            "article": "제12조"
+          },
+          "text": "배우자 출산휴가 20일",
+          "score": 0.0
+        }
+      ],
+      "source_ids": [
+        "chunk-25"
+      ],
+      "session_id": "9b64721a10184757a6335ec52aae0844",
+      "request_id": "exact_article",
+      "replayed": false,
+      "summary_checked": false,
+      "summary_update_status": "up_to_date",
+      "summary_is_current": true,
+      "retrieved_count": 1,
+      "search_count": 1,
+      "retry_count": 0,
+      "model_calls": 5,
+      "input_tokens_estimate": 500,
+      "budget_input_tokens": 500,
+      "elapsed_ms": 4.15,
+      "trace": [
+        {
+          "stage": "route",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.13
+        },
+        {
+          "stage": "route_decision",
+          "intent": "document_question"
+        },
+        {
+          "stage": "resolve_recent",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.13
+        },
+        {
+          "stage": "memory_decision",
+          "action": "ready",
+          "summary_checked": false
+        },
+        {
+          "stage": "retrieve",
+          "search_count": 1,
+          "elapsed_ms": 0.1,
+          "method": "metadata"
+        },
+        {
+          "stage": "assess",
+          "input_tokens_estimate": 100,
+          "usage": {
+            "input_tokens": 10,
+            "output_tokens": 5
+          },
+          "elapsed_ms": 0.14
+        },
+        {
+          "stage": "evidence_decision",
+          "decision": "sufficient",
+          "reason_code": "evidence_sufficient",
+          "source_count": 1
+        },
+        {
+          "stage": "generate",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.14
+        },
+        {
+          "stage": "verify_answer",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.13
+        },
+        {
+          "stage": "answer_review",
+          "decision": "grounded"
+        },
+        {
+          "stage": "generation_sources",
+          "selected_count": 1
+        }
+      ]
+    },
+    "generation_contains_unselected": false
+  },
+  {
+    "id": "missing_article",
+    "question": "휴가규정 제999조 내용은?",
+    "expected_status": "no_evidence",
+    "pass": true,
+    "result": {
+      "status": "no_evidence",
+      "output": "제공된 문서에서 답변에 사용할 근거를 찾지 못했습니다.",
+      "reason_code": "exact_evidence_insufficient",
+      "answer": "제공된 문서에서 답변에 사용할 근거를 찾지 못했습니다.",
+      "sources": [],
+      "source_ids": [],
+      "session_id": "d826ed3c17314ec6bf93286f127d6473",
+      "request_id": "missing_article",
+      "replayed": false,
+      "summary_checked": false,
+      "summary_update_status": "up_to_date",
+      "summary_is_current": true,
+      "retrieved_count": 0,
+      "search_count": 1,
+      "retry_count": 0,
+      "model_calls": 2,
+      "input_tokens_estimate": 200,
+      "budget_input_tokens": 200,
+      "elapsed_ms": 3.2,
+      "trace": [
+        {
+          "stage": "route",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.13
+        },
+        {
+          "stage": "route_decision",
+          "intent": "document_question"
+        },
+        {
+          "stage": "resolve_recent",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.14
+        },
+        {
+          "stage": "memory_decision",
+          "action": "ready",
+          "summary_checked": false
+        },
+        {
+          "stage": "retrieve",
+          "search_count": 1,
+          "elapsed_ms": 0.05,
+          "method": "metadata"
+        },
+        {
+          "stage": "evidence_decision",
+          "decision": "insufficient",
+          "reason_code": "exact_evidence_insufficient",
+          "source_count": 0
+        }
+      ]
+    },
+    "generation_contains_unselected": false
+  },
+  {
+    "id": "ambiguous_article",
+    "question": "제12조 내용은?",
+    "expected_status": "clarification_needed",
+    "pass": true,
+    "result": {
+      "status": "clarification_needed",
+      "output": "어느 규정의 조항을 확인할까요? 스칼라테크 취업규정, 스칼라테크 휴가규정",
+      "reason_code": "missing_user_condition",
+      "answer": "어느 규정의 조항을 확인할까요? 스칼라테크 취업규정, 스칼라테크 휴가규정",
+      "sources": [],
+      "source_ids": [],
+      "session_id": "774c154d4bcc4c07971984ee9b652ae6",
+      "request_id": "ambiguous_article",
+      "replayed": false,
+      "summary_checked": false,
+      "summary_update_status": "up_to_date",
+      "summary_is_current": true,
+      "retrieved_count": 0,
+      "search_count": 1,
+      "retry_count": 0,
+      "model_calls": 2,
+      "input_tokens_estimate": 200,
+      "budget_input_tokens": 200,
+      "elapsed_ms": 3.27,
+      "trace": [
+        {
+          "stage": "route",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.13
+        },
+        {
+          "stage": "route_decision",
+          "intent": "document_question"
+        },
+        {
+          "stage": "resolve_recent",
+          "input_tokens_estimate": 100,
+          "usage": {},
+          "elapsed_ms": 0.13
+        },
+        {
+          "stage": "memory_decision",
+          "action": "ready",
+          "summary_checked": false
+        },
+        {
+          "stage": "retrieve",
+          "search_count": 1,
+          "elapsed_ms": 0.05,
+          "method": "metadata"
+        },
+        {
+          "stage": "evidence_decision",
+          "decision": "clarify",
+          "reason_code": "missing_user_condition",
+          "source_count": 0
+        }
+      ]
+    },
+    "generation_contains_unselected": false
+  }
+]

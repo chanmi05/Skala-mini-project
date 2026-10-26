@@ -1,0 +1,156 @@
+{
+  "case": {
+    "id": "Q26",
+    "유형": "사실",
+    "질문": "노동절에도 쉬어?",
+    "기대답변": "5월 1일 노동절은 유급휴일이며 다른 날로 대체하지 않는다.",
+    "근거_규정": "스칼라테크 근태규정",
+    "근거_조문": "제4조",
+    "쪽": "2",
+    "정확": "",
+    "근거": "",
+    "환각": ""
+  },
+  "result": {
+    "status": "answered",
+    "output": "스칼라테크 근태규정에 따르면, 5월 1일 노동절은 별도 법률에 따른 유급휴일로 처리됩니다. 따라서 스칼라테크에서는 노동절에 쉬는 것으로 규정되어 있습니다 [S2].",
+    "reason_code": "evidence_sufficient",
+    "answer": "스칼라테크 근태규정에 따르면, 5월 1일 노동절은 별도 법률에 따른 유급휴일로 처리됩니다. 따라서 스칼라테크에서는 노동절에 쉬는 것으로 규정되어 있습니다 [S2].",
+    "sources": [
+      {
+        "id": "S1",
+        "chunk_id": "03_근태규정.pdf::5",
+        "metadata": {
+          "source": "03_근태규정.pdf",
+          "doc": "스칼라테크 근태규정",
+          "doc_no": "SCT-HR-003",
+          "version": "1.0",
+          "doc_type": "사내규정",
+          "chapter": "제1장 기본 근무와 휴일",
+          "article": "제4조",
+          "title": "휴일과 유급 처리",
+          "page": 2,
+          "chunk_mode": "fixed"
+        },
+        "text": "6. 주휴일·공휴일의 대체는 해당 휴일의 법적 성격과 필요한 사전 절차·근로자대표 서면합의를 갖춘 경우에 한한다. 노동절은 회사 기준상 다른 날로 대체하지 않는다.",
+        "score": 0.19405493140220642
+      },
+      {
+        "id": "S2",
+        "chunk_id": "03_근태규정.pdf::4",
+        "metadata": {
+          "source": "03_근태규정.pdf",
+          "doc": "스칼라테크 근태규정",
+          "doc_no": "SCT-HR-003",
+          "version": "1.0",
+          "doc_type": "사내규정",
+          "chapter": "제1장 기본 근무와 휴일",
+          "article": "제4조",
+          "title": "휴일과 유급 처리",
+          "page": 2,
+          "chunk_mode": "fixed"
+        },
+        "text": "제4조 휴일과 유급 처리\n1. 1주 소정근로일을 개근한 근로자에게 일요일을 유급 주휴일로 보장한다. 법정 유급휴가·출근 간주 등은 각 법령에 맞게 처리하며 지각·조퇴 몇 회를 결근 1일로 임의 환산하지 않는다.\n2. 4주 평균 주 소정근로시간 15시간 미만인 경우 근로기준법 제55조상 휴일은 법정 적용 대상에서 제외된다. 더 유리한 개별 약정이 있으면 이를 적용한다.\n3. 제2항의 적용 제외를 제외하고, 관공서 공휴일 규정에 따른 공휴일·대체공휴일을 유급휴일로 보장한다. 토요일은 공휴일 등 별도 휴일에 해당하지 않는 한 무급 휴무일이다.\n4. 5월 1일 노동절은 별도 법률에 따른 유급휴일로 처리한다. 주 15시간 미만이라는 이유만으로 일괄 제외하지 않으며, 근로관계의 계속 여부와 단시간근로자의 산정기준을 확인한다.\n5. 유급휴일 임금과 실제 휴일근로의 임금·가산수당은 구분한다. 월급에 이미 포함된 유급휴일분을 중복 계산하지 않되 실제 근로분을 누락하지 않는다.",
+        "score": 0.22433267533779144
+      }
+    ],
+    "source_ids": [
+      "03_근태규정.pdf::5",
+      "03_근태규정.pdf::4"
+    ],
+    "session_id": "66d384a75b734af4b93c23816bed501c",
+    "request_id": "Q26",
+    "replayed": false,
+    "summary_checked": false,
+    "summary_update_status": "up_to_date",
+    "summary_is_current": true,
+    "retrieved_count": 5,
+    "search_count": 1,
+    "retry_count": 0,
+    "model_calls": 5,
+    "input_tokens_estimate": 4657,
+    "budget_input_tokens": 5399,
+    "elapsed_ms": 6198.59,
+    "trace": [
+      {
+        "stage": "route",
+        "input_tokens_estimate": 156,
+        "usage": {
+          "input_tokens": 287,
+          "output_tokens": 6,
+          "total_tokens": 293
+        },
+        "elapsed_ms": 726.39
+      },
+      {
+        "stage": "route_decision",
+        "intent": "document_question"
+      },
+      {
+        "stage": "resolve_recent",
+        "input_tokens_estimate": 660,
+        "usage": {
+          "input_tokens": 941,
+          "output_tokens": 76,
+          "total_tokens": 1017
+        },
+        "elapsed_ms": 1497.61
+      },
+      {
+        "stage": "memory_decision",
+        "action": "ready",
+        "summary_checked": false
+      },
+      {
+        "stage": "retrieve",
+        "search_count": 1,
+        "elapsed_ms": 338.29,
+        "method": "semantic"
+      },
+      {
+        "stage": "assess",
+        "input_tokens_estimate": 1948,
+        "usage": {
+          "input_tokens": 2075,
+          "output_tokens": 34,
+          "total_tokens": 2109
+        },
+        "elapsed_ms": 1014.69
+      },
+      {
+        "stage": "evidence_decision",
+        "decision": "sufficient",
+        "reason_code": "evidence_sufficient",
+        "source_count": 5
+      },
+      {
+        "stage": "generate",
+        "input_tokens_estimate": 919,
+        "usage": {
+          "input_tokens": 1063,
+          "output_tokens": 64,
+          "total_tokens": 1127
+        },
+        "elapsed_ms": 1416.16
+      },
+      {
+        "stage": "verify_answer",
+        "input_tokens_estimate": 974,
+        "usage": {
+          "input_tokens": 1033,
+          "output_tokens": 31,
+          "total_tokens": 1064
+        },
+        "elapsed_ms": 1186.65
+      },
+      {
+        "stage": "answer_review",
+        "decision": "grounded"
+      },
+      {
+        "stage": "generation_sources",
+        "selected_count": 2
+      }
+    ]
+  }
+}

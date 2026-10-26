@@ -1,0 +1,123 @@
+{
+  "case": {
+    "id": "Q03",
+    "유형": "사실",
+    "질문": "식대는 한 달에 얼마야?",
+    "기대답변": "월 정액 200,000원을 급여와 함께 지급한다. 월 중 입·퇴사하면 재직일수로 일할 계산한다.",
+    "근거_규정": "스칼라테크 복리후생규정",
+    "근거_조문": "제6조",
+    "쪽": "2",
+    "정확": "",
+    "근거": "",
+    "환각": ""
+  },
+  "result": {
+    "status": "answered",
+    "output": "스칼라테크 복리후생규정에 따르면, 월 정액 식대로 200,000원이 급여와 함께 지급됩니다 [S1].",
+    "reason_code": "evidence_sufficient",
+    "answer": "스칼라테크 복리후생규정에 따르면, 월 정액 식대로 200,000원이 급여와 함께 지급됩니다 [S1].",
+    "sources": [
+      {
+        "id": "S1",
+        "chunk_id": "02_복리후생규정.pdf::6",
+        "metadata": {
+          "source": "02_복리후생규정.pdf",
+          "doc": "스칼라테크 복리후생규정",
+          "doc_no": "SCT-HR-002",
+          "version": "1.0",
+          "doc_type": "사내규정",
+          "chapter": "제3장 회사 추가 복지 — 제안 기준",
+          "article": "제6조",
+          "title": "식사 지원",
+          "page": 2,
+          "chunk_mode": "fixed"
+        },
+        "text": "제6조 식사 지원\n1. 월 정액 식대로 200,000원을 급여와 함께 지급한다. 회사가 현물 식사를 별도로 제공하는 경우 중복·세무 처리방식을 확정본에 명시하되 기존 근로조건을 불리하게 변경하지 않는다.\n2. 월 중 입·퇴사 시 해당 월 재직일수/달력일수로 계산한다. 단시간근로자에게도 같은 월 정액 기준을 적용하는 회사 복지안으로 한다.\n3. 연차·법정 유급휴가 사용일을 재직일수에서 제외하지 않는다. 월 전체가 무급휴직인 경우 지급하지 않고, 일부 무급휴직이면 무급휴직일수를 제외한 재직일수로 계산한다. 개별 법령상 차별 금지 및 기존 약정에 더 유리한 기준이 있으면 그 기준을 적용한다.\n4. 야간근로·출장 식비는 업무상 실비 기준에 따라 별도 처리하고 같은 식사 영수증의 이중 정산은 하지 않는다. 월 정액 식대는 실제 출장 식비와 성격이 다르므로 정액 식대 수령만으로 출장 식비를 일괄 부지급하지 않는다.",
+        "score": 0.4028933644294739
+      }
+    ],
+    "source_ids": [
+      "02_복리후생규정.pdf::6"
+    ],
+    "session_id": "262eab9964ff44a8bdd582068f0e89c7",
+    "request_id": "Q03",
+    "replayed": false,
+    "summary_checked": false,
+    "summary_update_status": "up_to_date",
+    "summary_is_current": true,
+    "retrieved_count": 5,
+    "search_count": 1,
+    "retry_count": 0,
+    "model_calls": 4,
+    "input_tokens_estimate": 3531,
+    "budget_input_tokens": 4214,
+    "elapsed_ms": 4041.64,
+    "trace": [
+      {
+        "stage": "route",
+        "input_tokens_estimate": 159,
+        "usage": {
+          "input_tokens": 290,
+          "output_tokens": 6,
+          "total_tokens": 296
+        },
+        "elapsed_ms": 761.6
+      },
+      {
+        "stage": "route_decision",
+        "intent": "document_question"
+      },
+      {
+        "stage": "resolve_recent",
+        "input_tokens_estimate": 610,
+        "usage": {
+          "input_tokens": 891,
+          "output_tokens": 22,
+          "total_tokens": 913
+        },
+        "elapsed_ms": 1058.67
+      },
+      {
+        "stage": "memory_decision",
+        "action": "ready",
+        "summary_checked": false
+      },
+      {
+        "stage": "retrieve",
+        "search_count": 1,
+        "elapsed_ms": 331.4,
+        "method": "semantic"
+      },
+      {
+        "stage": "assess",
+        "input_tokens_estimate": 2147,
+        "usage": {
+          "input_tokens": 2274,
+          "output_tokens": 30,
+          "total_tokens": 2304
+        },
+        "elapsed_ms": 967.04
+      },
+      {
+        "stage": "evidence_decision",
+        "decision": "sufficient",
+        "reason_code": "evidence_sufficient",
+        "source_count": 5
+      },
+      {
+        "stage": "generate",
+        "input_tokens_estimate": 615,
+        "usage": {
+          "input_tokens": 759,
+          "output_tokens": 42,
+          "total_tokens": 801
+        },
+        "elapsed_ms": 910.18
+      },
+      {
+        "stage": "generation_sources",
+        "selected_count": 1
+      }
+    ]
+  }
+}

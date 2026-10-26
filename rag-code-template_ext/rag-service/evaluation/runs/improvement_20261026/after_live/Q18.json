@@ -1,0 +1,123 @@
+{
+  "case": {
+    "id": "Q18",
+    "유형": "사실",
+    "질문": "부모님이 돌아가시면 경조금이 얼마야?",
+    "기대답변": "본인 또는 배우자의 부모 사망 시 500,000원이다.",
+    "근거_규정": "스칼라테크 복리후생규정",
+    "근거_조문": "제9조",
+    "쪽": "3",
+    "정확": "",
+    "근거": "",
+    "환각": ""
+  },
+  "result": {
+    "status": "answered",
+    "output": "부모님이 돌아가셨을 때 지급되는 경조금은 500,000원입니다. 이는 본인 또는 배우자의 부모 사망 시 적용되는 금액입니다 [S1].",
+    "reason_code": "evidence_sufficient",
+    "answer": "부모님이 돌아가셨을 때 지급되는 경조금은 500,000원입니다. 이는 본인 또는 배우자의 부모 사망 시 적용되는 금액입니다 [S1].",
+    "sources": [
+      {
+        "id": "S1",
+        "chunk_id": "02_복리후생규정.pdf::9",
+        "metadata": {
+          "source": "02_복리후생규정.pdf",
+          "doc": "스칼라테크 복리후생규정",
+          "doc_no": "SCT-HR-002",
+          "version": "1.0",
+          "doc_type": "사내규정",
+          "chapter": "제3장 회사 추가 복지 — 제안 기준",
+          "article": "제9조",
+          "title": "경조금",
+          "page": 3,
+          "chunk_mode": "fixed"
+        },
+        "text": "제9조 경조금\n다음 금액은 회사 추가 복지의 제안액이다. 정규직·기간제·단시간·수습 모두 동일하게 적용한다. 사유 지원금 적용 기준 본인 혼인 500,000원 실제 혼인 사실 확인, 동일 혼인행사 중복 지급 없음 본인 또는 배우자 출산 자녀 1명당 300,000원 다태아는 자녀 수에 따라 지급 자녀 입양 자녀 1명당 300,000원 법적 입양 확인; 동일 자녀의 동일 사유 중복 지급 없음 배우자·자녀 사망 1,000,000원 사망 사실 및 관계 확인 본인·배우자의 부모 사망 500,000원 사망 사실 및 관계 확인 본인·배우자의 조부모 또는 본인 형제자매 사망 200,000원 사망 사실 및 관계 확인 근로자 본인 사망 2,000,000원 민법상 상속관계 등 수령 권한을 확인하여 지급\n1. 출산·입양 지원은 성별에 따라 차등하지 않는다. 부부가 모두 회사 근로자이면 각 근로자에게 각각 지급한다.",
+        "score": 0.30908483266830444
+      }
+    ],
+    "source_ids": [
+      "02_복리후생규정.pdf::9"
+    ],
+    "session_id": "e42f60f0f188485a8c6bf72000ee6b7b",
+    "request_id": "Q18",
+    "replayed": false,
+    "summary_checked": false,
+    "summary_update_status": "up_to_date",
+    "summary_is_current": true,
+    "retrieved_count": 5,
+    "search_count": 1,
+    "retry_count": 0,
+    "model_calls": 4,
+    "input_tokens_estimate": 3687,
+    "budget_input_tokens": 4370,
+    "elapsed_ms": 4095.4,
+    "trace": [
+      {
+        "stage": "route",
+        "input_tokens_estimate": 163,
+        "usage": {
+          "input_tokens": 294,
+          "output_tokens": 6,
+          "total_tokens": 300
+        },
+        "elapsed_ms": 718.63
+      },
+      {
+        "stage": "route_decision",
+        "intent": "document_question"
+      },
+      {
+        "stage": "resolve_recent",
+        "input_tokens_estimate": 614,
+        "usage": {
+          "input_tokens": 895,
+          "output_tokens": 31,
+          "total_tokens": 926
+        },
+        "elapsed_ms": 916.44
+      },
+      {
+        "stage": "memory_decision",
+        "action": "ready",
+        "summary_checked": false
+      },
+      {
+        "stage": "retrieve",
+        "search_count": 1,
+        "elapsed_ms": 343.37,
+        "method": "semantic"
+      },
+      {
+        "stage": "assess",
+        "input_tokens_estimate": 2289,
+        "usage": {
+          "input_tokens": 2416,
+          "output_tokens": 30,
+          "total_tokens": 2446
+        },
+        "elapsed_ms": 1019.68
+      },
+      {
+        "stage": "evidence_decision",
+        "decision": "sufficient",
+        "reason_code": "evidence_sufficient",
+        "source_count": 5
+      },
+      {
+        "stage": "generate",
+        "input_tokens_estimate": 621,
+        "usage": {
+          "input_tokens": 765,
+          "output_tokens": 49,
+          "total_tokens": 814
+        },
+        "elapsed_ms": 1082.65
+      },
+      {
+        "stage": "generation_sources",
+        "selected_count": 1
+      }
+    ]
+  }
+}

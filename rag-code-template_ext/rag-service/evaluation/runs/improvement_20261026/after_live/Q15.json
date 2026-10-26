@@ -1,0 +1,123 @@
+{
+  "case": {
+    "id": "Q15",
+    "유형": "절차",
+    "질문": "육아휴직은 언제까지 신청해야 해?",
+    "기대답변": "개시예정일 30일 전까지 신청한다. 회사는 14일 안에 알려야 하고, 기한 내 통지가 없으면 신청대로 허용된 것으로 본다.",
+    "근거_규정": "스칼라테크 휴가규정",
+    "근거_조문": "제17조",
+    "쪽": "5",
+    "정확": "",
+    "근거": "",
+    "환각": ""
+  },
+  "result": {
+    "status": "answered",
+    "output": "육아휴직은 원칙적으로 개시예정일 30일 전까지 신청해야 합니다. 다만, 법정 긴급사유가 있는 경우에는 7일 전까지 신청할 수 있으며, 고용노동부령상 긴급사유에 해당하는 경우에는 개시예정일까지 신청할 수 있는 특례가 적용됩니다 [S1].",
+    "reason_code": "evidence_sufficient",
+    "answer": "육아휴직은 원칙적으로 개시예정일 30일 전까지 신청해야 합니다. 다만, 법정 긴급사유가 있는 경우에는 7일 전까지 신청할 수 있으며, 고용노동부령상 긴급사유에 해당하는 경우에는 개시예정일까지 신청할 수 있는 특례가 적용됩니다 [S1].",
+    "sources": [
+      {
+        "id": "S1",
+        "chunk_id": "04_휴가규정.pdf::20",
+        "metadata": {
+          "source": "04_휴가규정.pdf",
+          "doc": "스칼라테크 휴가규정",
+          "doc_no": "SCT-HR-004",
+          "version": "1.0",
+          "doc_type": "사내규정",
+          "chapter": "제4장 육아·가족돌봄·병역 휴직 등",
+          "article": "제17조",
+          "title": "육아휴직 신청·회신",
+          "page": 5,
+          "chunk_mode": "fixed"
+        },
+        "text": "제17조 육아휴직 신청·회신\n1. 원칙적으로 개시예정일 30일 전까지 신청한다. 법정 긴급사유는 7일 전 신청, 단기 육아휴직 중 고용노동부령상 긴급사유는 개시예정일까지 신청하는 특례를 적용한다.\n2. 회사는 적법한 일반 신청은 신청일부터 14일 이내, 7일 전 신청 특례는 3일 이내, 개시일까지 신청 가능한 긴급 특례는 지체 없이 허용 사실을 서면 또는 전자적으로 알린다.\n3. 법정 회신기간 내 알리지 않으면 신청한 대로 허용한 것으로 보는 간주승인을 적용한다. 신청기한을 넘겼다는 이유로 일괄 거절하지 않고 시행령에 따른 기한 내 개시일을 지정하여 허용·통지한다.\n4. 자녀 출생 후 18개월 이내 시작할 육아휴직은 법정 요건에 따라 출산전후휴가 청구 또는 배우자 출산전후휴가 고지와 함께 신청할 수 있다.\n5. 휴직 종료·변경·철회·조기복직은 시행령의 사유·통보기한을 확인하여 처리한다. 임의로 휴직기간을 연장·단축하거나 복직을 지연시키지 않는다.",
+        "score": 0.19996124505996704
+      }
+    ],
+    "source_ids": [
+      "04_휴가규정.pdf::20"
+    ],
+    "session_id": "91df9f53f88d4932a4144fc3b13ddbe1",
+    "request_id": "Q15",
+    "replayed": false,
+    "summary_checked": false,
+    "summary_update_status": "up_to_date",
+    "summary_is_current": true,
+    "retrieved_count": 5,
+    "search_count": 1,
+    "retry_count": 0,
+    "model_calls": 4,
+    "input_tokens_estimate": 3722,
+    "budget_input_tokens": 4405,
+    "elapsed_ms": 5055.53,
+    "trace": [
+      {
+        "stage": "route",
+        "input_tokens_estimate": 161,
+        "usage": {
+          "input_tokens": 292,
+          "output_tokens": 6,
+          "total_tokens": 298
+        },
+        "elapsed_ms": 851.54
+      },
+      {
+        "stage": "route_decision",
+        "intent": "document_question"
+      },
+      {
+        "stage": "resolve_recent",
+        "input_tokens_estimate": 612,
+        "usage": {
+          "input_tokens": 893,
+          "output_tokens": 24,
+          "total_tokens": 917
+        },
+        "elapsed_ms": 993.22
+      },
+      {
+        "stage": "memory_decision",
+        "action": "ready",
+        "summary_checked": false
+      },
+      {
+        "stage": "retrieve",
+        "search_count": 1,
+        "elapsed_ms": 268.16,
+        "method": "semantic"
+      },
+      {
+        "stage": "assess",
+        "input_tokens_estimate": 2292,
+        "usage": {
+          "input_tokens": 2419,
+          "output_tokens": 30,
+          "total_tokens": 2449
+        },
+        "elapsed_ms": 1654.84
+      },
+      {
+        "stage": "evidence_decision",
+        "decision": "sufficient",
+        "reason_code": "evidence_sufficient",
+        "source_count": 5
+      },
+      {
+        "stage": "generate",
+        "input_tokens_estimate": 657,
+        "usage": {
+          "input_tokens": 801,
+          "output_tokens": 87,
+          "total_tokens": 888
+        },
+        "elapsed_ms": 1269.78
+      },
+      {
+        "stage": "generation_sources",
+        "selected_count": 1
+      }
+    ]
+  }
+}

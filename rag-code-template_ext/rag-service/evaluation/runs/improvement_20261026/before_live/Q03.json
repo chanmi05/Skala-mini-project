@@ -1,0 +1,66 @@
+{
+  "case": {
+    "id": "Q03",
+    "유형": "사실",
+    "질문": "식대는 한 달에 얼마야?",
+    "기대답변": "월 정액 200,000원을 급여와 함께 지급한다. 월 중 입·퇴사하면 재직일수로 일할 계산한다.",
+    "근거_규정": "스칼라테크 복리후생규정",
+    "근거_조문": "제6조",
+    "쪽": "2",
+    "정확": "",
+    "근거": "",
+    "환각": ""
+  },
+  "result": {
+    "status": "clarification_needed",
+    "output": "어떤 식대에 대해 말씀하시는 건가요? 회사에서 제공하는 식대 지원금이나 특정 식당의 식사 비용을 말씀하시는 건가요?",
+    "reason_code": "missing_subject_or_condition",
+    "answer": "어떤 식대에 대해 말씀하시는 건가요? 회사에서 제공하는 식대 지원금이나 특정 식당의 식사 비용을 말씀하시는 건가요?",
+    "sources": [],
+    "source_ids": [],
+    "session_id": "47be8753a8b947ecab5a8a4f70d87e46",
+    "request_id": "Q03",
+    "replayed": false,
+    "summary_checked": false,
+    "summary_update_status": "up_to_date",
+    "summary_is_current": true,
+    "retrieved_count": 0,
+    "search_count": 0,
+    "retry_count": 0,
+    "model_calls": 2,
+    "input_tokens_estimate": 672,
+    "budget_input_tokens": 1084,
+    "elapsed_ms": 2021.7,
+    "trace": [
+      {
+        "stage": "route",
+        "input_tokens_estimate": 159,
+        "usage": {
+          "input_tokens": 290,
+          "output_tokens": 6,
+          "total_tokens": 296
+        },
+        "elapsed_ms": 769.35
+      },
+      {
+        "stage": "route_decision",
+        "intent": "document_question"
+      },
+      {
+        "stage": "resolve_recent",
+        "input_tokens_estimate": 513,
+        "usage": {
+          "input_tokens": 794,
+          "output_tokens": 50,
+          "total_tokens": 844
+        },
+        "elapsed_ms": 1245.81
+      },
+      {
+        "stage": "memory_decision",
+        "action": "clarify",
+        "summary_checked": false
+      }
+    ]
+  }
+}

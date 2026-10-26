@@ -1,0 +1,194 @@
+{
+  "case": {
+    "id": "Q26",
+    "유형": "사실",
+    "질문": "노동절에도 쉬어?",
+    "기대답변": "5월 1일 노동절은 유급휴일이며 다른 날로 대체하지 않는다.",
+    "근거_규정": "스칼라테크 근태규정",
+    "근거_조문": "제4조",
+    "쪽": "2",
+    "정확": "",
+    "근거": "",
+    "환각": ""
+  },
+  "result": {
+    "status": "answered",
+    "output": "스칼라테크의 근태규정에 따르면, 노동절은 회사 기준상 다른 날로 대체하지 않으며, 이는 노동절에 근무하지 않는다는 것을 의미합니다 [S3]. 따라서 스칼라테크에서는 노동절에 근무하지 않는 것으로 처리됩니다.",
+    "reason_code": "evidence_sufficient",
+    "answer": "스칼라테크의 근태규정에 따르면, 노동절은 회사 기준상 다른 날로 대체하지 않으며, 이는 노동절에 근무하지 않는다는 것을 의미합니다 [S3]. 따라서 스칼라테크에서는 노동절에 근무하지 않는 것으로 처리됩니다.",
+    "sources": [
+      {
+        "id": "S1",
+        "chunk_id": "04_휴가규정.pdf::10",
+        "metadata": {
+          "source": "04_휴가규정.pdf",
+          "doc": "스칼라테크 휴가규정",
+          "doc_no": "SCT-HR-004",
+          "version": "1.0",
+          "doc_type": "사내규정",
+          "chapter": "제2장 연차 유급휴가",
+          "article": "제8조",
+          "title": "법정 사용촉진",
+          "page": 3,
+          "chunk_mode": "fixed"
+        },
+        "text": "3. 지정 휴가일에 출근했을 때 회사가 실제로 노무를 수령하는 등 법정 면제요건을 충족하지 못하면 보상 면제를 단정하지 않는다.\n4. 사용촉진을 하지 않았거나 절차에 흠이 있으면 회사가 수당을 지급하지 않을 수 있는 별도 근거가 있는지 확인하며, 단순한 사내 소멸 규정만으로 미지급하지 않는다.",
+        "score": 0.25482240319252014
+      },
+      {
+        "id": "S2",
+        "chunk_id": "01_취업규정.pdf::24",
+        "metadata": {
+          "source": "01_취업규정.pdf",
+          "doc": "스칼라테크 취업규정",
+          "doc_no": "SCT-HR-001",
+          "version": "1.0",
+          "doc_type": "사내규정",
+          "chapter": "제7장 제정·변경과 부칙",
+          "article": "제20조",
+          "title": "의견청취·동의·신고",
+          "page": 6,
+          "chunk_mode": "fixed"
+        },
+        "text": "제20조 의견청취·동의·신고\n1. 5개 규정 중 명칭과 무관하게 근로조건을 정한 부분은 취업규칙으로 관리한다.\n2. 작성·변경 시 과반수 노동조합이 있으면 그 노동조합, 없으면 근로자 과반수의 의견을 듣는다. 불이익 변경은 법이 요구하는 집단적 동의를 받는다. 개별 직원의 수령확인서나 단순 공지만으로 이를 대체하지 않는다.\n3. 근로자대표의 서면합의가 필요한 제도와 취업규칙 불이익 변경의 집단 동의는 서로 다른 절차이다. 대표자 지정만으로 모든 동의가 완료된 것으로 보지 않는다.\n4. 상시근로자 10명 이상이면 취업규칙 및 변경사항을 의견서 등 법정 서류와 함께 관할 고용노동관서에 신고한다. 10명 미만이어도 법령·계약과 해당 변경 절차를 준수한다.\n5. 규정은 근로자가 언제든 열람할 수 있도록 게시·비치하고 신규 입사자에게 안내한다. 개별 근로계약의 변경이 필요한 사항은 별도 서면으로 처리한다.",
+        "score": 0.2682880461215973
+      },
+      {
+        "id": "S3",
+        "chunk_id": "03_근태규정.pdf::5",
+        "metadata": {
+          "source": "03_근태규정.pdf",
+          "doc": "스칼라테크 근태규정",
+          "doc_no": "SCT-HR-003",
+          "version": "1.0",
+          "doc_type": "사내규정",
+          "chapter": "제1장 기본 근무와 휴일",
+          "article": "제4조",
+          "title": "휴일과 유급 처리",
+          "page": 2,
+          "chunk_mode": "fixed"
+        },
+        "text": "6. 주휴일·공휴일의 대체는 해당 휴일의 법적 성격과 필요한 사전 절차·근로자대표 서면합의를 갖춘 경우에 한한다. 노동절은 회사 기준상 다른 날로 대체하지 않는다.",
+        "score": 0.2768365442752838
+      },
+      {
+        "id": "S4",
+        "chunk_id": "04_휴가규정.pdf::11",
+        "metadata": {
+          "source": "04_휴가규정.pdf",
+          "doc": "스칼라테크 휴가규정",
+          "doc_no": "SCT-HR-004",
+          "version": "1.0",
+          "doc_type": "사내규정",
+          "chapter": "제2장 연차 유급휴가",
+          "article": "제9조",
+          "title": "연차 대체와 회사 휴무",
+          "page": 3,
+          "chunk_mode": "fixed"
+        },
+        "text": "제9조 연차 대체와 회사 휴무\n1. 특정 근로일을 연차로 대체하려면 근로자대표와의 서면합의가 필요하다. 대표자의 공지나 개별 휴가신청서를 일괄 작성하는 방식으로 대체하지 않는다.\n2. 주휴일·공휴일 등 원래 근로의무가 없는 날에 연차를 차감하지 않는다.\n3. 회사 사정으로 쉬게 하는 날은 유급 특별휴무·휴업수당 등 법적 성격을 판단한다. 근로자 동의 없는 개인 연차 강제 소진이나 무급처리를 하지 않는다.",
+        "score": 0.28153976798057556
+      },
+      {
+        "id": "S5",
+        "chunk_id": "04_휴가규정.pdf::22",
+        "metadata": {
+          "source": "04_휴가규정.pdf",
+          "doc": "스칼라테크 휴가규정",
+          "doc_no": "SCT-HR-004",
+          "version": "1.0",
+          "doc_type": "사내규정",
+          "chapter": "제4장 육아·가족돌봄·병역 휴직 등",
+          "article": "제18조",
+          "title": "가족돌봄휴가·휴직",
+          "page": 6,
+          "chunk_mode": "fixed"
+        },
+        "text": "4. 가족돌봄휴직은 계속근로 6개월 미만, 다른 가족의 돌봄 가능, 법정 대체인력 채용 노력에도 채용 불가, 입증되는 중대한 사업 지장 등 시행령상 예외가 실제로 있는 경우에만 거절할 수 있다. 법정 사유·증빙을 확인하고 서면으로 알리며 대체 지원방안을 협의한다.\n5. 가족돌봄휴직은 원칙적으로 30일 전 신청하고 지연 신청의 개시일은 시행령에 따른다. 긴급 가족돌봄휴가는 가능한 즉시 신청·통지하게 하여 일반 사전결재 기한을 강요하지 않는다.\n6. 근속기간에 포함하고 평균임금 산정에서는 법정 제외 규정을 적용한다. 법정 연차 산정은 근속기간 포함과 별도로 출근율 기준을 확인한다.",
+        "score": 0.2842949628829956
+      }
+    ],
+    "source_ids": [
+      "04_휴가규정.pdf::10",
+      "01_취업규정.pdf::24",
+      "03_근태규정.pdf::5",
+      "04_휴가규정.pdf::11",
+      "04_휴가규정.pdf::22"
+    ],
+    "session_id": "feb4054dbff843c19e5513199072ce37",
+    "request_id": "Q26",
+    "replayed": false,
+    "summary_checked": false,
+    "summary_update_status": "up_to_date",
+    "summary_is_current": true,
+    "retrieved_count": 5,
+    "search_count": 1,
+    "retry_count": 0,
+    "model_calls": 4,
+    "input_tokens_estimate": 3950,
+    "budget_input_tokens": 4489,
+    "elapsed_ms": 4894.47,
+    "trace": [
+      {
+        "stage": "route",
+        "input_tokens_estimate": 156,
+        "usage": {
+          "input_tokens": 287,
+          "output_tokens": 6,
+          "total_tokens": 293
+        },
+        "elapsed_ms": 766.25
+      },
+      {
+        "stage": "route_decision",
+        "intent": "document_question"
+      },
+      {
+        "stage": "resolve_recent",
+        "input_tokens_estimate": 510,
+        "usage": {
+          "input_tokens": 791,
+          "output_tokens": 53,
+          "total_tokens": 844
+        },
+        "elapsed_ms": 1326.85
+      },
+      {
+        "stage": "memory_decision",
+        "action": "ready",
+        "summary_checked": false
+      },
+      {
+        "stage": "retrieve",
+        "search_count": 1,
+        "elapsed_ms": 319.3
+      },
+      {
+        "stage": "assess",
+        "input_tokens_estimate": 1750,
+        "usage": {
+          "input_tokens": 1877,
+          "output_tokens": 31,
+          "total_tokens": 1908
+        },
+        "elapsed_ms": 1013.15
+      },
+      {
+        "stage": "evidence_decision",
+        "decision": "sufficient",
+        "reason_code": "evidence_sufficient",
+        "source_count": 5
+      },
+      {
+        "stage": "generate",
+        "input_tokens_estimate": 1534,
+        "usage": {
+          "input_tokens": 1534,
+          "output_tokens": 62,
+          "total_tokens": 1596
+        },
+        "elapsed_ms": 1456.21
+      }
+    ]
+  }
+}

@@ -194,7 +194,7 @@ class MemoryWorkflowTests(unittest.IsolatedAsyncioTestCase):
         sid = await seed(store, 5)
         model = MemoryModel()
         result = await self.invoke(RagService(FakeStore(), model, session_store=store,
-                                             settings=RagSettings(max_model_calls=4)), sid)
+                                             settings=RagSettings(max_model_calls=5)), sid)
         self.assertEqual(result["status"], "answered")
         self.assertEqual(result["summary_update_status"], "failed")
         self.assertNotIn("SummaryDecision", model.calls)

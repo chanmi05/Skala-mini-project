@@ -1,0 +1,112 @@
+{
+  "case": {
+    "id": "Q10",
+    "유형": "사실",
+    "질문": "일주일에 최대 몇 시간까지 일할 수 있어?",
+    "기대답변": "연장근로는 주 12시간 이내로, 주 40시간과 합쳐 일반적으로 52시간이 한도다.",
+    "근거_규정": "스칼라테크 근태규정",
+    "근거_조문": "제9조",
+    "쪽": "3",
+    "정확": "",
+    "근거": "",
+    "환각": ""
+  },
+  "result": {
+    "status": "no_evidence",
+    "output": "제공된 문서에서 답변에 사용할 근거를 찾지 못했습니다.",
+    "reason_code": "generation_not_grounded",
+    "answer": "제공된 문서에서 답변에 사용할 근거를 찾지 못했습니다.",
+    "sources": [],
+    "source_ids": [],
+    "session_id": "c164b431cf4e4a23a3282d75cdd2dda2",
+    "request_id": "Q10",
+    "replayed": false,
+    "summary_checked": false,
+    "summary_update_status": "up_to_date",
+    "summary_is_current": true,
+    "retrieved_count": 5,
+    "search_count": 1,
+    "retry_count": 0,
+    "model_calls": 5,
+    "input_tokens_estimate": 4566,
+    "budget_input_tokens": 5308,
+    "elapsed_ms": 5956.62,
+    "trace": [
+      {
+        "stage": "route",
+        "input_tokens_estimate": 163,
+        "usage": {
+          "input_tokens": 294,
+          "output_tokens": 6,
+          "total_tokens": 300
+        },
+        "elapsed_ms": 772.77
+      },
+      {
+        "stage": "route_decision",
+        "intent": "document_question"
+      },
+      {
+        "stage": "resolve_recent",
+        "input_tokens_estimate": 667,
+        "usage": {
+          "input_tokens": 948,
+          "output_tokens": 28,
+          "total_tokens": 976
+        },
+        "elapsed_ms": 1072.66
+      },
+      {
+        "stage": "memory_decision",
+        "action": "ready",
+        "summary_checked": false
+      },
+      {
+        "stage": "retrieve",
+        "search_count": 1,
+        "elapsed_ms": 354.45,
+        "method": "semantic"
+      },
+      {
+        "stage": "assess",
+        "input_tokens_estimate": 1943,
+        "usage": {
+          "input_tokens": 2070,
+          "output_tokens": 34,
+          "total_tokens": 2104
+        },
+        "elapsed_ms": 1085.81
+      },
+      {
+        "stage": "evidence_decision",
+        "decision": "sufficient",
+        "reason_code": "evidence_sufficient",
+        "source_count": 5
+      },
+      {
+        "stage": "generate",
+        "input_tokens_estimate": 842,
+        "usage": {
+          "input_tokens": 986,
+          "output_tokens": 73,
+          "total_tokens": 1059
+        },
+        "elapsed_ms": 1584.67
+      },
+      {
+        "stage": "verify_answer",
+        "input_tokens_estimate": 951,
+        "usage": {
+          "input_tokens": 1010,
+          "output_tokens": 26,
+          "total_tokens": 1036
+        },
+        "elapsed_ms": 1075.64
+      },
+      {
+        "stage": "answer_review",
+        "decision": "unsupported"
+      }
+    ]
+  }
+}

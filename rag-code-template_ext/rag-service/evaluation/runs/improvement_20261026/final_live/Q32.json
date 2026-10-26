@@ -1,0 +1,98 @@
+{
+  "case": {
+    "id": "Q32",
+    "유형": "예외",
+    "질문": "형제가 결혼하면 경조휴가 받아?",
+    "기대답변": "(문서에 없음) 경조휴가 표에는 본인 혼인만 있고 형제자매 혼인은 없다. 지어내지 말고 인사담당자에게 연결한다.",
+    "근거_규정": "",
+    "근거_조문": "",
+    "쪽": "",
+    "정확": "",
+    "근거": "",
+    "환각": ""
+  },
+  "result": {
+    "status": "no_evidence",
+    "output": "제공된 문서에서 답변에 사용할 근거를 찾지 못했습니다.",
+    "reason_code": "generation_abstained",
+    "answer": "제공된 문서에서 답변에 사용할 근거를 찾지 못했습니다.",
+    "sources": [],
+    "source_ids": [],
+    "session_id": "1be66bd8823649979cacc20b53a83f74",
+    "request_id": "Q32",
+    "replayed": false,
+    "summary_checked": false,
+    "summary_update_status": "up_to_date",
+    "summary_is_current": true,
+    "retrieved_count": 5,
+    "search_count": 1,
+    "retry_count": 0,
+    "model_calls": 4,
+    "input_tokens_estimate": 3771,
+    "budget_input_tokens": 4454,
+    "elapsed_ms": 4509.77,
+    "trace": [
+      {
+        "stage": "route",
+        "input_tokens_estimate": 161,
+        "usage": {
+          "input_tokens": 292,
+          "output_tokens": 6,
+          "total_tokens": 298
+        },
+        "elapsed_ms": 688.63
+      },
+      {
+        "stage": "route_decision",
+        "intent": "document_question"
+      },
+      {
+        "stage": "resolve_recent",
+        "input_tokens_estimate": 665,
+        "usage": {
+          "input_tokens": 946,
+          "output_tokens": 39,
+          "total_tokens": 985
+        },
+        "elapsed_ms": 853.94
+      },
+      {
+        "stage": "memory_decision",
+        "action": "ready",
+        "summary_checked": false
+      },
+      {
+        "stage": "retrieve",
+        "search_count": 1,
+        "elapsed_ms": 336.35,
+        "method": "semantic"
+      },
+      {
+        "stage": "assess",
+        "input_tokens_estimate": 2223,
+        "usage": {
+          "input_tokens": 2350,
+          "output_tokens": 32,
+          "total_tokens": 2382
+        },
+        "elapsed_ms": 1223.36
+      },
+      {
+        "stage": "evidence_decision",
+        "decision": "sufficient",
+        "reason_code": "evidence_sufficient",
+        "source_count": 5
+      },
+      {
+        "stage": "generate",
+        "input_tokens_estimate": 722,
+        "usage": {
+          "input_tokens": 866,
+          "output_tokens": 91,
+          "total_tokens": 957
+        },
+        "elapsed_ms": 1392.9
+      }
+    ]
+  }
+}

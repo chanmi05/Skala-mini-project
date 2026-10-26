@@ -149,3 +149,14 @@ python -B rag-service/evaluation/run_hr_api_smoke.py --trust-local-index
 ```
 
 각 명령은 새 결과 폴더를 만들며 원본 인덱스를 보존한다. API 업로드는 별도 임시 인덱스에서만 수행한다. 실패한 개발 실행도 결과 폴더에 남아 있으며 최종 실행은 [연결 결과 문서](../../../rag-docs/HR_RAG_INTEGRATION_RESULT.md)에 지정했다.
+
+## 2026-10-26 개선 전후 평가
+
+- `evaluate_improvement.py`: 기본은 외부 API가 없는 고정 모의 사례 8개. `--live`는 32문항 CSV로 실제 OpenAI 임베딩·모델 API를 호출하므로 규정 자료 전송과 비용이 발생한다.
+- 실행 예: 부모 `rag-code-template_ext`에서 `.venv/bin/python rag-service/evaluation/evaluate_improvement.py --output /tmp/new-fixture-run`.
+- 실제 평가 예: 같은 명령에 `--live --cases ../data/eval/eval_set.csv --top-k 5`를 추가한다. 출력 폴더는 새 경로여야 한다. 신뢰하는 로컬 FAISS pickle만 사용한다.
+- 각 실행은 질문별 원문 답변·출처·trace, 코드/인덱스/질문 해시와 실행 설정을 보존한다. 단일 질문마다 새 세션을 쓰고 동시성은 2다.
+- `RAG_REVIEW_CODE_ROOT`를 별도 코드 스냅샷 경로로 지정하면 해당 소스를 불러와 비교할 수 있다. 평가 스크립트·환경·인덱스는 현재 작업 경로를 사용한다.
+- `compare_improvement.py runs/improvement_20261026`: 인덱스·질문·모델·k가 같은지 확인한 뒤 `comparison.json`, `case_comparison.md`를 생성한다. 에이전트 검토는 결과 해시와 연결해 다른 실행에 재사용하지 않는다.
+- `run_evaluation.py`는 레거시 `rag_agent` 기준선 도구다. 이번 개선의 구조화 생성·검증·기억 경로는 `evaluate_improvement.py`의 `RagService` 경로로 평가한다.
+- 실제 API 전송은 이번 작업에서 사용자에게 명시적으로 승인받았다. 기존 실행 원자료는 `runs/improvement_20261026/`에 있다. 현재 32문항은 개발 중 확인한 자료이며 미사용 holdout은 아니다.

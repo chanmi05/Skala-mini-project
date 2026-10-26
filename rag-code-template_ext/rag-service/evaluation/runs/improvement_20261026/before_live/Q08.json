@@ -1,0 +1,66 @@
+{
+  "case": {
+    "id": "Q08",
+    "유형": "사실",
+    "질문": "출퇴근 시간이랑 점심시간이 어떻게 돼?",
+    "기대답변": "월~금 09:00~18:00 근무, 휴게(점심)는 12:00~13:00이다.",
+    "근거_규정": "스칼라테크 근태규정",
+    "근거_조문": "제2조",
+    "쪽": "1",
+    "정확": "",
+    "근거": "",
+    "환각": ""
+  },
+  "result": {
+    "status": "clarification_needed",
+    "output": "출퇴근 시간과 점심시간에 대한 정보를 알고 싶은 특정 회사나 기관이 있나요, 아니면 일반적인 정보를 찾고 계신가요?",
+    "reason_code": "missing_subject_or_condition",
+    "answer": "출퇴근 시간과 점심시간에 대한 정보를 알고 싶은 특정 회사나 기관이 있나요, 아니면 일반적인 정보를 찾고 계신가요?",
+    "sources": [],
+    "source_ids": [],
+    "session_id": "3f1ca59941d6447ca32c3d8be4de7078",
+    "request_id": "Q08",
+    "replayed": false,
+    "summary_checked": false,
+    "summary_update_status": "up_to_date",
+    "summary_is_current": true,
+    "retrieved_count": 0,
+    "search_count": 0,
+    "retry_count": 0,
+    "model_calls": 2,
+    "input_tokens_estimate": 680,
+    "budget_input_tokens": 1092,
+    "elapsed_ms": 1942.12,
+    "trace": [
+      {
+        "stage": "route",
+        "input_tokens_estimate": 163,
+        "usage": {
+          "input_tokens": 294,
+          "output_tokens": 6,
+          "total_tokens": 300
+        },
+        "elapsed_ms": 884.68
+      },
+      {
+        "stage": "route_decision",
+        "intent": "document_question"
+      },
+      {
+        "stage": "resolve_recent",
+        "input_tokens_estimate": 517,
+        "usage": {
+          "input_tokens": 798,
+          "output_tokens": 46,
+          "total_tokens": 844
+        },
+        "elapsed_ms": 1050.79
+      },
+      {
+        "stage": "memory_decision",
+        "action": "clarify",
+        "summary_checked": false
+      }
+    ]
+  }
+}

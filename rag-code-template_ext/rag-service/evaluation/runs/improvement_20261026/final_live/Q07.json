@@ -1,0 +1,137 @@
+{
+  "case": {
+    "id": "Q07",
+    "유형": "사실",
+    "질문": "연차는 최대 며칠까지 늘어나?",
+    "기대답변": "총 25일이 한도다.",
+    "근거_규정": "스칼라테크 휴가규정",
+    "근거_조문": "제4조",
+    "쪽": "2",
+    "정확": "",
+    "근거": "",
+    "환각": ""
+  },
+  "result": {
+    "status": "answered",
+    "output": "연차는 최대 25일까지 늘어날 수 있습니다. 계속근로 3년 이상인 경우 최초 1년을 넘는 계속근로연수 매 2년마다 1일을 가산하여 총 25일을 한도로 합니다 [S1].",
+    "reason_code": "evidence_sufficient",
+    "answer": "연차는 최대 25일까지 늘어날 수 있습니다. 계속근로 3년 이상인 경우 최초 1년을 넘는 계속근로연수 매 2년마다 1일을 가산하여 총 25일을 한도로 합니다 [S1].",
+    "sources": [
+      {
+        "id": "S1",
+        "chunk_id": "04_휴가규정.pdf::4",
+        "metadata": {
+          "source": "04_휴가규정.pdf",
+          "doc": "스칼라테크 휴가규정",
+          "doc_no": "SCT-HR-004",
+          "version": "1.0",
+          "doc_type": "사내규정",
+          "chapter": "제2장 연차 유급휴가",
+          "article": "제4조",
+          "title": "발생 기준",
+          "page": 2,
+          "chunk_mode": "fixed"
+        },
+        "text": "제4조 발생 기준\n1. 연차는 입사일을 기준으로 계산한다. 회계연도 기준으로 변경할 경우 법정 입사일 기준에 미달하지 않도록 부여·퇴직정산 기준을 정하고 필요한 변경 절차를 거친다.\n2. 1년간 80% 이상 출근하면 그 1년을 마친 다음 날 근로관계가 존속하는 때 15일을 부여한다.\n3. 계속근로 1년 미만에는 1개월 개근 시 1일을 부여한다. 첫 1년의 월 단위 연차는 최대 11일이며, 이후 발생하는 15일에서 이미 사용한 월 단위 연차를 빼지 않는다.\n4. 1년간 출근율이 80% 미만인 경우에는 해당 산정기간 중 1개월 개근 시 1일을 부여하는 법정 기준을 적용한다.\n5. 계속근로 3년 이상이면 최초 1년을 넘는 계속근로연수 매 2년마다 1일을 가산하고 총 25일을 한도로 한다. 예: 3·4년 근속 구간 16일, 5·6년 구간 17일.",
+        "score": 0.34333163499832153
+      }
+    ],
+    "source_ids": [
+      "04_휴가규정.pdf::4"
+    ],
+    "session_id": "f609856835894983a9eae061c5a4a01a",
+    "request_id": "Q07",
+    "replayed": false,
+    "summary_checked": false,
+    "summary_update_status": "up_to_date",
+    "summary_is_current": true,
+    "retrieved_count": 5,
+    "search_count": 1,
+    "retry_count": 0,
+    "model_calls": 5,
+    "input_tokens_estimate": 4358,
+    "budget_input_tokens": 5100,
+    "elapsed_ms": 5547.34,
+    "trace": [
+      {
+        "stage": "route",
+        "input_tokens_estimate": 161,
+        "usage": {
+          "input_tokens": 292,
+          "output_tokens": 6,
+          "total_tokens": 298
+        },
+        "elapsed_ms": 677.43
+      },
+      {
+        "stage": "route_decision",
+        "intent": "document_question"
+      },
+      {
+        "stage": "resolve_recent",
+        "input_tokens_estimate": 665,
+        "usage": {
+          "input_tokens": 946,
+          "output_tokens": 23,
+          "total_tokens": 969
+        },
+        "elapsed_ms": 852.98
+      },
+      {
+        "stage": "memory_decision",
+        "action": "ready",
+        "summary_checked": false
+      },
+      {
+        "stage": "retrieve",
+        "search_count": 1,
+        "elapsed_ms": 336.54,
+        "method": "semantic"
+      },
+      {
+        "stage": "assess",
+        "input_tokens_estimate": 2157,
+        "usage": {
+          "input_tokens": 2284,
+          "output_tokens": 32,
+          "total_tokens": 2316
+        },
+        "elapsed_ms": 1233.72
+      },
+      {
+        "stage": "evidence_decision",
+        "decision": "sufficient",
+        "reason_code": "evidence_sufficient",
+        "source_count": 5
+      },
+      {
+        "stage": "generate",
+        "input_tokens_estimate": 643,
+        "usage": {
+          "input_tokens": 787,
+          "output_tokens": 66,
+          "total_tokens": 853
+        },
+        "elapsed_ms": 1339.88
+      },
+      {
+        "stage": "verify_answer",
+        "input_tokens_estimate": 732,
+        "usage": {
+          "input_tokens": 791,
+          "output_tokens": 26,
+          "total_tokens": 817
+        },
+        "elapsed_ms": 1091.03
+      },
+      {
+        "stage": "answer_review",
+        "decision": "grounded"
+      },
+      {
+        "stage": "generation_sources",
+        "selected_count": 1
+      }
+    ]
+  }
+}

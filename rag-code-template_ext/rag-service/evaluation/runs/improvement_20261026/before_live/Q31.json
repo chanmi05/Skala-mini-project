@@ -1,0 +1,122 @@
+{
+  "case": {
+    "id": "Q31",
+    "유형": "예외",
+    "질문": "올해 연봉 인상률이 몇 퍼센트야?",
+    "기대답변": "(문서에 없음) 규정집에서 찾을 수 없다고 답하고 인사담당자에게 연결한다.",
+    "근거_규정": "",
+    "근거_조문": "",
+    "쪽": "",
+    "정확": "",
+    "근거": "",
+    "환각": ""
+  },
+  "result": {
+    "status": "no_evidence",
+    "output": "제공된 문서에서 답변에 사용할 근거를 찾지 못했습니다.",
+    "reason_code": "retry_limit",
+    "answer": "제공된 문서에서 답변에 사용할 근거를 찾지 못했습니다.",
+    "sources": [],
+    "source_ids": [],
+    "session_id": "aaf9cbb8674d4e85b1b6f9523ff64170",
+    "request_id": "Q31",
+    "replayed": false,
+    "summary_checked": false,
+    "summary_update_status": "up_to_date",
+    "summary_is_current": true,
+    "retrieved_count": 5,
+    "search_count": 2,
+    "retry_count": 1,
+    "model_calls": 5,
+    "input_tokens_estimate": 5166,
+    "budget_input_tokens": 5872,
+    "elapsed_ms": 6287.19,
+    "trace": [
+      {
+        "stage": "route",
+        "input_tokens_estimate": 163,
+        "usage": {
+          "input_tokens": 294,
+          "output_tokens": 6,
+          "total_tokens": 300
+        },
+        "elapsed_ms": 799.76
+      },
+      {
+        "stage": "route_decision",
+        "intent": "document_question"
+      },
+      {
+        "stage": "resolve_recent",
+        "input_tokens_estimate": 517,
+        "usage": {
+          "input_tokens": 798,
+          "output_tokens": 27,
+          "total_tokens": 825
+        },
+        "elapsed_ms": 1010.85
+      },
+      {
+        "stage": "memory_decision",
+        "action": "ready",
+        "summary_checked": false
+      },
+      {
+        "stage": "retrieve",
+        "search_count": 1,
+        "elapsed_ms": 328.86
+      },
+      {
+        "stage": "assess",
+        "input_tokens_estimate": 2160,
+        "usage": {
+          "input_tokens": 2287,
+          "output_tokens": 33,
+          "total_tokens": 2320
+        },
+        "elapsed_ms": 1400.05
+      },
+      {
+        "stage": "evidence_decision",
+        "decision": "insufficient",
+        "reason_code": "evidence_insufficient",
+        "source_count": 5
+      },
+      {
+        "stage": "rewrite",
+        "input_tokens_estimate": 169,
+        "usage": {
+          "input_tokens": 209,
+          "output_tokens": 15,
+          "total_tokens": 224
+        },
+        "elapsed_ms": 879.53
+      },
+      {
+        "stage": "query_rewrite",
+        "duplicate": false
+      },
+      {
+        "stage": "retrieve",
+        "search_count": 2,
+        "elapsed_ms": 318.01
+      },
+      {
+        "stage": "assess",
+        "input_tokens_estimate": 2157,
+        "usage": {
+          "input_tokens": 2284,
+          "output_tokens": 33,
+          "total_tokens": 2317
+        },
+        "elapsed_ms": 1535.91
+      },
+      {
+        "stage": "evidence_decision",
+        "decision": "insufficient",
+        "reason_code": "retry_limit",
+        "source_count": 5
+      }
+    ]
+  }
+}

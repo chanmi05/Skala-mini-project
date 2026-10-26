@@ -1,0 +1,49 @@
+{
+  "before": {
+    "total": 32,
+    "statuses": {
+      "answered": 24,
+      "clarification_needed": 4,
+      "no_evidence": 4
+    },
+    "answerable_answered": 24,
+    "answerable_total": 28,
+    "unanswerable_abstained": 4,
+    "unanswerable_total": 4,
+    "median_ms": 4729.23,
+    "p95_ms_nearest_rank": 7265.69,
+    "model_calls": 128,
+    "reported_input_tokens": 154958,
+    "reported_output_tokens": 4448,
+    "agent_primary_correct": 23,
+    "agent_primary_total": 28,
+    "fixture_passed": 1,
+    "fixture_total": 8
+  },
+  "final": {
+    "total": 32,
+    "statuses": {
+      "answered": 26,
+      "no_evidence": 6
+    },
+    "answerable_answered": 26,
+    "answerable_total": 28,
+    "unanswerable_abstained": 4,
+    "unanswerable_total": 4,
+    "median_ms": 5784.195,
+    "p95_ms_nearest_rank": 7667.09,
+    "model_calls": 165,
+    "reported_input_tokens": 172349,
+    "reported_output_tokens": 5427,
+    "agent_primary_correct": 26,
+    "agent_primary_total": 28,
+    "fixture_passed": 8,
+    "fixture_total": 8
+  },
+  "reviewer": "codex_agent",
+  "limitations": [
+    "질문이 요구하는 핵심 사실/수치와 명시적 조건의 일치를 본 에이전트 1차 검토이며 독립적인 사람의 평가가 아니다.",
+    "기대답변의 모든 부가 설명을 빠짐없이 담았다는 의미가 아니다. 검색된 문서/제공된 기대값 기준이며 현행 법률 검증이 아니다.",
+    "동일 32문항을 개선 중 확인하고 프롬프트에 반영했으므로 개발셋 결과다. 미사용 holdout 성능으로 일반화할 수 없다."
+  ]
+}

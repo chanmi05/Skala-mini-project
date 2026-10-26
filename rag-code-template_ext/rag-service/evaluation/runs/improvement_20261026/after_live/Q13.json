@@ -1,0 +1,123 @@
+{
+  "case": {
+    "id": "Q13",
+    "유형": "사실",
+    "질문": "난임치료휴가는 며칠이고 유급이야?",
+    "기대답변": "연 6일 이내이며, 처음 2일은 유급이고 나머지 4일은 무급이다.",
+    "근거_규정": "스칼라테크 휴가규정",
+    "근거_조문": "제14조",
+    "쪽": "5",
+    "정확": "",
+    "근거": "",
+    "환각": ""
+  },
+  "result": {
+    "status": "answered",
+    "output": "난임치료휴가는 연간 6일 이내로 부여되며, 그 중 최초 2일은 유급이고 나머지 4일은 무급입니다 [S1].",
+    "reason_code": "evidence_sufficient",
+    "answer": "난임치료휴가는 연간 6일 이내로 부여되며, 그 중 최초 2일은 유급이고 나머지 4일은 무급입니다 [S1].",
+    "sources": [
+      {
+        "id": "S1",
+        "chunk_id": "04_휴가규정.pdf::16",
+        "metadata": {
+          "source": "04_휴가규정.pdf",
+          "doc": "스칼라테크 휴가규정",
+          "doc_no": "SCT-HR-004",
+          "version": "1.0",
+          "doc_type": "사내규정",
+          "chapter": "제3장 임신·출산·치료 관련 법정휴가",
+          "article": "제14조",
+          "title": "난임치료휴가와 생리휴가",
+          "page": 5,
+          "chunk_mode": "fixed"
+        },
+        "text": "제14조 난임치료휴가와 생리휴가\n1. 인공수정·체외수정 등 난임치료를 위하여 연간 6일 이내의 휴가를 부여하고 최초 2일은 유급, 나머지 4일은 무급으로 한다. 연간 기준은 1월 1일부터 12월 31일까지로 관리한다.\n2. 정상적인 사업 운영에 중대한 지장이 있을 때에만 근로자와 협의하여 난임치료휴가 시기를 변경한다. 치료 일정의 특수성과 긴급성을 고려한다.\n3. 난임치료 관련 정보를 본인의 의사에 반하여 누설하지 않는다. 법정 유급일수 소진 여부를 인사담당자가 비공개 관리한다.\n4. 여성 근로자가 청구하면 월 1일의 생리휴가를 부여한다. 이 초안에서는 무급으로 하되 기존 유급 약정은 유지한다. 과도한 진단서 제출 등으로 권리를 제한하지 않는다.",
+        "score": 0.23882801830768585
+      }
+    ],
+    "source_ids": [
+      "04_휴가규정.pdf::16"
+    ],
+    "session_id": "68c6b578dd9d46c3b7797fbb73d497bc",
+    "request_id": "Q13",
+    "replayed": false,
+    "summary_checked": false,
+    "summary_update_status": "up_to_date",
+    "summary_is_current": true,
+    "retrieved_count": 5,
+    "search_count": 1,
+    "retry_count": 0,
+    "model_calls": 4,
+    "input_tokens_estimate": 3504,
+    "budget_input_tokens": 4187,
+    "elapsed_ms": 4063.59,
+    "trace": [
+      {
+        "stage": "route",
+        "input_tokens_estimate": 165,
+        "usage": {
+          "input_tokens": 296,
+          "output_tokens": 6,
+          "total_tokens": 302
+        },
+        "elapsed_ms": 804.89
+      },
+      {
+        "stage": "route_decision",
+        "intent": "document_question"
+      },
+      {
+        "stage": "resolve_recent",
+        "input_tokens_estimate": 616,
+        "usage": {
+          "input_tokens": 897,
+          "output_tokens": 28,
+          "total_tokens": 925
+        },
+        "elapsed_ms": 922.16
+      },
+      {
+        "stage": "memory_decision",
+        "action": "ready",
+        "summary_checked": false
+      },
+      {
+        "stage": "retrieve",
+        "search_count": 1,
+        "elapsed_ms": 270.39,
+        "method": "semantic"
+      },
+      {
+        "stage": "assess",
+        "input_tokens_estimate": 2129,
+        "usage": {
+          "input_tokens": 2256,
+          "output_tokens": 30,
+          "total_tokens": 2286
+        },
+        "elapsed_ms": 1108.45
+      },
+      {
+        "stage": "evidence_decision",
+        "decision": "sufficient",
+        "reason_code": "evidence_sufficient",
+        "source_count": 5
+      },
+      {
+        "stage": "generate",
+        "input_tokens_estimate": 594,
+        "usage": {
+          "input_tokens": 738,
+          "output_tokens": 51,
+          "total_tokens": 789
+        },
+        "elapsed_ms": 941.12
+      },
+      {
+        "stage": "generation_sources",
+        "selected_count": 1
+      }
+    ]
+  }
+}

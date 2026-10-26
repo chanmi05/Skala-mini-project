@@ -1,0 +1,122 @@
+{
+  "case": {
+    "id": "Q32",
+    "유형": "예외",
+    "질문": "형제가 결혼하면 경조휴가 받아?",
+    "기대답변": "(문서에 없음) 경조휴가 표에는 본인 혼인만 있고 형제자매 혼인은 없다. 지어내지 말고 인사담당자에게 연결한다.",
+    "근거_규정": "",
+    "근거_조문": "",
+    "쪽": "",
+    "정확": "",
+    "근거": "",
+    "환각": ""
+  },
+  "result": {
+    "status": "no_evidence",
+    "output": "제공된 문서에서 답변에 사용할 근거를 찾지 못했습니다.",
+    "reason_code": "retry_limit",
+    "answer": "제공된 문서에서 답변에 사용할 근거를 찾지 못했습니다.",
+    "sources": [],
+    "source_ids": [],
+    "session_id": "b015db0dcc4548a2822b43f4a58ccbcb",
+    "request_id": "Q32",
+    "replayed": false,
+    "summary_checked": false,
+    "summary_update_status": "up_to_date",
+    "summary_is_current": true,
+    "retrieved_count": 5,
+    "search_count": 2,
+    "retry_count": 1,
+    "model_calls": 5,
+    "input_tokens_estimate": 4573,
+    "budget_input_tokens": 5279,
+    "elapsed_ms": 6652.02,
+    "trace": [
+      {
+        "stage": "route",
+        "input_tokens_estimate": 161,
+        "usage": {
+          "input_tokens": 292,
+          "output_tokens": 6,
+          "total_tokens": 298
+        },
+        "elapsed_ms": 828.37
+      },
+      {
+        "stage": "route_decision",
+        "intent": "document_question"
+      },
+      {
+        "stage": "resolve_recent",
+        "input_tokens_estimate": 515,
+        "usage": {
+          "input_tokens": 796,
+          "output_tokens": 41,
+          "total_tokens": 837
+        },
+        "elapsed_ms": 927.57
+      },
+      {
+        "stage": "memory_decision",
+        "action": "ready",
+        "summary_checked": false
+      },
+      {
+        "stage": "retrieve",
+        "search_count": 1,
+        "elapsed_ms": 328.16
+      },
+      {
+        "stage": "assess",
+        "input_tokens_estimate": 2132,
+        "usage": {
+          "input_tokens": 2259,
+          "output_tokens": 40,
+          "total_tokens": 2299
+        },
+        "elapsed_ms": 1696.34
+      },
+      {
+        "stage": "evidence_decision",
+        "decision": "insufficient",
+        "reason_code": "evidence_insufficient",
+        "source_count": 5
+      },
+      {
+        "stage": "rewrite",
+        "input_tokens_estimate": 201,
+        "usage": {
+          "input_tokens": 241,
+          "output_tokens": 22,
+          "total_tokens": 263
+        },
+        "elapsed_ms": 1366.55
+      },
+      {
+        "stage": "query_rewrite",
+        "duplicate": false
+      },
+      {
+        "stage": "retrieve",
+        "search_count": 2,
+        "elapsed_ms": 259.05
+      },
+      {
+        "stage": "assess",
+        "input_tokens_estimate": 1564,
+        "usage": {
+          "input_tokens": 1691,
+          "output_tokens": 41,
+          "total_tokens": 1732
+        },
+        "elapsed_ms": 1226.38
+      },
+      {
+        "stage": "evidence_decision",
+        "decision": "insufficient",
+        "reason_code": "retry_limit",
+        "source_count": 5
+      }
+    ]
+  }
+}

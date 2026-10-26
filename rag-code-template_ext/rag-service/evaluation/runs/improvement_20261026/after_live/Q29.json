@@ -1,0 +1,124 @@
+{
+  "case": {
+    "id": "Q29",
+    "유형": "예외",
+    "질문": "출퇴근할 때 회사 주차비 지원돼?",
+    "기대답변": "(문서에 없음) 출퇴근 주차비 지원 규정은 없다. 출장 중 업무 주차비 실비(출장규정 제8조)와 헷갈리지 않고 인사담당자에게 연결한다.",
+    "근거_규정": "",
+    "근거_조문": "",
+    "쪽": "",
+    "정확": "",
+    "근거": "",
+    "환각": ""
+  },
+  "result": {
+    "status": "no_evidence",
+    "output": "제공된 문서에서 답변에 사용할 근거를 찾지 못했습니다.",
+    "reason_code": "retry_limit",
+    "answer": "제공된 문서에서 답변에 사용할 근거를 찾지 못했습니다.",
+    "sources": [],
+    "source_ids": [],
+    "session_id": "de463cf58f8040ad8f75de96afb10a98",
+    "request_id": "Q29",
+    "replayed": false,
+    "summary_checked": false,
+    "summary_update_status": "up_to_date",
+    "summary_is_current": true,
+    "retrieved_count": 5,
+    "search_count": 2,
+    "retry_count": 1,
+    "model_calls": 5,
+    "input_tokens_estimate": 4779,
+    "budget_input_tokens": 5485,
+    "elapsed_ms": 5843.08,
+    "trace": [
+      {
+        "stage": "route",
+        "input_tokens_estimate": 162,
+        "usage": {
+          "input_tokens": 293,
+          "output_tokens": 6,
+          "total_tokens": 299
+        },
+        "elapsed_ms": 711.47
+      },
+      {
+        "stage": "route_decision",
+        "intent": "document_question"
+      },
+      {
+        "stage": "resolve_recent",
+        "input_tokens_estimate": 613,
+        "usage": {
+          "input_tokens": 894,
+          "output_tokens": 31,
+          "total_tokens": 925
+        },
+        "elapsed_ms": 1069.32
+      },
+      {
+        "stage": "memory_decision",
+        "action": "ready",
+        "summary_checked": false
+      },
+      {
+        "stage": "retrieve",
+        "search_count": 1,
+        "elapsed_ms": 570.82,
+        "method": "semantic"
+      },
+      {
+        "stage": "assess",
+        "input_tokens_estimate": 1939,
+        "usage": {
+          "input_tokens": 2066,
+          "output_tokens": 38,
+          "total_tokens": 2104
+        },
+        "elapsed_ms": 1112.6
+      },
+      {
+        "stage": "evidence_decision",
+        "decision": "insufficient",
+        "reason_code": "evidence_insufficient",
+        "source_count": 5
+      },
+      {
+        "stage": "rewrite",
+        "input_tokens_estimate": 183,
+        "usage": {
+          "input_tokens": 223,
+          "output_tokens": 15,
+          "total_tokens": 238
+        },
+        "elapsed_ms": 882.59
+      },
+      {
+        "stage": "query_rewrite",
+        "duplicate": false
+      },
+      {
+        "stage": "retrieve",
+        "search_count": 2,
+        "elapsed_ms": 329.15,
+        "method": "semantic"
+      },
+      {
+        "stage": "assess",
+        "input_tokens_estimate": 1882,
+        "usage": {
+          "input_tokens": 2009,
+          "output_tokens": 38,
+          "total_tokens": 2047
+        },
+        "elapsed_ms": 1147.1
+      },
+      {
+        "stage": "evidence_decision",
+        "decision": "insufficient",
+        "reason_code": "retry_limit",
+        "source_count": 5
+      }
+    ]
+  }
+}
