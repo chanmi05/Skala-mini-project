@@ -39,7 +39,7 @@ test('빈 질문과 2000자 초과 질문은 서버에 보내지 않는다', asy
   await assert.rejects(queryText('가'.repeat(2001)), /2,000/)
 })
 
-test('질문 확인은 8008 음성 인식 API에 audio 파일을 보내고 교정 결과를 받는다', async () => {
+test('질문 확인은 음성 인식 프록시에 audio 파일을 보내고 교정 결과를 받는다', async () => {
   const review = {
     raw_transcript: '유가 휴직',
     corrected_question: '육아휴직',
@@ -47,12 +47,32 @@ test('질문 확인은 8008 음성 인식 API에 audio 파일을 보내고 교�
     warning: null,
   }
   globalThis.fetch = async (url, options) => {
-    assert.equal(url, 'http://localhost:8008/voice-transcribe')
+    assert.equal(url, '/voice-api/voice-transcribe')
     assert.equal(options.credentials, 'include')
     assert.equal(options.body.get('audio').size, 5)
     return Response.json(review)
   }
   assert.deepEqual(await transcribeAudio(new Blob(['audio'])), review)
+})
+
+test('음성 질문은 파일과 세션·요청 정보를 보내고 답변을 검증한다', async () => {
+  globalThis.fetch = async (url, options) => {
+    assert.equal(url, '/voice-api/voice-query')
+    assert.equal(options.credentials, 'include')
+    assert.equal(options.body.get('audio').size, 5)
+    assert.equal(options.body.get('session_id'), 'session-test')
+    assert.equal(options.body.get('request_id'), 'request-test')
+    return Response.json(answer)
+  }
+  assert.deepEqual(
+    await queryAudio(new Blob(['audio']), {
+      sessionId: 'session-test',
+      requestId: 'request-test',
+    }),
+    answer,
+  )
+  globalThis.fetch = async () => Response.json({ response: '다른 API 응답' })
+  await assert.rejects(queryAudio(new Blob(['audio'])), /응답 형식/)
 })
 
 test('잘못된 교정 응답은 확인 화면이나 자동 답변에 사용하지 않는다', async () => {

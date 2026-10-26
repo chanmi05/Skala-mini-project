@@ -60,10 +60,13 @@ function setMedia(getUserMedia) {
   })
 }
 
-function session() {
-  const voice = useVoiceInput((text) => {
-    transcripts.push(text)
-  })
+function session(getContext) {
+  const voice = useVoiceInput(
+    (text) => {
+      transcripts.push(text)
+    },
+    getContext,
+  )
   sessions.push(voice)
   return voice
 }
@@ -111,7 +114,7 @@ test('녹음 종료 후 원문·교정 질문을 표시하고 확인 전에는 �
   voice.stop()
   await recordings[0].finished
   assert.equal(tracks[0].stopped, true)
-  assert.equal(uploads[0].url, '/voice-api/voice-query')
+  assert.equal(uploads[0].url, '/voice-api/voice-transcribe')
   assert.equal(uploads[0].options.credentials, 'include')
   assert.match(
     uploads[0].options.body.get('audio').name,
@@ -225,13 +228,30 @@ test('수정한 질문을 확인하면 텍스트 API로 보내고 음성 답변�
   await recordings[0].finished
   voice.question.value = '수정한 질문입니다.'
   await voice.confirm()
-  assert.equal(uploads[1].url, 'http://localhost:8008/voice-query-text')
+  assert.equal(uploads[1].url, '/voice-api/voice-query-text')
   assert.equal(uploads[1].options.credentials, 'include')
   assert.deepEqual(JSON.parse(uploads[1].options.body), {
     question: '수정한 질문입니다.',
   })
   assert.deepEqual(transcripts, [answer])
   assert.equal(voice.phase.value, 'idle')
+})
+
+test('확인한 음성 질문에도 현재 세션·요청 정보를 전달한다', async () => {
+  const voice = session(() => ({
+    sessionId: 'session-test',
+    requestId: 'request-test',
+  }))
+  await voice.start()
+  voice.stop()
+  await recordings[0].finished
+  await voice.confirm()
+  assert.deepEqual(JSON.parse(uploads[1].options.body), {
+    question: review.corrected_question,
+    session_id: 'session-test',
+    request_id: 'request-test',
+  })
+  assert.deepEqual(transcripts, [answer])
 })
 
 test('원문 사용은 질문만 복원하고 확인 버튼 전까지 답변을 요청하지 않는다', async () => {

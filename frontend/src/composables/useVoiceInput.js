@@ -66,7 +66,10 @@ export function useVoiceInput(onAnswer, getContext = () => ({})) {
     controller = new AbortController()
     let succeeded = false
     try {
-      const answer = await queryText(content, { signal: controller.signal })
+      const answer = await queryText(content, {
+        ...getContext(),
+        signal: controller.signal,
+      })
       if (token !== generation) return
       await onAnswer(answer)
       succeeded = true
