@@ -1,0 +1,185 @@
+# Git 변경 파일 책임 범위별 분류 및 커밋 가이드
+
+현재 `git status`에 표시되는 변경/미추적 파일들을 **1) 필수 커밋 대상 (`rag-service` 및 직접 의존 파일)**, **2) 선택 커밋 대상 (RAG 문서·평가 결과)**, **3) 커밋 제외 대상 (프런트엔드 `.js`/`.vue`, 음성 서버 등 타 담당 영역)**으로 분류했습니다.
+
+---
+
+## 1. [필수 커밋] 실질적인 `rag-service` 및 RAG 서버 작업 파일
+
+다른 팀원의 영역(프런트엔드·음성 서버)을 건드리지 않고 **RAG 서비스가 단독으로 정상 동작 및 테스트 통과(94개)하기 위해 반드시 함께 커밋해야 하는 파일**입니다.
+
+### ① `rag-service` 핵심 코드·테스트·문서
+- `rag-code-template_ext/rag-service/rag_api.py` (신규 — `RagRuntime`, 세션·스냅샷 관리, 테스트용 `create_app`)
+- `rag-code-template_ext/rag-service/rag_router.py` (수정 — `SessionCoordinator` 공유 및 에러 분류)
+- `rag-code-template_ext/rag-service/rag_session.py` (수정 — `SummaryDecision` strict schema)
+- `rag-code-template_ext/rag-service/rag_state.py` (수정 — `MemoryDecisionOutput` 중첩 Union, `summary_available` 등)
+- `rag-code-template_ext/rag-service/rag_workflow.py` (수정 — strict schema 및 기억 해석 프롬프트·검증 보강)
+- `rag-code-template_ext/rag-service/tests/test_rag_api.py` (신규 — API·업로드·세션 단위 테스트)
+- `rag-code-template_ext/rag-service/tests/test_memory_workflow.py` (수정 — 기억 워크플로우 회귀 테스트)
+- `rag-code-template_ext/rag-service/tests/test_rag_workflow.py` (수정 — 문서 워크플로우 회귀 테스트)
+- `rag-code-template_ext/rag-service/ARCHITECTURE.md` (신규 — RAG/LangChain/LangGraph 설계 및 파일별 역할 문서)
+- `rag-code-template_ext/rag-service/README.md` (수정 — 실행 안내 및 `ARCHITECTURE.md` 링크)
+
+### ② `rag-code-template_ext` 진입점 및 직접 연동 파일
+- `rag-code-template_ext/rag_external-web_pdf_closed_llm.py` (수정 — 스켈레톤 진입점 + `rag-service` 연결)
+- `rag-code-template_ext/pdf_pipeline.py` (수정 — **[중요]** `rag_api.py`에서 호출하는 `embeddings()`, `clone_store()`, 원자적 `save_store()`가 포함되어 있어 반드시 함께 커밋 필요)
+- `rag-code-template_ext/ingest.py` (수정 — `--output-dir` 옵션 및 안전 저장)
+- `rag-code-template_ext/external_index.html` (수정 — `/console` 엔드포인트용 RAG 테스트 콘솔 화면)
+- `rag-code-template_ext/.env.example` (신규 — API 키 없는 환경변수 예시)
+- `rag-code-template_ext/프로젝트 구조.md` (수정 — 디렉터리 구조 설명)
+
+### ▶ 위 필수 파일만 `git add` 하는 명령어 (Git Bash 기준)
+```bash
+git add \
+  rag-code-template_ext/rag-service/rag_api.py \
+  rag-code-template_ext/rag-service/rag_router.py \
+  rag-code-template_ext/rag-service/rag_session.py \
+  rag-code-template_ext/rag-service/rag_state.py \
+  rag-code-template_ext/rag-service/rag_workflow.py \
+  rag-code-template_ext/rag-service/tests/test_rag_api.py \
+  rag-code-template_ext/rag-service/tests/test_memory_workflow.py \
+  rag-code-template_ext/rag-service/tests/test_rag_workflow.py \
+  rag-code-template_ext/rag-service/ARCHITECTURE.md \
+  rag-code-template_ext/rag-service/README.md \
+  rag-code-template_ext/rag_external-web_pdf_closed_llm.py \
+  rag-code-template_ext/pdf_pipeline.py \
+  rag-code-template_ext/ingest.py \
+  rag-code-template_ext/external_index.html \
+  rag-code-template_ext/.env.example \
+  "rag-code-template_ext/프로젝트 구조.md"
+```
+
+---
+
+## 2. [선택 커밋] RAG 평가 스크립트·실행 로그 및 `rag-docs` 문서
+
+코드 동작 자체에는 영향이 없지만, 평가 스크립트나 설계/작업 문서를 함께 남기고 싶을 때 선택적으로 추가할 수 있는 파일입니다.
+
+### ① 평가 스크립트 (커밋 권장) vs 평가 결과 폴더 (`runs/*`, 생략 가능)
+- 평가 스크립트·안내:
+  - `rag-code-template_ext/rag-service/evaluation/README.md`
+  - `rag-code-template_ext/rag-service/evaluation/run_hr_api_smoke.py`
+  - `rag-code-template_ext/rag-service/evaluation/run_hr_session_evaluation.py`
+- 평가 실행 결과물 (파일 개수가 많으므로 깔끔한 커밋을 원하면 제외 가능):
+  - `rag-code-template_ext/rag-service/evaluation/inspections/`
+  - `rag-code-template_ext/rag-service/evaluation/runs/hr_api_*` (4개 폴더)
+  - `rag-code-template_ext/rag-service/evaluation/runs/hr_session_*` (7개 폴더)
+
+### ② `rag-docs/` 설계·사용법 문서 및 작업 기록
+- `rag-docs/HR_DOCUMENT_INTEGRATION_PLAN.md`
+- `rag-docs/RAG_STATE_DESIGN.md`
+- `rag-docs/SESSION_RAG_WORKFLOW_USAGE.md`
+- `rag-docs/HR_RAG_API_USAGE.md`
+- `rag-docs/HR_RAG_INTEGRATION_RESULT.md`
+- `rag-docs/작업기록/2026-10-25_011~014_*.md`
+
+### ▶ 평가 스크립트와 `rag-docs` 문서까지 추가하고 싶을 때 (`runs/` 로그 폴더 제외)
+```bash
+git add \
+  rag-code-template_ext/rag-service/evaluation/README.md \
+  rag-code-template_ext/rag-service/evaluation/run_hr_api_smoke.py \
+  rag-code-template_ext/rag-service/evaluation/run_hr_session_evaluation.py \
+  rag-docs/
+```
+
+---
+
+## 3. [커밋 제외 / 원복 대상] 내 담당 범위 밖의 파일들
+
+프런트엔드(`.js`, `.vue`), 음성 AI 서버(`voice-ai_code`), 저장소 루트 공용 파일, 임시 참고 폴더입니다. **커밋에 포함하지 마세요.**
+
+### ① Vue 프런트엔드 (`frontend/`) — 제외
+- `frontend/src/composables/useChat.js`
+- `frontend/src/composables/useVoiceInput.js`
+- `frontend/src/services/voice.js`
+- `frontend/src/views/ChatView.vue`
+- `frontend/tests/chat.test.js`
+
+### ② 음성 AI 서버 (`voice-ai_code/`) — 제외
+- `voice-ai_code/app/routers/voice_query_router.py`
+- `voice-ai_code/app/services/voice_pipeline.py`
+- `voice-ai_code/tests/test_rag_integration.py`
+
+### ③ 저장소 루트 공용 파일 및 임시 파일 — 제외
+- `RUN.md`
+- `external_index.html` (저장소 루트의 HTML)
+- `original/` (스켈레톤 복원 참고용 임시 폴더)
+- `rag-code-template_ext/rag-service/git_add_ignore.txt` (현재 분류 안내 파일)
+
+### ▶ (선택) 내 담당이 아닌 수정 파일들을 원래 상태(`HEAD`)로 되돌리고 싶을 때
+```bash
+git restore \
+  RUN.md \
+  external_index.html \
+  frontend/src/composables/useChat.js \
+  frontend/src/composables/useVoiceInput.js \
+  frontend/src/services/voice.js \
+  frontend/src/views/ChatView.vue \
+  frontend/tests/chat.test.js \
+  voice-ai_code/app/routers/voice_query_router.py \
+  voice-ai_code/app/services/voice_pipeline.py
+```
+
+---
+
+## [원본 참고] 분류 전 `git status` 스냅샷
+
+```text
+$ git status
+On branch rag-preprocessing-integration
+Changes not staged for commit:
+        modified:   RUN.md
+        modified:   external_index.html
+        modified:   frontend/src/composables/useChat.js
+        modified:   frontend/src/composables/useVoiceInput.js
+        modified:   frontend/src/services/voice.js
+        modified:   frontend/src/views/ChatView.vue
+        modified:   frontend/tests/chat.test.js
+        modified:   rag-code-template_ext/external_index.html
+        modified:   rag-code-template_ext/ingest.py
+        modified:   rag-code-template_ext/pdf_pipeline.py
+        modified:   rag-code-template_ext/rag-service/README.md
+        modified:   rag-code-template_ext/rag-service/evaluation/README.md
+        modified:   rag-code-template_ext/rag-service/rag_router.py
+        modified:   rag-code-template_ext/rag-service/rag_session.py
+        modified:   rag-code-template_ext/rag-service/rag_state.py
+        modified:   rag-code-template_ext/rag-service/rag_workflow.py
+        modified:   rag-code-template_ext/rag-service/tests/test_memory_workflow.py
+        modified:   rag-code-template_ext/rag-service/tests/test_rag_workflow.py
+        modified:   rag-code-template_ext/rag_external-web_pdf_closed_llm.py
+        modified:   rag-code-template_ext/프로젝트 구조.md
+        modified:   rag-docs/HR_DOCUMENT_INTEGRATION_PLAN.md
+        modified:   rag-docs/RAG_STATE_DESIGN.md
+        modified:   rag-docs/SESSION_RAG_WORKFLOW_USAGE.md
+        modified:   voice-ai_code/app/routers/voice_query_router.py
+        modified:   voice-ai_code/app/services/voice_pipeline.py
+
+Untracked files:
+        original/
+        rag-code-template_ext/.env.example
+        rag-code-template_ext/rag-service/ARCHITECTURE.md
+        rag-code-template_ext/rag-service/evaluation/inspections/
+        rag-code-template_ext/rag-service/evaluation/run_hr_api_smoke.py
+        rag-code-template_ext/rag-service/evaluation/run_hr_session_evaluation.py
+        rag-code-template_ext/rag-service/evaluation/runs/hr_api_20261025T103549689810Z/
+        rag-code-template_ext/rag-service/evaluation/runs/hr_api_20261025T104231003137Z/
+        rag-code-template_ext/rag-service/evaluation/runs/hr_api_20261025T105257588628Z/
+        rag-code-template_ext/rag-service/evaluation/runs/hr_api_20261025T120016925120Z/
+        rag-code-template_ext/rag-service/evaluation/runs/hr_session_20261025T102526546206Z/
+        rag-code-template_ext/rag-service/evaluation/runs/hr_session_20261025T102635771515Z/
+        rag-code-template_ext/rag-service/evaluation/runs/hr_session_20261025T102809241670Z/
+        rag-code-template_ext/rag-service/evaluation/runs/hr_session_20261025T103003089794Z/
+        rag-code-template_ext/rag-service/evaluation/runs/hr_session_20261025T103346192426Z/
+        rag-code-template_ext/rag-service/evaluation/runs/hr_session_20261025T103448686359Z/
+        rag-code-template_ext/rag-service/evaluation/runs/hr_session_20261025T105257260569Z/
+        rag-code-template_ext/rag-service/git_add_ignore.txt
+        rag-code-template_ext/rag-service/rag_api.py
+        rag-code-template_ext/rag-service/tests/test_rag_api.py
+        rag-docs/HR_RAG_API_USAGE.md
+        rag-docs/HR_RAG_INTEGRATION_RESULT.md
+        rag-docs/작업기록/2026-10-25_011_인사규정_RAG_단계별_연결_및_검증.md
+        rag-docs/작업기록/2026-10-25_012_데이터_파이프라인_RAG_서비스_독립_검증.md
+        rag-docs/작업기록/2026-10-25_013_스켈레톤_진입점_복원_및_rag_service_엔드포인트_연결.md
+        rag-docs/작업기록/2026-10-25_014_rag_service_설계_및_구조_문서_추가.md
+        voice-ai_code/tests/test_rag_integration.py
+```

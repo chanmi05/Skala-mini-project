@@ -2,12 +2,12 @@
 
 사용법 (rag-code-template_ext 폴더에서):
     python ingest.py --dry-run            # 임베딩 없이 청크만 확인 (API 비용 없음)
-    python ingest.py                      # 기존 PDF 저장소를 지우고 5개 규정으로 새로 적재
+    python ingest.py                      # 새 인덱스 구축에 성공한 후 기존 PDF 저장소 교체
+    python ingest.py --output-dir faiss_db/hr_test  # 별도 인덱스에 적재
     CHUNK_MODE=article python ingest.py   # 조문 단위로 적재
 """
 import argparse
 import os
-import shutil
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -19,11 +19,13 @@ DEFAULT_DATA_DIR = BASE_DIR.parent / "data" / "regulations"
 
 
 def main() -> None:
+    load_dotenv(BASE_DIR / ".env")
     parser = argparse.ArgumentParser(description="사내 규정 PDF 일괄 적재")
     parser.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR)
     parser.add_argument("--mode", choices=["fixed", "article"], default=os.getenv("CHUNK_MODE", "fixed"))
     parser.add_argument("--dry-run", action="store_true", help="임베딩·저장 없이 청크만 출력")
     parser.add_argument("--keep", action="store_true", help="기존 저장소를 지우지 않고 파일별로 교체")
+    parser.add_argument("--output-dir", type=Path, default=Path(os.getenv("RAG_INDEX_PATH", str(pdf_pipeline.PDF_STORE_PATH))))
     args = parser.parse_args()
 
     pdfs = sorted(args.data_dir.glob("*.pdf"))
@@ -52,14 +54,11 @@ def main() -> None:
     if not os.getenv("OPENAI_API_KEY"):
         raise SystemExit("OPENAI_API_KEY가 없습니다. rag-code-template_ext/.env 를 확인하세요.")
 
-    if not args.keep and pdf_pipeline.PDF_STORE_PATH.exists():
-        shutil.rmtree(pdf_pipeline.PDF_STORE_PATH)
-        print("🗑  기존 faiss_db/pdf 삭제")
-
-    store = pdf_pipeline.load_store()
+    # 새 인덱스 전체가 만들어지기 전에 기존 디스크 인덱스를 삭제하지 않는다.
+    store = pdf_pipeline.load_store(args.output_dir) if args.keep else None
     for docs in all_docs:
         store = pdf_pipeline.upsert(store, docs)
-    pdf_pipeline.save_store(store)
+    pdf_pipeline.save_store(store, args.output_dir)
 
     print("\n✅ 적재 완료:", pdf_pipeline.count_by_source(store))
 
