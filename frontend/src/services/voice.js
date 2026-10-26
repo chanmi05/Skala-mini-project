@@ -1,8 +1,7 @@
 export const MAX_QUESTION_LENGTH = 2000
-// Development calls port 8008 directly. Production can keep a same-origin proxy.
+// Keep authentication cookies on the page's origin in both local and Docker runs.
 export const VOICE_API_BASE_URL = (
-  import.meta.env?.VITE_VOICE_API_BASE_URL ||
-  (import.meta.env?.PROD ? '/voice-api' : 'http://localhost:8008')
+  import.meta.env?.VITE_VOICE_API_BASE_URL || '/voice-api'
 ).replace(/\/+$/, '')
 
 export class VoiceApiError extends Error {

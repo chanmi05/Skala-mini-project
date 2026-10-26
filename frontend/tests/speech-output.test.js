@@ -153,11 +153,11 @@ afterEach(() => {
   else delete globalThis.Audio
 })
 
-test('서버 오디오를 8008에서 인증 쿠키와 함께 재생하고 중지 시 해제한다', () => {
+test('서버 오디오를 같은 출처의 프록시에서 인증 쿠키와 함께 재생하고 중지 시 해제한다', () => {
   mockAudio()
   const output = reader()
   output.speak('답변', 'answer-1', '/voice-audio/test.mp3')
-  assert.equal(players[0].url, 'http://localhost:8008/voice-audio/test.mp3')
+  assert.equal(players[0].url, '/voice-api/voice-audio/test.mp3')
   assert.equal(players[0].crossOrigin, 'use-credentials')
   assert.equal(spoken.length, 0)
   assert.equal(output.phase.value, 'pending')

@@ -14,9 +14,9 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
     proxy: {
-      '/api': { target: 'http://localhost:8080', changeOrigin: true },
+      '/api': { target: process.env.AUTH_PROXY_TARGET || 'http://localhost:8080', changeOrigin: true },
       '/voice-api': {
-        target: 'http://localhost:8008',
+        target: process.env.VOICE_PROXY_TARGET || 'http://localhost:8008',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/voice-api/, ''),
       },
