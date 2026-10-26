@@ -24,7 +24,7 @@ afterEach(() => {
 
 test('텍스트 질문을 JSON으로 보내고 출처와 음성 주소를 유지한다', async () => {
   globalThis.fetch = async (url, options) => {
-    assert.equal(url, 'http://localhost:8008/voice-query-text')
+    assert.equal(url, '/voice-api/voice-query-text')
     assert.equal(options.credentials, 'include')
     assert.equal(options.headers['Content-Type'], 'application/json')
     assert.deepEqual(JSON.parse(options.body), { question: '연차 기준' })
@@ -104,18 +104,22 @@ test('실제 답변 대신 잘못된 성공 JSON을 반환하면 오류로 처�
   await assert.rejects(queryText('질문'), /응답 형식/)
 })
 
-test('인증이 필요한 음성 주소도 8008 서버를 직접 사용한다', () => {
+test('상대·절대 음성 주소를 같은 출처의 인증 프록시로 정규화한다', () => {
   assert.equal(
     resolveVoiceAudioUrl('/voice-audio/test.mp3'),
-    'http://localhost:8008/voice-audio/test.mp3',
+    '/voice-api/voice-audio/test.mp3',
   )
   assert.equal(
     resolveVoiceAudioUrl('http://localhost:8008/voice-audio/test.mp3'),
-    'http://localhost:8008/voice-audio/test.mp3',
+    '/voice-api/voice-audio/test.mp3',
   )
   assert.equal(
     resolveVoiceAudioUrl('/voice-api/voice-audio/test.mp3'),
-    'http://localhost:8008/voice-audio/test.mp3',
+    '/voice-api/voice-audio/test.mp3',
+  )
+  assert.equal(
+    resolveVoiceAudioUrl('http://127.0.0.1:8008/voice-audio/test.mp3'),
+    '/voice-api/voice-audio/test.mp3',
   )
   assert.throws(() => resolveVoiceAudioUrl('https://unknown.example/audio.mp3'))
   assert.throws(() => resolveVoiceAudioUrl('//unknown.example/audio.mp3'))

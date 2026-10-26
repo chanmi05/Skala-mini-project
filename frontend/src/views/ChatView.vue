@@ -33,6 +33,7 @@ const {
   send: sendText,
   receiveVoiceAnswer,
   reset: resetChat,
+  requestContext,
 } = useChat((answer, voice) => {
   scrollToAnswer()
   if (voice) speakAnswer(answer.content, answer.id, answer.audioUrl)
@@ -51,7 +52,7 @@ const {
   start: startVoice,
   stop: stopVoice,
   cancel: cancelVoice,
-} = useVoiceInput(receiveVoiceAnswer)
+} = useVoiceInput(receiveVoiceAnswer, requestContext)
 const voiceStatus = computed(() => {
   if (voicePhase.value === 'requesting')
     return '마이크 사용 권한을 확인하고 있어요.'

@@ -78,3 +78,50 @@ test('음성 답변은 인식 문장과 함께 표시하고 자동 재생 콜백
   chat.reset()
   assert.deepEqual(chat.messages.value, [])
 })
+
+
+test('후속 질문에 세션을 유지하고 새 대화에서 종료한다', async () => {
+  const bodies = []
+  globalThis.fetch = async (url, options) => {
+    bodies.push({ url, body: JSON.parse(options.body) })
+    if (url.endsWith('/voice-session-end')) return Response.json({ ended: true })
+    return Response.json({ ...answer, session_id: 'abc123' })
+  }
+  const chat = useChat()
+  await chat.send('첫 질문')
+  await chat.send('그럼 신청은?')
+  assert.equal(bodies[0].body.session_id, undefined)
+  assert.equal(bodies[1].body.session_id, 'abc123')
+  assert.notEqual(bodies[0].body.request_id, bodies[1].body.request_id)
+  assert.equal(chat.requestContext().sessionId, 'abc123')
+  chat.reset()
+  assert.equal(bodies[2].body.session_id, 'abc123')
+  await chat.send('새 질문')
+  assert.equal(bodies[3].body.session_id, undefined)
+})
+
+test('같은 실패 질문의 재전송은 request_id를 재사용한다', async () => {
+  const ids = []
+  globalThis.fetch = async (_, options) => {
+    ids.push(JSON.parse(options.body).request_id)
+    return ids.length === 1 ? new Response('', { status: 503 }) : Response.json(answer)
+  }
+  const chat = useChat()
+  assert.equal(await chat.send('질문'), false)
+  assert.equal(await chat.send('질문'), true)
+  assert.equal(ids[0], ids[1])
+})
+
+test('문서 변경 충돌 후에는 이전 세션을 보내지 않는다', async () => {
+  const bodies = []
+  globalThis.fetch = async (_, options) => {
+    bodies.push(JSON.parse(options.body))
+    if (bodies.length === 2) return Response.json({ detail: '새 대화를 시작해 주세요.' }, { status: 409 })
+    return Response.json({ ...answer, session_id: 'abc123' })
+  }
+  const chat = useChat()
+  await chat.send('질문')
+  assert.equal(await chat.send('후속 질문'), false)
+  assert.equal(await chat.send('다시 질문'), true)
+  assert.equal(bodies[2].session_id, undefined)
+})

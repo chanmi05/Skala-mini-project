@@ -1,0 +1,21 @@
+{
+  "total": 24,
+  "success": 24,
+  "errors": 0,
+  "answerable_success_count": 20,
+  "hit_at_k": 0.65,
+  "evidence_group_recall": 0.65,
+  "context_group_recall": 0.65,
+  "mrr": 0.5266666666666666,
+  "median_total_ms": 1780.52,
+  "reviewed_count": 24,
+  "reviewer_types": [
+    "codex_agent"
+  ],
+  "answer_correct_reviewed_count": 20,
+  "answer_correct_rate": 0.7,
+  "grounded_reviewed_count": 20,
+  "grounded_rate": 0.85,
+  "abstained_reviewed_count": 4,
+  "abstained_rate": 1.0
+}

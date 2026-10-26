@@ -1,0 +1,27 @@
+{
+  "started_at_utc": "2026-10-23T08:23:04.854072+00:00",
+  "finished_at_utc": "2026-10-23T08:23:25.281714+00:00",
+  "model": "gpt-4o",
+  "embedding_model": "text-embedding-ada-002",
+  "settings": {
+    "top_k": 5,
+    "max_retries": 1,
+    "max_input_tokens": 6000,
+    "max_total_input_tokens": 24000,
+    "max_model_calls": 8,
+    "timeout_seconds": 60,
+    "max_history_messages": 10
+  },
+  "index_before": {
+    "index.faiss": "58aa11a5714efcc992b1f95927280158e4b8ff8cea2c8a22f69ade418c0cd456",
+    "index.pkl": "9f03c58011936e90664b503244c9431c653d92529fe82284a1236bb915e6c4ff"
+  },
+  "index_unchanged": true,
+  "module_sha256": {
+    "rag_agent.py": "1086825a32f2dcc22747fd867140a890fa2efc0f16efc69aacfe63efc3709df8",
+    "rag_router.py": "30b2c33f165d1ff535a6467064e0d6f669c72ed2e1733d4b91e38a444f4eaec0",
+    "rag_state.py": "034043208239f33cf432d61b22b1569d6b3ebf383de41b301fcca8b5f6fc21b9",
+    "rag_workflow.py": "12871e1c9e3fb0bf6aaa2935cc781a749f8430cd45655bc07c1695db23856b61"
+  },
+  "limitations": "Six smoke cases; status matches are not factual-accuracy scores."
+}

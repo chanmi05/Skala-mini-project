@@ -6,7 +6,7 @@ import {
 } from '../services/voice.js'
 
 // 녹음은 저장하지 않으며 페이지를 떠날 때 cancel()을 호출합니다.
-export function useVoiceInput(onAnswer) {
+export function useVoiceInput(onAnswer, getContext = () => ({})) {
   const phase = ref('idle')
   const seconds = ref(0)
   const error = ref('')
@@ -152,6 +152,7 @@ export function useVoiceInput(onAnswer) {
         try {
           const transcript = await transcribeAudio(audio, {
             signal: controller.signal,
+            ...getContext(),
           })
           if (token !== generation) return
           review.value = transcript

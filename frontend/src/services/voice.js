@@ -1,8 +1,7 @@
 export const MAX_QUESTION_LENGTH = 2000
-// Development calls port 8008 directly. Production can keep a same-origin proxy.
+// Keep authentication cookies on the page's origin in both local and Docker runs.
 export const VOICE_API_BASE_URL = (
-  import.meta.env?.VITE_VOICE_API_BASE_URL ||
-  (import.meta.env?.PROD ? '/voice-api' : 'http://localhost:8008')
+  import.meta.env?.VITE_VOICE_API_BASE_URL || '/voice-api'
 ).replace(/\/+$/, '')
 
 export class VoiceApiError extends Error {
@@ -76,11 +75,10 @@ export function queryText(question, options = {}) {
       new VoiceApiError('질문은 1~2,000자로 입력해 주세요.'),
     )
   }
-  return request(
-    '/voice-query-text',
-    { question },
-    { ...options, json: true },
-  ).then(readAnswer)
+  const body = { question }
+  if (options.sessionId) body.session_id = options.sessionId
+  if (options.requestId) body.request_id = options.requestId
+  return request('/voice-query-text', body, { ...options, json: true })
 }
 
 function audioForm(audio) {
@@ -91,30 +89,9 @@ function audioForm(audio) {
   }
   const body = new FormData()
   body.append('audio', audio, `recording-${crypto.randomUUID()}.webm`)
-  return body
-}
-
-export async function queryAudio(audio, options = {}) {
-  return readAnswer(await request('/voice-query', audioForm(audio), options))
-}
-
-export async function transcribeAudio(audio, options = {}) {
-  const data = await request('/voice-transcribe', audioForm(audio), options)
-  if (
-    typeof data?.raw_transcript !== 'string' ||
-    !data.raw_transcript.trim() ||
-    typeof data.corrected_question !== 'string' ||
-    !data.corrected_question.trim() ||
-    data.corrected_question.length > MAX_QUESTION_LENGTH ||
-    typeof data.changed !== 'boolean' ||
-    (data.confirmation_required != null &&
-      typeof data.confirmation_required !== 'boolean')
-  ) {
-    throw new VoiceApiError(
-      '질문 확인 응답 형식을 확인할 수 없습니다. 다시 녹음해 주세요.',
-    )
-  }
-  return data
+  if (options.sessionId) body.append('session_id', options.sessionId)
+  if (options.requestId) body.append('request_id', options.requestId)
+  return request('/voice-query', body, options)
 }
 
 // Use the same API origin for answers and authenticated audio playback.
@@ -137,4 +114,14 @@ export function resolveVoiceAudioUrl(value) {
   let path = url.pathname.replace(/^\/voice-api(?=\/)/, '')
   if (prefix && path.startsWith(`${prefix}/`)) path = path.slice(prefix.length)
   return `${VOICE_API_BASE_URL}${path}${url.search}`
+}
+
+export async function endRagSession(sessionId) {
+  if (!sessionId) return
+  await fetch(`${VOICE_API_BASE_URL}/voice-session-end`, {
+    method: 'POST', credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_id: sessionId }),
+    signal: AbortSignal.timeout(10000),
+  })
 }

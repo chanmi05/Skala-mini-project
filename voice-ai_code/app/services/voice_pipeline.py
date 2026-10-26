@@ -28,6 +28,11 @@ class RagAnswer(BaseModel):
     sources: list[Source]
     needs_review: bool
     handoff: bool
+    warning: str | None = None
+    session_id: str | None = None
+    request_id: str | None = None
+    corpus_revision: int | None = None
+    summary_update_status: str | None = None
 
 class VoiceAnswer(RagAnswer):
     transcript: str
@@ -47,7 +52,7 @@ def rag_mode() -> str:
         raise HTTPException(503, "VOICE_RAG_MODE는 mock, demo 또는 live여야 합니다.")
     return mode
 
-def ask_rag(question: str, token: str) -> RagAnswer:
+def ask_rag(question: str, token: str, session_id: str | None = None, request_id: str | None = None) -> RagAnswer:
     mode = rag_mode()
     if mode == "demo":
         from app.services.demo_rag import demo_answer
@@ -60,12 +65,19 @@ def ask_rag(question: str, token: str) -> RagAnswer:
         )
     base = os.getenv("RAG_BASE_URL", "http://localhost:8001").rstrip("/")
     try:
-        with httpx.Client(timeout=30, follow_redirects=False, trust_env=False) as client:
+        payload = {"prompt": question, "source": "pdf", "top_k": 4}
+        if session_id:
+            payload["session_id"] = session_id
+        if request_id:
+            payload["request_id"] = request_id
+        with httpx.Client(timeout=90, follow_redirects=False, trust_env=False) as client:
             response = client.post(base + "/rag-query",
                 headers={"Authorization": "Bearer " + token},
-                json={"prompt": question, "source": "pdf", "top_k": 4})
+                json=payload)
         if response.status_code == 401:
             raise HTTPException(401, "RAG 인증에 실패했습니다. 다시 로그인해 주세요.")
+        if response.status_code in {404, 409, 410}:
+            raise HTTPException(response.status_code, "대화 또는 검색 문서가 변경되었습니다. 새 대화를 시작해 주세요.")
         response.raise_for_status()
         result = RagAnswer.model_validate(response.json())
         if not result.answer.strip():
@@ -134,25 +146,40 @@ def synthesize(answer: str, user_id: str) -> str:
         raise
     return "/voice-audio/" + filename
 
-def run_pipeline(data: bytes, suffix: str, identity: dict) -> VoiceAnswer:
+def run_pipeline(data: bytes, suffix: str, identity: dict, session_id=None, request_id=None) -> VoiceAnswer:
     started = time.perf_counter()
     transcript = transcribe_private(data, suffix)
-    return answer_question(transcript, identity, started)
+    return answer_question(transcript, identity, started, session_id=session_id, request_id=request_id)
 
-def answer_question(question: str, identity: dict, started: float | None = None) -> VoiceAnswer:
+def answer_question(question: str, identity: dict, started: float | None = None, *, session_id=None, request_id=None) -> VoiceAnswer:
     if started is None:
         started = time.perf_counter()
     transcript = mask_private(question.strip())
     if not transcript:
         raise HTTPException(422, "질문을 입력해 주세요.")
     # No raw question is logged or sent to the external LLM by this service.
-    result = ask_rag(transcript, identity["token"])
+    result = ask_rag(transcript, identity["token"], session_id=session_id, request_id=request_id)
     result.answer = mask_private(result.answer)
-    audio_url, warning = None, None
+    audio_url, warning = None, result.warning
     try:
         audio_url = synthesize(result.answer, identity["id"])
     except Exception:
         warning = "음성을 생성하지 못했습니다. 텍스트 답변을 확인해 주세요."
-    return VoiceAnswer(**result.model_dump(), transcript=transcript,
+    return VoiceAnswer(**result.model_dump(exclude={"warning"}), transcript=transcript,
         audio_url=audio_url, warning=warning, mode=rag_mode(),
         latency_ms=round((time.perf_counter() - started) * 1000))
+
+
+def end_rag_session(session_id: str, token: str):
+    if rag_mode() != "live":
+        return {"ended": True}
+    base = os.getenv("RAG_BASE_URL", "http://localhost:8001").rstrip("/")
+    try:
+        with httpx.Client(timeout=10, follow_redirects=False, trust_env=False) as client:
+            result = client.delete(base + "/sessions/" + session_id,
+                                   headers={"Authorization": "Bearer " + token})
+        if result.status_code not in {200, 404, 410}:
+            raise HTTPException(503, "대화 종료에 실패했습니다.")
+    except httpx.HTTPError:
+        raise HTTPException(503, "대화 종료에 실패했습니다.")
+    return {"ended": True}

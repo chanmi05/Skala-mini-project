@@ -111,7 +111,7 @@ test('녹음 종료 후 원문·교정 질문을 표시하고 확인 전에는 �
   voice.stop()
   await recordings[0].finished
   assert.equal(tracks[0].stopped, true)
-  assert.equal(uploads[0].url, 'http://localhost:8008/voice-transcribe')
+  assert.equal(uploads[0].url, '/voice-api/voice-query')
   assert.equal(uploads[0].options.credentials, 'include')
   assert.match(
     uploads[0].options.body.get('audio').name,
