@@ -151,9 +151,7 @@ svg {
 /* Chat */
 .chat-layout {
   display: flex;
-  height: 100dvh;
-  min-height: 480px;
-  overflow: hidden;
+  min-height: 100dvh;
 }
 .chat-main {
   display: flex;
@@ -196,7 +194,6 @@ svg {
   font-size: 14px;
   white-space: nowrap;
 }
-.reset-chat-button,
 .header-login {
   display: inline-flex;
   align-items: center;
@@ -211,7 +208,6 @@ svg {
   font-size: 13px;
   white-space: nowrap;
 }
-.reset-chat-button:hover,
 .header-login:hover {
   border-color: #cecece;
   background: #f6f6f6;
@@ -222,41 +218,10 @@ svg {
 }
 .chat-content {
   display: flex;
-  flex: 1;
+  flex: 1 0 auto;
   flex-direction: column;
-  min-height: 0;
-  overflow: auto;
   padding: 0 32px;
-  scroll-padding: 24px;
 }
-.welcome {
-  width: 100%;
-  max-width: 720px;
-  margin: auto;
-  padding: 24px 0 30px;
-}
-.chat-section-label {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  margin-bottom: 20px;
-  color: #bdc9d8;
-  font-size: 12px;
-}
-.chat-section-label::before,
-.chat-section-label::after {
-  content: '';
-  width: 44px;
-  height: 1px;
-  background: #43546b;
-}
-.welcome-assistant {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-.assistant-avatar,
 .message.assistant > .brand {
   display: flex;
   align-items: center;
@@ -268,88 +233,181 @@ svg {
   background: #fff;
   box-shadow: 0 2px 8px #38383810;
 }
-.assistant-avatar .brand-mark,
 .message.assistant .brand-mark {
   width: 28px;
   height: 28px;
 }
-.welcome-bubble {
+.policy-browser {
+  width: 100%;
+  max-width: 720px;
+  margin: auto;
+  padding: 24px 0;
+}
+.policy-browser-heading {
+  margin-bottom: 24px;
+}
+.policy-browser-heading h1 {
+  color: #eef3fa;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.policy-browser-heading > p {
+  margin-top: 7px;
+  color: #b4c1d2;
+  font-size: 13px;
+  line-height: 1.8;
+  word-break: keep-all;
+}
+.policy-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 8px;
+}
+.policy-tabs button {
+  position: relative;
   flex: 1;
   min-width: 0;
-  padding: 18px 21px;
-  border: 1px solid #eaeaea;
-  border-radius: 6px 22px 22px 22px;
-  background: #fff;
-  box-shadow: 0 3px 14px #39393910;
-}
-.welcome-author {
-  margin-bottom: 6px;
-  color: #6c6c6c;
+  min-height: 40px;
+  padding: 9px 12px;
+  border: 1px solid #4c5f77;
+  border-radius: 10px 10px 0 0;
+  background: #2c4058;
+  color: #c8d3e1;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
+  white-space: nowrap;
 }
-.welcome h1 {
+.policy-tabs button:hover {
+  background: #344c67;
+  color: #fff;
+}
+.policy-tabs button[aria-selected='true'] {
+  z-index: 1;
+  margin-bottom: -1px;
+  border-color: #dfe6ef;
+  border-bottom-color: #fff;
+  background: #fff;
   color: var(--accent);
-  font-size: 18px;
-  line-height: 1.55;
   font-weight: 600;
-  letter-spacing: -0.2px;
-  word-break: keep-all;
 }
-.welcome-description {
-  margin-top: 6px;
-  color: #606060;
-  font-size: 15px;
-  line-height: 1.85;
-  word-break: keep-all;
+.policy-panel {
+  padding: 22px 24px 16px;
+  border: 1px solid #dfe6ef;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 8px 24px #07152512;
 }
-.welcome-questions {
-  margin: 20px 0 0 48px;
-}
-.topics-heading {
+.policy-panel-heading {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
-  padding: 0 4px;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e1e7ee;
 }
-.topics-heading h2 {
-  color: #e5ebf3;
-  font-size: 14px;
-  font-weight: 600;
-}
-.topics-heading > span {
-  color: #b4c1d2;
+.policy-panel-caption {
+  margin-bottom: 5px;
+  color: #6e7d90;
   font-size: 12px;
 }
-.suggestion-grid {
-  display: grid;
-  gap: 10px;
+.policy-panel-heading h2 {
+  color: var(--accent);
+  font-size: 21px;
+  font-weight: 600;
 }
-.suggestion-card {
-  display: flex;
+.policy-panel-description {
+  margin-top: 6px;
+  color: #677687;
+  font-size: 13px;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+.policy-panel-index {
+  color: #d5dde8;
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.policy-faq-item {
+  border-bottom: 1px solid #e8ecf1;
+}
+.policy-faq-toggle {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) 16px;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
-  min-height: 44px;
-  padding: 10px 14px;
-  border: 1px solid #e6e6e6;
-  border-radius: 12px;
-  background: #fff;
+  min-height: 52px;
+  padding: 14px 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #293e58;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.65;
   text-align: left;
 }
-.suggestion-card:hover {
-  background: #fbfbfb;
-  border-color: #c9c9c9;
-  box-shadow: 0 3px 12px #5656560a;
+.policy-faq-toggle:hover {
+  background: #f5f7fa;
 }
-.suggestion-description {
-  color: #2d3b4c;
+.policy-question-index {
+  color: #7c8b9c;
+  font-size: 11px;
+  font-weight: 400;
+}
+.policy-question-text {
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
+.policy-faq-answer {
+  margin: 0 0 16px 34px;
+}
+.policy-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 14px 16px;
+  border-left: 2px solid #9cabbc;
+  border-radius: 0 8px 8px 0;
+  background: #f3f6f9;
+}
+.policy-summary-label {
+  flex-shrink: 0;
+  color: #445c77;
+  font-size: 12px;
+  font-weight: 600;
+}
+.policy-summary p {
+  color: #526174;
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.8;
   word-break: keep-all;
   overflow-wrap: anywhere;
+}
+.policy-ask-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  padding: 5px 9px;
+  border: 1px solid #dde5ee;
+  border-radius: 8px;
+  background: #fff;
+  color: #304763;
+  font-size: 12px;
+}
+.policy-ask-button:hover {
+  border-color: #aebed0;
+  background: #f1f4f8;
+}
+.policy-panel-note {
+  margin-top: 14px;
+  color: #778596;
+  font-size: 12px;
+  line-height: 1.8;
+  word-break: keep-all;
 }
 .message-list {
   width: 100%;
@@ -1112,8 +1170,14 @@ svg {
   }
 }
 @media (max-width: 760px) {
-  .chat-layout {
-    min-height: 0;
+  .policy-browser {
+    padding: 20px 0;
+  }
+  .policy-browser-heading {
+    margin-bottom: 20px;
+  }
+  .policy-panel {
+    padding: 18px;
   }
   .chat-header {
     min-height: 64px;
@@ -1134,14 +1198,6 @@ svg {
   .header-user {
     font-size: 13px;
   }
-  .reset-chat-button {
-    width: 36px;
-    min-height: 36px;
-    padding: 0;
-  }
-  .reset-chat-button span {
-    display: none;
-  }
   .header-login {
     min-height: 36px;
     padding: 6px 11px;
@@ -1149,28 +1205,6 @@ svg {
   }
   .chat-content {
     padding: 0 18px;
-  }
-  .welcome {
-    padding: 18px 0 22px;
-  }
-  .chat-section-label {
-    margin-bottom: 22px;
-  }
-  .welcome-bubble {
-    padding: 16px;
-  }
-  .welcome h1 {
-    font-size: 18px;
-  }
-  .welcome-description {
-    font-size: 15px;
-  }
-  .welcome-questions {
-    margin-top: 18px;
-  }
-  .suggestion-card {
-    min-height: 44px;
-    padding: 10px 14px;
   }
   .composer-area {
     padding: 9px 14px 10px;
@@ -1226,6 +1260,38 @@ svg {
   }
 }
 @media (max-width: 480px) {
+  .policy-browser-heading h1 {
+    font-size: 20px;
+  }
+  .policy-tabs {
+    gap: 2px;
+    padding: 0 4px;
+  }
+  .policy-tabs button {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+  .policy-panel {
+    padding: 16px;
+  }
+  .policy-panel-heading h2 {
+    font-size: 19px;
+  }
+  .policy-panel-index {
+    font-size: 28px;
+  }
+  .policy-faq-toggle {
+    grid-template-columns: 18px minmax(0, 1fr) 16px;
+    gap: 8px;
+  }
+  .policy-faq-answer {
+    margin-left: 26px;
+  }
+  .policy-summary {
+    flex-direction: column;
+    gap: 5px;
+    padding: 12px;
+  }
   .chat-header {
     padding: 8px 10px;
   }
@@ -1252,47 +1318,17 @@ svg {
   .chat-content {
     padding: 0 14px;
   }
-  .welcome-assistant,
   .message {
     gap: 8px;
   }
-  .assistant-avatar,
   .message.assistant > .brand {
     width: 34px;
     height: 34px;
     border-radius: 12px;
   }
-  .assistant-avatar .brand-mark,
   .message.assistant .brand-mark {
     width: 27px;
     height: 27px;
-  }
-  .welcome-bubble {
-    padding: 14px;
-    border-radius: 6px 18px 18px 18px;
-  }
-  .welcome h1 {
-    font-size: 18px;
-  }
-  .welcome-description {
-    font-size: 15px;
-  }
-  .welcome-questions {
-    margin-left: 42px;
-  }
-  .topics-heading > span {
-    display: none;
-  }
-  .topics-heading h2 {
-    font-size: 13px;
-  }
-  .suggestion-card {
-    gap: 10px;
-    padding: 10px 14px;
-    border-radius: 12px;
-  }
-  .suggestion-description {
-    font-size: 14px;
   }
   .message-body {
     max-width: calc(100% - 42px);
@@ -1342,20 +1378,6 @@ svg {
   }
 }
 @media (max-height: 740px) and (min-width: 761px) {
-  .welcome {
-    padding-top: 16px;
-    padding-bottom: 18px;
-  }
-  .chat-section-label {
-    margin-bottom: 20px;
-  }
-  .welcome-bubble {
-    padding-top: 15px;
-    padding-bottom: 15px;
-  }
-  .welcome-questions {
-    margin-top: 22px;
-  }
   .story-content {
     padding: 30px 0;
   }

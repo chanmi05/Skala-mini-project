@@ -31,8 +31,8 @@ import { PROJECT_NAME } from '@/config/project'
             ><span>신청 / 증빙 / 정산</span>
           </div>
           <div class="register-row">
-            <AppIcon name="shield" :size="20" /><strong>보안·업무</strong
-            ><span>자료 / 정보 / 보안</span>
+            <AppIcon name="chat" :size="20" /><strong>기타</strong
+            ><span>증명서 / 회의실 / 비품</span>
           </div>
         </section>
       </div>

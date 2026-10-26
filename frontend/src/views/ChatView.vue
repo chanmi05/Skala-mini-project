@@ -3,6 +3,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import AppIcon from '@/components/AppIcon.vue'
 import BrandLogo from '@/components/BrandLogo.vue'
+import PolicyFaq from '@/components/PolicyFaq.vue'
 import { checkAuth, currentUser, logout } from '@/services/auth'
 import { useVoiceInput } from '@/composables/useVoiceInput'
 import { useSpeechOutput } from '@/composables/useSpeechOutput'
@@ -13,7 +14,8 @@ import { PROJECT_NAME } from '@/config/project'
 const router = useRouter()
 const draft = ref('')
 const input = ref(null)
-const messageEnd = ref(null)
+const composerArea = ref(null)
+const homeKey = ref(0)
 const reviewInput = ref(null)
 const notice = ref('')
 const loggingOut = ref(false)
@@ -68,20 +70,6 @@ watch(reviewing, async (value) => {
   reviewInput.value?.focus()
   reviewInput.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
 })
-const suggestions = [
-  {
-    text: '연차는 어떻게 신청하나요?',
-    prompt: '연차를 신청하려면 어떤 절차를 따라야 하나요?',
-  },
-  {
-    text: '출장 경비 정산에 어떤 서류가 필요한가요?',
-    prompt: '출장 경비를 정산할 때 필요한 서류와 절차가 궁금해요.',
-  },
-  {
-    text: '사내 자료를 외부에 공유해도 되나요?',
-    prompt: '사내 자료를 외부에 공유하려면 어떤 보안 절차를 확인해야 하나요?',
-  },
-]
 
 function resizeInput() {
   if (!input.value) return
@@ -94,10 +82,24 @@ function resetConversation() {
   resetChat()
   draft.value = ''
   notice.value = ''
+  homeKey.value += 1
   nextTick(() => {
     resizeInput()
-    input.value?.focus()
+    window.scrollTo({ top: 0, behavior: 'instant' })
   })
+}
+
+function goHome(event) {
+  // Let modified clicks open the home link without clearing this tab.
+  if (
+    event.button !== 0 ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey
+  )
+    return
+  resetConversation()
 }
 
 async function useSuggestion(prompt) {
@@ -110,7 +112,7 @@ async function useSuggestion(prompt) {
 
 async function scrollToAnswer() {
   await nextTick()
-  messageEnd.value?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+  composerArea.value?.scrollIntoView({ behavior: 'smooth', block: 'end' })
 }
 
 async function send() {
@@ -212,20 +214,12 @@ onUnmounted(() => {
             to="/"
             class="brand-link"
             :aria-label="`${PROJECT_NAME} 메인으로`"
+            @click="goHome"
             ><BrandLogo
           /></RouterLink>
           <span class="header-tag">우리 회사 업무 도우미</span>
         </div>
         <div class="header-actions">
-          <button
-            v-if="messages.length || draft || voiceBusy || voiceReview"
-            type="button"
-            class="reset-chat-button"
-            aria-label="현재 대화 초기화"
-            @click="resetConversation"
-          >
-            <AppIcon name="plus" :size="16" /><span>처음부터 질문하기</span>
-          </button>
           <RouterLink v-if="!currentUser" to="/login" class="header-login"
             >로그인<AppIcon name="right" :size="15" /></RouterLink
           ><template v-else
@@ -249,36 +243,11 @@ onUnmounted(() => {
         <p v-if="notice" class="form-notice error chat-notice" role="alert">
           {{ notice }}
         </p>
-        <section v-if="!messages.length && !voiceReview" class="welcome">
-          <p class="chat-section-label">사내 지침 안내</p>
-          <div class="welcome-assistant">
-            <span class="assistant-avatar"><BrandLogo compact /></span>
-            <div class="welcome-bubble">
-              <p class="welcome-author">{{ PROJECT_NAME }}</p>
-              <h1>안녕하세요. 무엇이 궁금하세요?</h1>
-              <p class="welcome-description">
-                휴가부터 출장, 보안 지침까지<br />회사 생활에 필요한 내용을 함께
-                찾아드릴게요.
-              </p>
-            </div>
-          </div>
-          <div class="welcome-questions">
-            <div class="topics-heading">
-              <h2>이런 질문을 많이 찾아요</h2>
-              <span>질문을 선택해 보세요</span>
-            </div>
-            <div class="suggestion-grid">
-              <button
-                v-for="item in suggestions"
-                :key="item.prompt"
-                class="suggestion-card"
-                @click="useSuggestion(item.prompt)"
-              >
-                <span class="suggestion-description">{{ item.text }}</span>
-              </button>
-            </div>
-          </div>
-        </section>
+        <PolicyFaq
+          v-if="!messages.length && !voiceReview"
+          :key="homeKey"
+          @ask="useSuggestion"
+        />
         <section
           v-else
           class="message-list"
@@ -371,7 +340,6 @@ onUnmounted(() => {
           <p v-if="pending" class="answer-pending" role="status">
             관련 지침을 확인하고 있습니다…
           </p>
-          <div ref="messageEnd"></div>
         </section>
         <section
           v-if="voiceReview"
@@ -430,7 +398,7 @@ onUnmounted(() => {
           </div>
         </section>
       </main>
-      <div class="composer-area">
+      <div ref="composerArea" class="composer-area">
         <div class="question-confirmation-setting">
           <label
             ><input
