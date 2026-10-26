@@ -44,6 +44,20 @@ class FakeModel:
         return sum(len(m.content) for m in messages)
 
     def with_structured_output(self, schema, include_raw, **kwargs):
+        if schema.__name__ == "AnswerReview":
+            async def review(messages):
+                self.calls.append("AnswerReview")
+                self.inputs.append(messages)
+                queued = self.decisions.get("AnswerReview")
+                return {"parsed": queued.pop(0) if queued else {"decision": "grounded", "reason_code": "fixture"},
+                        "parsing_error": None}
+            return RunnableLambda(review)
+        if schema.__name__ == "GenerationDecision":
+            async def generate(messages):
+                response = await self.ainvoke(messages)
+                return {"parsed": {"status": "answered", "answer": response.content},
+                        "raw": response, "parsing_error": None}
+            return RunnableLambda(generate)
         async def call(messages):
             name = schema.__name__
             self.calls.append(name)
@@ -106,7 +120,7 @@ class WorkflowTests(unittest.IsolatedAsyncioTestCase):
         result = await RagService(FakeStore(), FakeModel()).ainvoke({"question": "연차?"})
         self.assertEqual(result["status"], "answered")
         self.assertEqual(result["search_count"], 1)
-        self.assertEqual(result["model_calls"], 3)
+        self.assertEqual(result["model_calls"], 4)
 
     async def test_router_clarification_without_search(self):
         model = FakeModel({"RouteDecision": [{"intent": "clarify", "reason_code": "missing_subject",
@@ -240,7 +254,7 @@ class WorkflowTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(a["sources"][0]["metadata"]["source"], "A")
         self.assertEqual(b["sources"][0]["metadata"]["source"], "B")
         self.assertEqual(a["search_count"], 1)
-        self.assertEqual(b["model_calls"], 3)
+        self.assertEqual(b["model_calls"], 4)
 
     async def test_timeout_and_cancellation(self):
         entered = asyncio.Event()

@@ -3,6 +3,7 @@ defineProps({ name: String, size: { type: [Number, String], default: 20 } })
 const paths = {
   document: 'M5 3h9l5 5v13H5V3Zm9 0v6h5M8 13h8m-8 4h6',
   plus: 'M12 5v14M5 12h14',
+  minus: 'M5 12h14',
   search: 'm21 21-4.5-4.5M19 10.5a8.5 8.5 0 1 1-17 0 8.5 8.5 0 0 1 17 0Z',
   chat: 'M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l-2 2v-10.5a9.5 9.5 0 0 1 19 0Z',
   arrow: 'M12 19V5m-6 6 6-6 6 6',

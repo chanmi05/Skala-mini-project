@@ -39,3 +39,15 @@ macOS/Linux에서는 `.venv/bin/python`을 사용한다. 상세 평가 명령은
 $env:PYTHONPATH = (Resolve-Path ./rag-service).Path
 .\.venv\Scripts\python.exe -c "from rag_router import RagService; from session_memory import InMemorySessionStore"
 ```
+
+## 근거 검증 및 조문 지정 검색
+
+`RagService`는 근거 평가에서 선택한 출처만 생성에 전달하고, 생성 결과의 `answered`/`no_evidence`를 구분한다. 사실 답변에는 유효한 출처 ID 인용을 요구하며, 생성 후 별도의 구조화 모델 호출로 대상·조건·수치와 인용 자료의 일치를 검토한다. 검토에서 근거 부족 또는 확인 불가로 판정하면 `no_evidence`를 반환한다. 모델 기반 검토가 사실성을 보장하는 것은 아니며 정상 답변의 과도한 유보도 평가해야 한다.
+
+선택 출처는 생성 전에 `S1..Sn`으로 다시 번호를 매겨 완료 턴의 `source_ids` 순서와 맞춘다. 같은 요청의 재전송은 기존 저장 결과와 출처를 재사용한다. 검증 호출이 추가되어 기본 전체 모델 호출 한도는 9이며 입력·시간 예산은 기존 제한을 공유한다.
+
+`rag_retrieval.MetadataLookup`은 취업·복리후생·근태·휴가·출장 규정의 명시적 조문 번호를 인식한다. 이 경우 FAISS의 유사도 후보 필터 대신 docstore의 메타데이터 매핑으로 조문 청크를 직접 조회한다. 매핑은 해당 `RagService`의 코퍼스 스냅샷당 한 번 만들며, 런타임에서 코퍼스 교체 시 서비스를 재생성해야 한다. 규정명 없는 조항이 여러 규정에 있으면 확인 질문을 반환한다. 없는 조항은 다른 조항으로 재검색하지 않고 유보한다. 일반 의미 검색의 기본 `top_k=5`는 유지한다. 명시적 조문 조회는 지정 조문의 모든 청크를 대상으로 하며 50개를 초과하면 검색 오류로 처리한다.
+
+정확 조회는 `index_to_docstore_id`/`docstore.search`를 제공하는 저장소가 필요하다. 이를 지원하지 않는 저장소에 조문 지정 질문을 하면 `retrieval_error`로 처리한다. 일반 의미 검색의 기존 비동기/동기 저장소 인터페이스는 유지한다. 레거시 `rag_agent.answer_question()`에는 인용 검증이 적용되지만, 구조화 유보·생성 후 검토·조문 직접 조회는 `RagService` 경로의 기능이다.
+
+개선 전후 실제 API·모의 테스트 비교는 [개선 비교 문서](../../rag-docs/rag-improve/RAG_서비스_개선_전후_비교_2026-10-26.md)를 참고한다.

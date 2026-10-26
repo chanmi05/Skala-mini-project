@@ -72,3 +72,22 @@ Thumbs.db
 
 # FAISS indexes are intentionally retained for team sharing.
 # Agree with the RAG owner before excluding rag-code-template_ext/faiss_db/.
+
+# RAG evaluation outputs are local artifacts; retain Markdown reports.
+/rag-code-template_ext/rag-service/evaluation/runs/**
+!/rag-code-template_ext/rag-service/evaluation/runs/**/
+!/rag-code-template_ext/rag-service/evaluation/runs/**/*.md
+/rag-code-template_ext/rag-service/evaluation/comparisons/**
+!/rag-code-template_ext/rag-service/evaluation/comparisons/**/
+!/rag-code-template_ext/rag-service/evaluation/comparisons/**/*.md
+/rag-code-template_ext/rag-service/evaluation/inspections/**
+!/rag-code-template_ext/rag-service/evaluation/inspections/**/
+!/rag-code-template_ext/rag-service/evaluation/inspections/**/*.md
+/rag-code-template_ext/rag-service/evaluation/corpus.jsonl
+/data/eval/result.csv
+
+# RAG documentation and work logs are maintained locally.
+/rag-docs/
+
+# Local copies of original source files.
+/original/
